@@ -2,7 +2,7 @@
 #                                   M2-maskedprimingBilinguals                                      #
 #---------------------------------------------------------------------------------------------------#
 #This is the code used to upload, check and analyze data from a masked morphological priming experiment on Italian-English bilinguals.
-# 14/12/2016
+# 19/12/2016
 
 #---------------------------------------------------------------------------------------------------#
 #                             CONCATENATE ALL THE ROTATIONS ENG SBJ                                 #
@@ -512,7 +512,7 @@ round(xtabs(datartITA$rt ~ datartITA$Morphtype + datartITA$Primetype) / xtabs(~d
 #---------------------------------------------------------------------------------------------------#
 #                                    ENG PRE-PROCESS DATA                                           #
 #---------------------------------------------------------------------------------------------------#
-#Diagnostics.Rfunction of Davide Crepaldi (see: http://www.davidecrepaldi.net/wordpress/software-utilities-2/)
+#Diagnostics.Rfunction of Davide Crepaldi (see:http://www.davidecrepaldi.net/wordpress/software-utilities-2/)
 subset(masterFile, Language=="eng") -> masterfileEng
 
 setwd("")
@@ -539,3 +539,117 @@ summary(dataAccENG)
 #---------------------------------------------------------------------------------------------------#
 subset(dataAccENG, dataAccENG$Accuracy2==1)-> datartENG
 round(xtabs(datartENG$rt ~ datartENG$Morphtype + datartENG$Primetype) / xtabs(~datartENG$Morphtype + datartENG$Primetype), digits = 0)
+
+#---------------------------------------------------------------------------------------------------#
+#------------------------------------------ITA ANALYSIS---------------------------------------------#
+#---------------------------------------------------------------------------------------------------#
+#inspection of the distribution of the RTs before beginning with fitting a model to the data.
+#we must remember that n.16 and 5 critical words need to be taken out.
+subset(masterfileIta, masterfileIta$Subject!=16 & masterfileIta$Target!= "congruo" & masterfileIta$Target!= "guado" & masterfileIta$Target!= "guano" & masterfileIta$Target!= "uggia" & masterfileIta$Target!= "vello" & masterfileIta$Target!= "avo" & masterfileIta$Lexicality=="WORD")-> ita
+#I decided to logarithmically transform RTs to normalize the distribution
+ita$rt2<- log(ita$rt)
+#plot
+qqmath(~rt2|Subject, data=ita)
+#The plot shows outliers that don't follow the normal distribution. So I fix a threshold at log RT<7 (around 1100ms) and RT>5.8 (around 250ms) and I take out data outside this range.
+qqmath(~rt2|Subject, data=ita[ita$rt2<7 & ita$rt2>5.5, ]) #the plot now shows that all sbjs follow a normal distribution.
+ita2<-ita[ita$rt2<7 & ita$rt2>5.5, ]
+#this is the actual number of rows that I've take out
+nrow(ita) - nrow(ita2)
+#65 columns, it's about 0.011% of the data
+(nrow(ita) - nrow(ita2)) / nrow(ita)
+#let's select only the right answers for the analysis
+ita3 <- ita2[ita2$Accuracy==1, ]
+
+#BEGIN OF THE ANALYSIS
+#Step n.1: 
+#eximination of a control variable for possible longitudinal effects of familiarization or fatigue during the experiment, using the position (or rank) of a trial in the experimental list
+xylowess.fnc(rt2 ~ TrialCount | Subject, data= ita3, ylabel = "log RT")
+#The plot apparently doesn't show any fatigue or familiarization effect.
+#Let's fit a mixed-effects model with Trial as covariate and Subject and Target as random effects to see if it's true.
+library(lmerTest)
+ita3.lmer <- lmer(rt2 ~ TrialCount + (1|Subject) + (1|Target), data = ita3)
+summary(ita3.lmer) 
+#p-value of 0.0853, not significant.
+#According to Baayen, there is another way tto estimate the p-value for TrialCount: take the number of observations (5353) and substract the number of fixed-effects parameters (2). Then because the t-distribution approximates the normal when its df>100, check for 5% of significance whether the abs value of the t-statistics exceeds 2.
+2* (1 - pt(abs(1.7), 5353 - 2)) # the p-value is 0.08918904... close to the previous one, and still not significant. We can move on testing our main hypothesis.
+#Step n.2
+#examination of the Primetype and Morphtype variable on RTs. According to our hypothesis, difference between rel and ctrl and OP/OR/TR should be significant in all conditions but the Orthographic one.
+bwplot(rt2 ~ Primetype | Morphtype, data= ita3, ylab = "log RT") #the plot apparently seems to give credit to our hyp.
+ita3.lmer2 <- lmer(rt2 ~ Primetype + Morphtype + (1|Subject) + (1|Target), data = ita3)
+summary(ita3.lmer2) 
+#it looks like that there is a difference between rel and unrel in TR and OP, but not in OR
+#let's see whether there is an interaction between Primetype and Morphtype
+ita3.lmer3 <- lmer(rt2 ~ Primetype*Morphtype + (1|Subject) + (1|Target), data = ita3)
+summary(ita3.lmer3) 
+#Interaction significant.
+
+#Step. n.3
+#Examination of other possible interactions. Let's see if the frequency of the target had an effect in interaction with Morphtype
+ita3.lmer3 <- lmer(rt2 ~ Primetype + Morphtype*Logfreq.Zipf.t + (1|Subject) + (1|Target), data = ita3)
+summary(ita3.lmer3) #no, it didn't. Same try with frequency of the prime.
+#Let's see if the Length of the target had an effect in interaction with Morphtype
+ita3.lmer4 <- lmer(rt2 ~ Primetype + Morphtype*Lenp + (1|Subject) + (1|Target), data = ita3)
+summary(ita3.lmer4) #no, it didn't. Same try with length of the prime.
+#It looks like that neither the length, nor the frequency had an effect on the RTs. Not completely sure about that, possible flaws.
+
+#---------------------------------------------------------------------------------------------------#
+#------------------------------------------ENG ANALYSIS---------------------------------------------#
+#---------------------------------------------------------------------------------------------------#
+#inspection of the distribution of the RTs before beginning with fitting a model to the data.
+#we must remember that n.22 and n.26 need to be taken out.
+subset(masterfileEng, masterfileEng$Subject!=22 & masterfileEng$Subject!=26 & masterfileEng$Lexicality=="WORD") -> eng
+#I decided to logarithmically transform RTs to normalize the distribution
+eng$rt2<- log(eng$rt)
+#plot
+qqmath(~rt2|Subject, data=eng)
+#The plot shows outliers that don't follow the normal distribution. So I fix a threshold at log RT<7.4 (around 1600ms) and RT>5.8 (around 250ms) and I take out data outside this range.
+qqmath(~rt2|Subject, data=eng[eng$rt2<7.4 & eng$rt2>5.5, ]) #the plot now shows a better distribution
+eng2<-eng[eng$rt2<7.4 & eng$rt2>5.5, ]
+#this is the actual number of rows that I've take out
+nrow(eng) - nrow(eng2)
+#60 columns, it's about 0.010% of the data
+(nrow(eng) - nrow(eng2)) / nrow(eng)
+#let's select only the right answers for the analysis
+eng3 <- eng2[eng2$Accuracy==1, ]
+
+
+#BEGIN OF THE ANALYSIS
+#Step n.1: 
+#eximination of a control variable for possible longitudinal effects of familiarization or fatigue during the experiment, using the position (or rank) of a trial in the experimental list
+xylowess.fnc(rt2 ~ TrialCount | Subject, data= eng3, ylabel = "log RT")
+#The plot is a mess. Some distributions seems to resemble an inverted U.
+#Let's fit a mixed-effects model with Trial as covariate and Subject and Target as random effects to see if the TrialCount had an effect.
+library(lmerTest)
+eng3.lmer <- lmer(rt2 ~ TrialCount + (1|Subject) + (1|Target), data = eng3)
+summary(eng3.lmer) 
+#p-value of 0.272, not significant.
+2* (1 - pt(abs(-1.099), 5353 - 2)) # the p-value is 0.2718175... still not significant. We can move on testing our main hypothesis.
+
+#Step n.2
+#examination of the Primetype and Morphtype variable on RTs. According to our hypothesis, difference between rel and ctrl and OP/OR/TR should be significant in all conditions but the Orthographic one.
+bwplot(rt2 ~ Primetype | Morphtype, data= eng3, ylab = "log RT")#the plot apparently seems to give partial creadit to our hyp.
+eng3.lmer2 <- lmer(rt2 ~ Primetype + Morphtype + (1|Subject) + (1|Target), data = eng3)
+summary(eng3.lmer2) 
+#it looks like that there is a difference between rel and unrel but not in the three conditions.
+eng3.lmer3 <- lmer(rt2 ~ Primetype*Morphtype + (1|Subject) + (1|Target), data = eng3)
+summary(eng3.lmer3) 
+#taking in consideration the interaction between Primetype and Morphtype, there is a significant difference between rel and unrel in the TR condition.
+
+#Step. n.3
+#Examination of possible interactions. Let's see if the frequency of the target had an effect in interaction with Morphtype
+eng3.lmer4 <- lmer(rt2 ~ Primetype*Morphtype*Logfreq.Zipf.t + (1|Subject) + (1|Target), data = eng3)
+summary(eng3.lmer4) #significant in the orthographic condition. Frequency of the prime didn't have an effect at all.
+#Let's see if the Length of the target had an effect in interaction with Morphtype
+eng3.lmer5 <- lmer(rt2 ~ Primetype*Morphtype*Lent + (1|Subject) + (1|Target), data = eng3)
+summary(eng3.lmer5) #it looks like that the second and third interaction is significant in the OR condition.
+eng3.lmer6 <- lmer(rt2 ~ Primetype*Morphtype*Lent*Logfreq.Zipf.t + (1|Subject) + (1|Target), data = eng3)
+summary(eng3.lmer6) #not sure of what does it mean.
+
+#---------------------------------------------------------------------------------------------------#
+#------------------------------------------ITA + ENG ANALYSIS---------------------------------------#
+#---------------------------------------------------------------------------------------------------#
+rbind(ita3,eng3)->master
+master.lmer<- lmer(rt2 ~ Primetype*Morphtype*Language*Lent + (1|Subject) + (1|Target), data = master)
+summary(master.lmer) 
+master.lmer<- lmer(rt2 ~ Language*Lent + (1|Subject) + (1|Target), data = master)
+summary(master.lmer) 
