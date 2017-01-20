@@ -4,8 +4,11 @@
 #---------------------------------------------------------------------------------------------------#
 #-------------------------------------ITA f.diagnostics---------------------------------------------#
 #---------------------------------------------------------------------------------------------------#
-subset(masterFile, Language=="ita")-> masterfileIta
 
+#set your own working directory
+#upload masterFile from masterFile.txt in the folder 'data'
+
+subset(masterFile, Language=="ita")-> masterfileIta
 
 sbj.id<- masterfileIta$Subject
 acc<- masterfileIta$Accuracy
@@ -13,18 +16,17 @@ lexicality<- masterfileIta$Lexicality
 target<-masterfileIta$Target
 rt<-masterfileIta$rt
 
-setwd("")
-
-source("diagnostics.r")
+source("Diagnostics.R") #I've uploaded this function into the git folder, so that everyone can import it into R, and use it. Doesn't seem to work here, however. Perhaps you could try putting your own diagnostics.r file into the git, Eva, it may be that there's a problem in my file
 diagnostics.f(rt, acc, sbj.id, target, lexicality, ita)
 
-#Subj. 16 has reported seeing clearly the prime, for this reason will be taken out of the analysis, in addition to the words that scored less than 30% of accuracy. 
+#Subj. 16 has reported seeing clearly the prime, for this reason will be taken out of the analysis, in addition to the words that scored less than 70% of accuracy. 
 # We filter also Rts from 250 to 1600ms
 subset(target.diagnostics, acc<0.7)-> parolebrutte #.giusto per sapere quali sono
 subset(masterfileIta, masterfileIta$rt>250 & masterfileIta$rt<1600 & masterfileIta$Subject!=16 & masterfileIta$Target!= "congruo" & masterfileIta$Target!= "guado" & masterfileIta$Target!= "guano" & masterfileIta$Target!= "uggia" & masterfileIta$Target!= "vello" & masterfileIta$Target!= "avo" & masterfileIta$Lexicality=="WORD") -> dataAccITA
 #Then, we select only right answers
 subset(dataAccITA, dataAccITA$Accuracy==1)-> datartITA
 summary(datartITA)
+
 #First look at the means
 round(xtabs(datartITA$rt ~ datartITA$Morphtype + datartITA$Primetype) / xtabs(~datartITA$Morphtype + datartITA$Primetype), digits = 0)
 
@@ -49,4 +51,7 @@ subset(masterfileEng, masterfileEng$rt>250 & masterfileEng$rt<1900 & masterfileE
 subset(dataAccENG, dataAccENG$Accuracy==1)-> datartENG
 #First look at the means
 round(xtabs(datartENG$rt ~ datartENG$Morphtype + datartENG$Primetype) / xtabs(~datartENG$Morphtype + datartENG$Primetype), digits = 0)
+
+#clean up the workspace
+rm(rt, acc, sbj.id, target, lexicality, diagnostics.f, masterFile);
 
