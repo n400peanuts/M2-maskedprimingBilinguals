@@ -1,5 +1,7 @@
 # ---- Preprocessing of bilingual masked priming experiment
+# ---- The final output is a file called "masterFile" in which there are all the raw data of the experiment
 #----- 14/12/2016
+
 #N.B.: ss2 in ITA has one target different from the others subjs (1 & from 3 to 40). Then I chose to upload 1 & 2 seperatly, and in a second moment from 3 to 40.
 
 #---------------------------------------------------------------------------------------------------#

@@ -1,4 +1,5 @@
 # ---- Diagnostics.Rfunction of Davide Crepaldi (see: http://www.davidecrepaldi.net/wordpress/software-utilities-2/)
+# ---- Run this script after the preprocessing. Or in alternative, upload directly the file 'masterFile.txt'
 # ---- 13/01/2017
 
 #---------------------------------------------------------------------------------------------------#
@@ -44,9 +45,9 @@ rt<-masterfileEng$rt
 
 diagnostics.f(rt, acc, sbj.id, target, lexicality, eng)
 
-#Subjs 22 and 26 will be taken out because their performance is very far from the others and the accuracy less than 40%, see the output graph from the diagnostics function.
+#Subjs 16 saw the prime. Sbjs 22 and 26 will be taken out because their performance is very far from the others and the accuracy less than 40%, see the output graph from the diagnostics function.
 # We filter also Rts from 250 to 1900ms
-subset(masterfileEng, masterfileEng$rt>250 & masterfileEng$rt<1900 & masterfileEng$Subject!=22 & masterfileEng$Subject!=26 & masterfileEng$Lexicality=="WORD") -> dataAccENG
+subset(masterfileEng, masterfileEng$rt>250 & masterfileEng$rt<1900 & masterfileEng$Subject!=16 & masterfileEng$Subject!=22 & masterfileEng$Subject!=26 & masterfileEng$Lexicality=="WORD") -> dataAccENG
 #Then, we select only right answers
 subset(dataAccENG, dataAccENG$Accuracy==1)-> datartENG
 #First look at the means
