@@ -146,9 +146,7 @@ summary(proficiencylmer7)
 anova(proficiencylmer7)
 
 #Second tentative of clustering using principal component analysis UNSUPERVISED
-library(reshape2)
-temp <- melt(datartENG, c("phoneticComprehension", "morphComprehension", "spelling", "readingComprehension", "vocabulary", "oralComprehension", "rt"), "Morphtype")
-prof.pr <- prcomp(temp[, c("rt", "value","phoneticComprehension", "morphComprehension", "spelling", "readingComprehension", "vocabulary", "oralComprehension")])
+prof.pr <- prcomp(data.frame(datartENG[, c("rt","phoneticComprehension", "morphComprehension", "spelling", "readingComprehension", "vocabulary", "oralComprehension")], row.names = NULL))
 summary(prof.pr)
 props <- round((prof.pr$sdev^2/sum(prof.pr$sdev^2)), 3)
 barplot(props, col = as.numeric(props > 0.5), xlab = "principal components", ylab = "proportion of variance explained")
