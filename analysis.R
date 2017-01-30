@@ -145,3 +145,11 @@ proficiencylmer7 <- lmer(-1000/rt ~ as.factor(Relatedness) * oralComprehension +
 summary(proficiencylmer7) 
 anova(proficiencylmer7)
 
+#Second tentative of clustering using principal component analysis UNSUPERVISED
+library(reshape2)
+temp <- melt(datartENG, c("phoneticComprehension", "morphComprehension", "spelling", "readingComprehension", "vocabulary", "oralComprehension", "rt"), "Morphtype")
+prof.pr <- prcomp(temp[, c("rt", "value","phoneticComprehension", "morphComprehension", "spelling", "readingComprehension", "vocabulary", "oralComprehension")])
+summary(prof.pr)
+props <- round((prof.pr$sdev^2/sum(prof.pr$sdev^2)), 3)
+barplot(props, col = as.numeric(props > 0.5), xlab = "principal components", ylab = "proportion of variance explained")
+abline(h = 0.05)
