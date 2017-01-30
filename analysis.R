@@ -136,9 +136,9 @@ summary(proficiencylmer5)
 anova(proficiencylmer5)
 #vocabulary
 proficiencylmer6 <- lmer(-1000/rt ~ as.factor(Relatedness) * vocabulary + Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
-proficiencylmer6 <- lmer(-1000/rt ~ as.factor(Relatedness) + vocabulary * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
-summary(proficiencylmer6) #vocabulary*relatedness significativo. seconda analisi significativa con i TR.
-anova(proficiencylmer6)
+proficiencylmer6b <- lmer(-1000/rt ~ as.factor(Relatedness) + vocabulary * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
+summary(proficiencylmer6b) #vocabulary*relatedness significativo.vocabulary*MorphtypeTR significativo
+anova(proficiencylmer6b)
 
 #oralComprehension
 proficiencylmer7 <- lmer(-1000/rt ~ as.factor(Relatedness) * oralComprehension + Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
@@ -146,8 +146,36 @@ summary(proficiencylmer7)
 anova(proficiencylmer7)
 
 #Second tentative of clustering using principal component analysis UNSUPERVISED
-prof.pr <- prcomp(data.frame(datartENG[, c("rt","phoneticComprehension", "morphComprehension", "spelling", "readingComprehension", "vocabulary", "oralComprehension")], row.names = NULL))
+#Question: "Do different kinds of proficiency measures codetermines RTs in OR/OP/TR condition?"
+prof.pr <- prcomp(data.frame(datartENG[, c( "rt","phoneticComprehension", "morphComprehension", "spelling", "readingComprehension", "vocabulary", "oralComprehension")]))
 summary(prof.pr)
 props <- round((prof.pr$sdev^2/sum(prof.pr$sdev^2)), 3)
 barplot(props, col = as.numeric(props > 0.5), xlab = "principal components", ylab = "proportion of variance explained")
 abline(h = 0.05)
+#BOH
+
+#AoA1 "A che età hai iniziato ad essere esposto alla lingua inglese?"
+proficiencylmer8 <- lmer(-1000/rt ~ as.factor(Relatedness) * AoA1 * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
+summary(proficiencylmer8) #relatedness*AoA1 significativo
+anova(proficiencylmer8)
+#AoA2 "quanto usi l'inglese nella tua vita quotidiana da 1 a 5?" 
+proficiencylmer9 <- lmer(-1000/rt ~ as.factor(Relatedness) * AoA2 * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
+summary(proficiencylmer9) 
+#AoA3 "In quale contesto hai iniziato ad essere esposto alla lingua inglese? Casa o scuola?"
+proficiencylmer10 <- lmer(-1000/rt ~ as.factor(Relatedness) * AoA3 * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
+summary(proficiencylmer10) 
+#AoA5 "Sei cresciuta/o in un ambiente dove si parlano più lingue? 1: sì 2: no"
+proficiencylmer11 <- lmer(-1000/rt ~ as.factor(Relatedness) * AoA5 * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
+summary(proficiencylmer11) 
+#AoA6 "Se parli più lingue, qual è la lingua che conosci meglio dopo la tua madrelingua? 1: eng 2: altro"
+proficiencylmer12 <- lmer(-1000/rt ~ as.factor(Relatedness) * AoA6 * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
+summary(proficiencylmer12) 
+#AoA7 "Come valuteresti il livello di conoscenza della tua seconda lingua su una scala da 1 (base) a 5 (avanzato)?"
+proficiencylmer13 <- lmer(-1000/rt ~ as.factor(Relatedness) * AoA7 * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
+summary(proficiencylmer13) 
+#AoA8 "Qual è la terza lingua che conosci meglio dopo la tua madrelingua? 1: eng 2: altro 3: nessun'altra"
+proficiencylmer14 <- lmer(-1000/rt ~ as.factor(Relatedness) * AoA8 * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
+summary(proficiencylmer14) 
+#AoA9 "Eva Viviani:Come valuteresti il livello di conoscenza della tua terza lingua su una scala da 1 (base) a 5 (avanzato)?"
+proficiencylmer15 <- lmer(-1000/rt ~ as.factor(Relatedness) * AoA9 * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
+summary(proficiencylmer15) 
