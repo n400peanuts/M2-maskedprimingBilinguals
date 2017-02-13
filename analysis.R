@@ -195,23 +195,14 @@ plotLMER.fnc(languagelmer2, fun = inv, pred = "as.factor(Relatedness)", control 
 
 
 par(mfrow=c(2,2));
-plotLMER.fnc(proficiencylmer8b, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .15)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', main='very low prof');
-plotLMER.fnc(proficiencylmer8b, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .35)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', main='low prof');
-plotLMER.fnc(proficiencylmer8b, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .65)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', main='high prof');
-plotLMER.fnc(proficiencylmer8b, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .85)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', main='very high prof');
+plotLMER.fnc(proficiencylmer8b, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .15)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', main='very low prof', ylimit = c(570,630));
+plotLMER.fnc(proficiencylmer8b, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .35)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', main='low prof', ylimit = c(570,630));
+plotLMER.fnc(proficiencylmer8b, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .65)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', main='high prof', ylimit = c(570,630));
+plotLMER.fnc(proficiencylmer8b, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .85)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', main='very high prof', ylimit = c(570,630));
 par(mfrow=c(1,1));
 
 #ah ah, bingo here!!!
-#allora ci ho pensato un po', dimmi se sono conclusioni un po' affrettate. 
-#Se filtriamo i dati secondo "subset(datartENG, abs(scale(resid(proficiencylmer8)))<2)" la 3way interaction salta fuori. 
-#E' ammissibile un passaggio del genere? 
-#nel caso in cui lo fosse, il pattern che emerge ? che pi? la proficiency cala, pi? si ha priming. Pi? la proficiency aumenta, meno si ha priming.
-#Tuttavia, se si guarda il pattern in morphtype, si vede che pi? la proficiency cala, pi? il priming ? presente in tutte e tre le condizioni: nei TR, ma cos? anche negli OR e nei OP, anzi, in questi ultimi due i RTs sono pi? veloci dei TR.
-#Invece per chi ha una proficiency alta (valore 112) si trova il classico pattern come in L1: TR e OP hanno RTs veloci, ma l'OR ? lentissimo. Questo pattern ? evidenziato dalla forma a /\ triangolare
-#Ma queste speculazioni sono ammissibili solo se accettiamo il subset che rende significativa la relazione tra relatedness*overallProf
-#E' cos???
-
-
+#heavily modulated
 
 
 #AoA1 "A che et? hai iniziato ad essere esposto alla lingua inglese?"
@@ -220,10 +211,19 @@ proficiencylmer10 <- lmer(-1000/rt ~ Relatedness * AoA1  * Morphtype + rcs(Trial
 anova(proficiencylmer0, proficiencylmer9) #relatedness*AoA1 significativo
 anova(proficiencylmer9) #anche qui senza filtrare c'? solo l'interazione tra relatedness*AoA1
 anova(proficiencylmer10) #qui invece anche la 3way interaction
-plotLMER.fnc(proficiencylmer9, fun = inv, pred = "Relatedness",intr = list("AoA1", quantile(datartENG$AoA1), "end"), addlines = T)
-#qui il pattern sembra essere interessante, pi? aumenta l'et? in cui si ? esposti all'inglese e meno si ha priming.
+plotLMER.fnc(proficiencylmer10, fun = inv, pred = "Relatedness",intr = list("AoA1", quantile(datartENG$AoA1), "end"), addlines = T)
 plotLMER.fnc(proficiencylmer10, fun = inv, pred = "Morphtype",intr = list("AoA1", quantile(datartENG$AoA1), "end"), addlines = T)
-#Anche qui, se ammettiamo il subset, il soggetto 0, che sarebbe un perfetto bilingue, ha il pattern di priming come in L1, mentre gli altri no
+
+fivenum(datartENG$AoA1)
+par(mfrow=c(2,2));
+plotLMER.fnc(proficiencylmer10, fun = inv, pred = "Relatedness",control = list("AoA1", quantile(datartENG$AoA1, .01)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', main='.01');
+plotLMER.fnc(proficiencylmer10, fun = inv, pred = "Relatedness",control = list("AoA1", quantile(datartENG$AoA1, .25)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', main='.25', ylimit = c(570,630));
+plotLMER.fnc(proficiencylmer10, fun = inv, pred = "Relatedness",control = list("AoA1", quantile(datartENG$AoA1, .50)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', main='.50', ylimit = c(570,630));
+plotLMER.fnc(proficiencylmer10, fun = inv, pred = "Relatedness",control = list("AoA1", quantile(datartENG$AoA1, .75)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', main='.75', ylimit = c(570,630));
+par(mfrow=c(1,1));
+
+#semb
+
 
 #AoA2 "quanto usi l'inglese nella tua vita quotidiana da 1 a 5?" 
 proficiencylmer11 <- lmer(-1000/rt ~ Relatedness * AoA2 * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
@@ -233,14 +233,19 @@ anova(proficiencylmer11) #qui significativo morphtype*AoA2 e relatedness*AoA2 se
 anova(proficiencylmer11b) #qui scompare morphtype*AoA2, ma compare una 3way tra relatedness:Aoa2:morphtype, perch???
 plotLMER.fnc(proficiencylmer11, fun = inv, pred = "Relatedness",intr = list("AoA2", quantile(datartENG$AoA2), "end"), addlines = T)
 plotLMER.fnc(proficiencylmer11, fun = inv, pred = "Morphtype",intr = list("AoA2", quantile(datartENG$AoA2), "end"), addlines = T)
+#da considerare come proficiency
 
+par(mfrow=c(2,2));
+plotLMER.fnc(proficiencylmer11, fun = inv, pred = "Relatedness",control = list("AoA2", 1), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', main='.25');
+plotLMER.fnc(proficiencylmer11, fun = inv, pred = "Relatedness",control = list("AoA2", 3), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', main='.50');
+plotLMER.fnc(proficiencylmer11, fun = inv, pred = "Relatedness",control = list("AoA2", 5), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', main='.75');
+par(mfrow=c(1,1));
 
 #AoA3 "In quale contesto hai iniziato ad essere esposto alla lingua inglese? Casa o scuola?"
-proficiencylmer12 <- lmer(-1000/rt ~ Relatedness * AoA3 * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
+proficiencylmer12 <- lmer(-1000/rt ~ Relatedness * AoA3 * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = subset(datartENG, abs(scale(resid(proficiencylmer11)))<2))
 anova(proficiencylmer0, proficiencylmer12) 
 anova(proficiencylmer12)
-#Qua non so come procedere perch? la risposta ? una variabile dicotomica, o casa o scuola, in classe 'factor' 
-
+summary(datartENG$AoA3) #too unbalanced
 
 #AoA5 "Sei cresciuta/o in un ambiente dove si parlano pi? lingue? 1: s? 2: no"
 proficiencylmer13 <- lmer(-1000/rt ~ Relatedness * AoA5 * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
@@ -248,21 +253,26 @@ anova(proficiencylmer0, proficiencylmer13)
 anova(proficiencylmer13) 
 #nothing significant here
 
-#AoA6 "Se parli pi? lingue, qual ? la lingua che conosci meglio dopo la tua madrelingua? 1: eng 2: altro"
-proficiencylmer14 <- lmer(-1000/rt ~ Relatedness * AoA6 * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
+#AoA6 "Se parli più lingue, qual è la lingua che conosci meglio dopo la tua madrelingua? 1: eng 2: altro"
+summary(datartENG$AoA6)
+proficiencylmer14 <- lmer(-1000/rt ~ Relatedness * as.factor(AoA6) * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
 anova(proficiencylmer0, proficiencylmer14) 
 anova(proficiencylmer14) 
-#anche qui non penso sia da usare come predictor questo AoA perch? dice solo se l'inglese ? la seconda lingua oppure no
 
 #AoA7 "Come valuteresti il livello di conoscenza della tua seconda lingua su una scala da 1 (base) a 5 (avanzato)?"
 proficiencylmer15 <- lmer(-1000/rt ~ Relatedness * AoA7 * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
+proficiencylmer15b <- lmer(-1000/rt ~ Relatedness * AoA7 * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = subset(datartENG, abs(scale(resid(proficiencylmer15)))<2))
 anova(proficiencylmer0, proficiencylmer15) 
-anova(proficiencylmer15) #AoA7:Morphtype significativo, non penso sia proprio utile
+anova(proficiencylmer15b) #useless
 
 #AoA8 "Qual ? la terza lingua che conosci meglio dopo la tua madrelingua? 1: eng 2: altro 3: nessun'altra"
-proficiencylmer16 <- lmer(-1000/rt ~ Relatedness * AoA8 * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
+summary(as.factor(datartENG$AoA8))
+proficiencylmer16 <- lmer(-1000/rt ~ Relatedness * as.factor(AoA8) * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
+proficiencylmer16b <- lmer(-1000/rt ~ Relatedness * as.factor(AoA8) * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = subset(datartENG, abs(scale(resid(proficiencylmer16)))<2))
 anova(proficiencylmer0, proficiencylmer16) 
 anova(proficiencylmer16) #same as AoA7, nonsense this analysis
+anova(proficiencylmer16b) #same as AoA7, nonsense this analysis
+
 
 #AoA9 "Come valuteresti il livello di conoscenza della tua terza lingua su una scala da 1 (base) a 5 (avanzato)?"
 proficiencylmer17 <- lmer(-1000/rt ~ as.factor(Relatedness) * AoA9 * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
@@ -278,3 +288,14 @@ subtlex<-read.table("C:/Users/Eva Viviani/OneDrive/Documenti/R/subtlex-it.txt", 
 subtlex.uk<-read.table("C:/Users/Eva Viviani/OneDrive/Documenti/SISSA - Experiments/Masked Priming/bilingualism/Stimoli/subtlex-UK/ukrimaneggiato.txt", header=T)
 subtlex.uk$length <- nchar(as.character(subtlex.uk$Spelling))  #counting lenght of Spelling words
 #bigram freq basata sull'ita per gli stimoli eng, ma solo sui prime.
+WordsNgramFreq(datartENG$Prime.x, subtlex$spelling, subtlex$zipf, 2, WriteOut = T)
+
+#the output of the WordsNgramFreq  is in the 'data' folder:
+read.table("dataRtPrimeEng_Mean2gramFreq_token_basedOnItalian.txt", header = T)-> datartBigram
+
+#mixed model with meanNgramFreq as a predictor:
+englmer5c <- lmer(-1000/rt ~ datartBigram$MeanNgramFreq * as.factor(Relatedness) * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent +(1|Subject) + (1|Target), data= datartENG, REML = F)
+summary(englmer5c)
+anova(englmer5c)
+#non interpretabile, modello tra raw data e media di frequenze, dovremmo trasformare i RTs? 
+
