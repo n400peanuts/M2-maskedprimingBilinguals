@@ -1,6 +1,6 @@
 # ---- Analysis of bilingual masked priming
 # ---- 12/01/2017
-# to use after f.diagnostics and pre-processing
+# to use after bilingualDiagnostics and pre-processing
 
 #---------------------------------------------------------------------------------------------------#
 #                                                    ITA                                            #
@@ -28,22 +28,40 @@ summary(italmer3)
 italmer4 <- lmer(-1000/rt ~ Logfreq.Zipf.t + (1|Subject) + (1|Target), data= datartITA, REML = F)
 anova(italmer3, italmer4)
 #5
-datartITA$Morphtype <- relevel(datartITA$Morphtype, "OR")
-italmer5 <- lmer(-1000/rt ~ as.factor(Relatedness) * Morphtype + Logfreq.Zipf.t + (1|Subject) + (1|Target), data= datartITA, REML = F)
+datartITA$Morphtype <- relevel(datartITA$Morphtype, "OP")
+italmer5 <- lmer(-1000/rt ~ Relatedness * Morphtype + Logfreq.Zipf.t + (1|Subject) + (1|Target), data= datartITA, REML = F)
 anova(italmer4, italmer5)
 summary(italmer5)
 #5b
-italmer5b <- lmer(-1000/rt ~ as.factor(Relatedness) * Morphtype + Logfreq.Zipf.t + (1|Subject) + (1|Target), data= subset(datartITA, abs(scale(resid(italmer5)))<2), REML = F)
+datartITA$Relatedness <- as.factor(datartITA$Relatedness)
+italmer5b <- lmer(-1000/rt ~ Relatedness * Morphtype + Logfreq.Zipf.t + (1|Subject) + (1|Target), data= subset(datartITA, abs(scale(resid(italmer5)))<2), REML = F)
 summary(italmer5b)
 anova(italmer5b)
 
 library(languageR)
 inv <- function(x) { -1000/x}
-plotLMER.fnc(italmer5b, fun = inv, pred = "as.factor(Relatedness)", intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T)
+aa<-plotLMER.fnc(italmer5b, fun = inv, withList = TRUE, pred = "Relatedness", intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, xlabel ="Relatedness" , ylabel = "-1000/rt", main = "ITA")
+
+df <- do.call(rbind, aa$Relatedness)
+names(df)[names(df) == "Levels"] <- "Relatedness"
+df$Morphtype <- rep(c("OR", "OP", "TR"), each =2)
+# plot using ggplot
+library(ggplot2)
+limitsforgraph <- summaryBy(rt ~ Morphtype + Relatedness, data=subset(datartITA, abs(scale(resid(italmer5)))<2), FUN=c(length,mean,sd))
+names(limitsforgraph)[names(limitsforgraph)=="rt.length"] <- "N"
+limitsforgraph$se <- limitsforgraph$rt.sd / sqrt(limitsforgraph$N)
+limitsforgraph$mean <- df$Y
+
+dodge <- position_dodge(width = 0.1)
+bb<-ggplot(data = df, aes(x = Relatedness, y = Y, col = Morphtype ,group = Morphtype)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
+bb <- bb + scale_y_continuous("RT(ms)",limits=c(480,650))
+bb<- bb + geom_errorbar(aes(ymin = limitsforgraph$mean - limitsforgraph$se, ymax = limitsforgraph$mean + limitsforgraph$se), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
+ggsave("itaplot.jpg", height=6, width=6, dpi = 600)
 
 #---------------------------------------------------------------------------------------------------#
 #                                                    ENG                                            #
 #---------------------------------------------------------------------------------------------------#
+datartENG$Relatedness <- as.factor(datartENG$Relatedness)
 englmer1 <- lmer(-1000/rt ~ TrialCount + Rotation + (1|Subject) + (1|Target), data= datartENG, REML = F)
 summary(englmer1)
 #2
@@ -61,15 +79,30 @@ englmer4 <- lmer(-1000/rt ~ rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject
 anova(englmer3, englmer4)
 #5
 datartENG$Morphtype <- relevel(datartENG$Morphtype, "OR")
-englmer5 <- lmer(-1000/rt ~ as.factor(Relatedness) * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent +(1|Subject) + (1|Target), data= datartENG, REML = F)
+englmer5 <- lmer(-1000/rt ~ Relatedness * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent +(1|Subject) + (1|Target), data= datartENG, REML = F)
 anova(englmer5, englmer4)
 summary(englmer5)
 #5b
-englmer5b <- lmer(-1000/rt ~ as.factor(Relatedness) * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data= subset(datartENG, abs(scale(resid(englmer5)))<2), REML = F)
+englmer5b <- lmer(-1000/rt ~ Relatedness * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data= subset(datartENG, abs(scale(resid(englmer5)))<2), REML = F)
 summary(englmer5b)
 anova(englmer5b)
 
-plotLMER.fnc(englmer5b, fun = inv, pred = "as.factor(Relatedness)", intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T)
+aa<- plotLMER.fnc(englmer5b, fun = inv, withList = TRUE, pred = "Relatedness", intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, xlabel ="Relatedness" , ylabel = "-1000/rt", main = "ENG")
+df <- do.call(rbind, aa$Relatedness)
+names(df)[names(df) == "Levels"] <- "Relatedness"
+df$Morphtype <- rep(c("OR", "OP", "TR"), each =2)
+# plot using ggplot
+library(ggplot2)
+limitsforgraph <- summaryBy(rt ~ Morphtype + Relatedness, data=subset(datartENG, abs(scale(resid(englmer5b)))<2), FUN=c(length,mean,sd))
+names(limitsforgraph)[names(limitsforgraph)=="rt.length"] <- "N"
+limitsforgraph$se <- limitsforgraph$rt.sd / sqrt(limitsforgraph$N)
+limitsforgraph$mean <- df$Y
+
+dodge <- position_dodge(width = 0.1)
+gg<-ggplot(data = df, aes(x = Relatedness, y = Y, col = Morphtype ,group = Morphtype)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
+gg <- gg + scale_y_continuous("RT(ms)",limits=c(480,650))
+gg<- gg + geom_errorbar(aes(ymin = limitsforgraph$mean - limitsforgraph$se, ymax = limitsforgraph$mean + limitsforgraph$se), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
+ggsave("engplot.jpg", height=6, width=6, dpi = 2000)
 
 #---------------------------------------------------------------------------------------------------#
 #                                     Cross-experiment interaction                                  #
@@ -77,17 +110,25 @@ plotLMER.fnc(englmer5b, fun = inv, pred = "as.factor(Relatedness)", intr = list(
 #   we need to have a three-way interaction here btw Relatedness, MorphType and Language            #
 #---------------------------------------------------------------------------------------------------#
 rbind(datartENG[,1:43], datartITA) -> crossExp
+crossExp$Relatedness <- as.factor(crossExp$Relatedness)
 crossExp$Morphtype<- relevel(crossExp$Morphtype,"OR")
-languagelmer1 <- lmer(-1000/rt ~ as.factor(Relatedness) * Morphtype * Language + Logfreq.Zipf.t +rcs(TrialCount) + Lent + (1|Subject) + (1|Target), data = crossExp, REML = F)
-languagelmer2 <- lmer(-1000/rt ~ as.factor(Relatedness) * Morphtype * Language + Logfreq.Zipf.t +rcs(TrialCount) + Lent + (1|Subject) + (1|Target), data = subset(crossExp, abs(scale(resid(languagelmer1)))<2.5), REML = F)
+languagelmer1 <- lmer(-1000/rt ~ Relatedness * Morphtype * Language + Logfreq.Zipf.t +rcs(TrialCount) + Lent + (1|Subject) + (1|Target), data = crossExp, REML = F)
+languagelmer2 <- lmer(-1000/rt ~ Relatedness * Morphtype * Language + Logfreq.Zipf.t +rcs(TrialCount) + Lent + (1|Subject) + (1|Target), data = subset(crossExp, abs(scale(resid(languagelmer1)))<2.5), REML = F)
+
+
 summary(languagelmer2)
 summary(languagelmer1)
-anova(languagelmer2)
+anova(languagelmer2) -> temp
 #add separate graph for ita and eng
 par(mfrow=c(1,2))
-plotLMER.fnc(languagelmer2, fun = inv, pred = "as.factor(Relatedness)", control = list("Languageita", 1),intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, main = "ITA", ylab='RT (ms)', ylim=c(515,640))
-plotLMER.fnc(languagelmer2, fun = inv, pred = "as.factor(Relatedness)", control = list("Languageita", 0),intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, main= 'ENG', ylab='RT (ms)', ylim=c(515,640))
+ita<-plotLMER.fnc(languagelmer2, fun = inv, pred = "Relatedness", control = list("Languageita", 1),intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, main = "L1 ITALIAN", ylab='RT (ms)', ylim=c(515,640), xlabel = 'Unrelated                                   Related',bty='l')
+eng<-plotLMER.fnc(languagelmer2, fun = inv, pred = "Relatedness", control = list("Languageita", 0),intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, main= 'L2 ENGLISH', ylab='RT (ms)', ylim=c(515,640), xlabel = 'Unrelated                                    Related',bty='l')
 par(mfrow=c(1,1))
+
+#computing p-values
+confint.merMod(languagelmer2, method = "Wald", FUN = f)
+round(1-pf(temp[[4]], temp[[1]], 9609-1-sum(temp[[1]])), digits=3) -> temp$pvalues
+
 
 #---------------------------------------------------------------------------------------------------#
 #                                     Language proficiency analysis                                 #
@@ -190,19 +231,95 @@ plotLMER.fnc(proficiencylmer8c, fun = inv, pred = "Morphtype",intr = list("overa
 plotLMER.fnc(proficiencylmer8c, fun = inv, pred = "Relatedness",intr = list("overallProf", quantile(datartENG$overallProf), "end"), addlines = T, ylab='RT(ms)');
 
 #the three way
-plotLMER.fnc(languagelmer2, fun = inv, pred = "as.factor(Relatedness)", control = list("Languageita", 1),intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, main = "ITA", ylab='RT (ms)', ylim=c(515,640))
+plotLMER.fnc(languagelmer2, fun = inv, pred = "Relatedness", control = list("Languageita", 1),intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, main = "ITA", ylab='RT (ms)', ylim=c(515,640))
 
-
-
-par(mfrow=c(2,2));
-plotLMER.fnc(proficiencylmer8b, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .15)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', main='very low prof', ylimit = c(570,630));
-plotLMER.fnc(proficiencylmer8b, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .35)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', main='low prof', ylimit = c(570,630));
-plotLMER.fnc(proficiencylmer8b, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .65)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', main='high prof', ylimit = c(570,630));
-plotLMER.fnc(proficiencylmer8b, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .85)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', main='very high prof', ylimit = c(570,630));
+jpeg(filename = "C:/Users/Eva Viviani/Documents/GitHub/M2-maskedprimingBilinguals/Rplot.jpg", res=300, height=1654, width=3339)
+par(mfrow=c(1,4));
+a<- plotLMER.fnc(proficiencylmer8b, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .25)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='VERY LOW PROFICIENCY', ylimit = c(570,640), bty='l'); 
+b<- plotLMER.fnc(proficiencylmer8b, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .50)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='LOW PROFICIENCY', ylimit = c(570,640), bty='l');
+c<- plotLMER.fnc(proficiencylmer8b, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .75)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='HIGH PROFICIENCY', ylimit = c(570,640), bty='l');
+d<- plotLMER.fnc(proficiencylmer8b, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, 1)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='VERY HIGH PROFICIENCY', ylimit = c(570,640), bty='l');
 par(mfrow=c(1,1));
-
+dev.off()
 #ah ah, bingo here!!!
 #heavily modulated
+
+#Primo quartile
+df <- do.call(rbind, a$Relatedness)
+names(df)[names(df) == "Levels"] <- "Relatedness"
+df$Morphtype <- rep(c("OR", "OP", "TR"), each =2)
+# plot using ggplot
+library(ggplot2)
+limitsforgraph <- summaryBy(rt ~ Morphtype + Relatedness, data=subset(datartENG, abs(scale(resid(proficiencylmer8)))<2), FUN=c(length,mean,sd))
+names(limitsforgraph)[names(limitsforgraph)=="rt.length"] <- "N"
+limitsforgraph$se <- limitsforgraph$rt.sd / sqrt(limitsforgraph$N)
+limitsforgraph$mean <- df$Y
+dodge <- position_dodge(width = 0.1)
+a<-ggplot(data = df, aes(x = Relatedness, y = Y, col = Morphtype ,group = Morphtype)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
+a <- a + scale_y_continuous("RT(ms)",limits=c(550,650))
+a<- a + geom_errorbar(aes(ymin = limitsforgraph$mean - limitsforgraph$se, ymax = limitsforgraph$mean + limitsforgraph$se), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
+ggsave("firsquartileProficiency.jpg", height=6, width=6, dpi = 2000)
+
+#Secondo quartile
+df <- do.call(rbind, b$Relatedness)
+names(df)[names(df) == "Levels"] <- "Relatedness"
+df$Morphtype <- rep(c("OR", "OP", "TR"), each =2)
+# plot using ggplot
+library(ggplot2)
+limitsforgraph <- summaryBy(rt ~ Morphtype + Relatedness, data=subset(datartENG, abs(scale(resid(proficiencylmer8)))<2), FUN=c(length,mean,sd))
+names(limitsforgraph)[names(limitsforgraph)=="rt.length"] <- "N"
+limitsforgraph$se <- limitsforgraph$rt.sd / sqrt(limitsforgraph$N)
+limitsforgraph$mean <- df$Y
+dodge <- position_dodge(width = 0.1)
+b<-ggplot(data = df, aes(x = Relatedness, y = Y, col = Morphtype ,group = Morphtype)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
+b <- b + scale_y_continuous("RT(ms)",limits=c(550,650))
+b<- b + geom_errorbar(aes(ymin = limitsforgraph$mean - limitsforgraph$se, ymax = limitsforgraph$mean + limitsforgraph$se), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
+ggsave("secondquartileProficiency.jpg", height=6, width=6, dpi = 2000)
+
+#Terzo quartile
+df <- do.call(rbind, c$Relatedness)
+names(df)[names(df) == "Levels"] <- "Relatedness"
+df$Morphtype <- rep(c("OR", "OP", "TR"), each =2)
+# plot using ggplot
+library(ggplot2)
+limitsforgraph <- summaryBy(rt ~ Morphtype + Relatedness, data=subset(datartENG, abs(scale(resid(proficiencylmer8)))<2), FUN=c(length,mean,sd))
+names(limitsforgraph)[names(limitsforgraph)=="rt.length"] <- "N"
+limitsforgraph$se <- limitsforgraph$rt.sd / sqrt(limitsforgraph$N)
+limitsforgraph$mean <- df$Y
+dodge <- position_dodge(width = 0.1)
+c<-ggplot(data = df, aes(x = Relatedness, y = Y, col = Morphtype ,group = Morphtype)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
+c <- c + scale_y_continuous("RT(ms)",limits=c(550,650))
+c<- c + geom_errorbar(aes(ymin = limitsforgraph$mean - limitsforgraph$se, ymax = limitsforgraph$mean + limitsforgraph$se), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
+ggsave("thirdquartileProficiency.jpg", height=6, width=6, dpi = 2000)
+
+#quarto quartile
+df <- do.call(rbind, d$Relatedness)
+names(df)[names(df) == "Levels"] <- "Relatedness"
+df$Morphtype <- rep(c("OR", "OP", "TR"), each =2)
+# plot using ggplot
+library(ggplot2)
+limitsforgraph <- summaryBy(rt ~ Morphtype + Relatedness, data=subset(datartENG, abs(scale(resid(proficiencylmer8)))<2), FUN=c(length,mean,sd))
+names(limitsforgraph)[names(limitsforgraph)=="rt.length"] <- "N"
+limitsforgraph$se <- limitsforgraph$rt.sd / sqrt(limitsforgraph$N)
+limitsforgraph$mean <- df$Y
+dodge <- position_dodge(width = 0.1)
+d<-ggplot(data = df, aes(x = Relatedness, y = Y, col = Morphtype ,group = Morphtype)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
+d <- d + scale_y_continuous("RT(ms)",limits=c(550,650))
+d<- d + geom_errorbar(aes(ymin = limitsforgraph$mean - limitsforgraph$se, ymax = limitsforgraph$mean + limitsforgraph$se), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
+ggsave("fourthquartileProficiency.jpg", height=6, width=6, dpi = 2000)
+
+
+#Let's see how many subjects were contained in these proficiency quantiles
+subset(datartENG, datartENG$overallProf<=54)-> firstQ
+unique(firstQ$Subject)-> firstQ #10 subjects
+subset(datartENG, datartENG$overallProf>54 & datartENG$overallProf<70)-> secondQ
+unique(secondQ$Subject)-> secondQ #9 subjects
+
+subset(datartENG, datartENG$overallProf>=70 & datartENG$overallProf<80)-> thirdQ
+unique(thirdQ$Subject)-> thirdQ #9 subjects
+
+subset(datartENG, datartENG$overallProf>=80)-> fourthQ
+unique(fourthQ$Subject)-> fourthQ #9 subjects
 
 
 #AoA1 "A che et? hai iniziato ad essere esposto alla lingua inglese?"
@@ -223,7 +340,6 @@ plotLMER.fnc(proficiencylmer10, fun = inv, pred = "Relatedness",control = list("
 par(mfrow=c(1,1));
 
 #semb
-
 
 #AoA2 "quanto usi l'inglese nella tua vita quotidiana da 1 a 5?" 
 proficiencylmer11 <- lmer(-1000/rt ~ Relatedness * AoA2 * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
@@ -278,24 +394,4 @@ anova(proficiencylmer16b) #same as AoA7, nonsense this analysis
 proficiencylmer17 <- lmer(-1000/rt ~ as.factor(Relatedness) * AoA9 * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
 anova(proficiencylmer0, proficiencylmer17) 
 anova(proficiencylmer17) #nothing significant here
-
-#***********SPIN-OFF
-#"how much eng words are similar to ita words? and how the similarity between them drives RTs in eng?"
-library(vwr)
-#ita subtlex
-subtlex<-read.table("C:/Users/Eva Viviani/OneDrive/Documenti/R/subtlex-it.txt", header=T) #see "http://crr.ugent.be/subtlex-it"; Crepaldi, Keuleers, Mandera & Brysbaert, 2013
-#eng subtlex
-subtlex.uk<-read.table("C:/Users/Eva Viviani/OneDrive/Documenti/SISSA - Experiments/Masked Priming/bilingualism/Stimoli/subtlex-UK/ukrimaneggiato.txt", header=T)
-subtlex.uk$length <- nchar(as.character(subtlex.uk$Spelling))  #counting lenght of Spelling words
-#bigram freq basata sull'ita per gli stimoli eng, ma solo sui prime.
-WordsNgramFreq(datartENG$Prime.x, subtlex$spelling, subtlex$zipf, 2, WriteOut = T)
-
-#the output of the WordsNgramFreq  is in the 'data' folder:
-read.table("dataRtPrimeEng_Mean2gramFreq_token_basedOnItalian.txt", header = T)-> datartBigram
-
-#mixed model with meanNgramFreq as a predictor:
-englmer5c <- lmer(-1000/rt ~ datartBigram$MeanNgramFreq * as.factor(Relatedness) * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent +(1|Subject) + (1|Target), data= datartENG, REML = F)
-summary(englmer5c)
-anova(englmer5c)
-#non interpretabile, modello tra raw data e media di frequenze, dovremmo trasformare i RTs? 
 
