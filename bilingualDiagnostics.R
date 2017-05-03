@@ -1,13 +1,7 @@
 # ---- Diagnostics.Rfunction of Davide Crepaldi (see: http://www.davidecrepaldi.net/wordpress/software-utilities-2/)
-# ---- Run this script after the preprocessing. Or in alternative, upload directly the file 'masterFile.txt'
-# ---- 13/01/2017
-
 #---------------------------------------------------------------------------------------------------#
-#-------------------------------------ITA f.diagnostics---------------------------------------------#
+#                                         ITA f.diagnostics                                         #
 #---------------------------------------------------------------------------------------------------#
-
-#set your own working directory
-#upload masterFile from masterFile.txt in the folder 'data'
 
 subset(masterFile, Language=="ita")-> masterfileIta
 
@@ -32,7 +26,7 @@ summary(datartITA)
 round(xtabs(datartITA$rt ~ datartITA$Morphtype + datartITA$Primetype) / xtabs(~datartITA$Morphtype + datartITA$Primetype), digits = 0)
 
 #---------------------------------------------------------------------------------------------------#
-#-------------------------------------ENG f.diagnostics---------------------------------------------#
+#                                         ENG f.diagnostics                                         #
 #---------------------------------------------------------------------------------------------------#
 subset(masterFile, Language=="eng")-> masterfileEng
 
@@ -57,8 +51,9 @@ round(xtabs(datartENG$rt ~ datartENG$Morphtype + datartENG$Primetype) / xtabs(~d
 #clean up the workspace
 rm(rt, acc, sbj.id, target, lexicality, diagnostics.f, masterFile, masterfileEng, masterfileIta);
 
-###calculate dprime value for for each subject from hits, miss, false alarms, correct rejections
-
+#---------------------------------------------------------------------------------------------------#
+#                                         d primes analysis                                         #
+#---------------------------------------------------------------------------------------------------#
 xtabs( ~ masterfileEng$Resp + masterfileEng$Subject) #look at response given by sbjs
 
 #I decided to remove the no responses from the subset
