@@ -6,6 +6,10 @@
 #---------------------------------------------------------------------------------------------------#
 #                                         ITA f.Diagnostics                                         #
 #---------------------------------------------------------------------------------------------------#
+library(languageR)
+library(lmerTest)
+library(ggplot2)
+inv <- function(x) { -1000/x}
 
 subset(masterFile, Language=="ita")-> masterfileIta
 
@@ -141,8 +145,7 @@ italmer5b <- lmer(-1000/rt ~ Relatedness * Morphtype + Logfreq.Zipf.t + (1|Subje
 summary(italmer5b)
 anova(italmer5b)
 
-library(languageR)
-inv <- function(x) { -1000/x}
+
 aa<-plotLMER.fnc(italmer5b, fun = inv, withList = TRUE, pred = "Relatedness", intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, xlabel ="Relatedness" , ylabel = "-1000/rt", main = "ITA")
 
 df <- do.call(rbind, aa$Relatedness)
@@ -539,7 +542,7 @@ proficiencylmer9b <- lmer(-1000/rt ~ Morphtype * overallProf + rcs(TrialCount) +
 anova(proficiencylmer9b)
 
 #rt ~ OSC_Primes * overallProf SENZA Relatedness e morphtype 
-proficiencylmer10 <- lmer(-1000/rt ~ overallProf * OSC_Target + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG);
+proficiencylmer10 <- lmer(-1000/rt ~ overallProf * OSC_Target + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG, REML = F);
 anova(proficiencylmer10)
 proficiencylmer10b <- lmer(-1000/rt ~ overallProf * OSC_Target + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = subset(datartENG, abs(scale(resid(proficiencylmer10)))<2));
 anova(proficiencylmer10b)
@@ -548,8 +551,15 @@ anova(proficiencylmer10b)
 round(cor(fitted(proficiencylmer10), -1000/datartENG$rt[!is.na(datartENG$OSC_Target)])^2, digits=3)
 round(cor(fitted(proficiencylmer9), -1000/datartENG$rt)^2, digits=3)
 
-plotLMER.fnc(proficiencylmer10b, withList = TRUE, fun = inv, pred = "OSC_Target", intr = list("overallProf", quantile(datartENG$overallProf, c(.30,.50,.80)), "end"), addlines = T, ylab='RT(ms)', bty='l'); 
+plotLMER.fnc(proficiencylmer10b, fun = inv, pred = "OSC_Target", intr = list("overallProf", quantile(datartENG$overallProf, c(.25,.50,.75,1)), "end"), addlines = T, ylab='RT(ms)', bty='l'); 
 
-#sembra non essere un effetto lineare. Proviamo ad usare un modello che permetta di fittare i dati basandosi su ' spline based smooths'
-gam(rt~ s('fixed') + s('secondofixed') + 'variabile x' + s('random') + s('random'), data='')
+install.packages('mgcv')
+library('mgcv')
+gam1 <- gam(-1000/rt ~ s(OSC_Target, by = overallProf) + s(TrialCount) + s(Logfreq.Zipf.t) + s(Subject, bs = 're') + s(Target, bs = 're'), data = datartENG)
+
+vis.gam(gam1, view=c("OSC_Target","overallProf"), type="response", plot.type="contour", main="rt ~ OSC * Proficiency", too.far=.1);
+par(mfrow=c(1,2))
+vis.gam(gam1, view=c("Logfreq.Zipf.t", "Logfreq.Zipf.t"), type="response", plot.type="contour", main="  Trialcount", too.far=.1);
+vis.gam(gam1, view=c("TrialCount"), type="response", plot.type="contour", main=" LogFreq of targets", too.far=.1);
+par(mfrow=c(1,1))
 
