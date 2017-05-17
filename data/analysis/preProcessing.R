@@ -915,6 +915,13 @@ masterFile$AoA8[masterFile$Subject==40] <- c(3)
 masterFile$AoA9[masterFile$Subject==40] <- c(0)
 
 masterFile$AoA3 <- as.factor(masterFile$AoA3)
+
+#---------------------------------------------------------------------------------------------------#
+#                           Sumup of proficiency                                                    #
+#---------------------------------------------------------------------------------------------------#
+
+masterFile$overallProf <- apply(masterFile[28:34],1,FUN = sum);
+
 #---------------------------------------------------------------------------------------------------#
 #                                          END                                                      #
 #---------------------------------------------------------------------------------------------------#
@@ -934,7 +941,7 @@ colnames(masterfileEng_OSC) <- c("Prime","Target","Subject","Age","Gender", "Han
                                  "Data","OraStart" ,"TrialCount","TrialType","Relatedness","rt","Resp","Trial.ID","Target.ID","Lexicality","Morphtype","Primetype",
                                  "Logfreq.Zipf.t","Lent","Lenp","Logfreq.Zipf.p","Nt","Np","Language","Accuracy","phoneticFluency","phoneticComprehension","morphComprehension",
                                  "spelling","readingComprehension","vocabulary","oralComprehension","AoA1" ,
-                                 "AoA2","AoA3","AoA4","AoA5","AoA6", "AoA7","AoA8","AoA9","OSC_Primes")
+                                 "AoA2","AoA3","AoA4","AoA5","AoA6", "AoA7","AoA8","AoA9","overallProf","OSC_Primes")
 colnames(db) <- c('Target', 'OSC')
 merge(masterfileEng_OSC, db, by='Target', all.x=T)-> masterfileEng_OSC
 
@@ -942,7 +949,7 @@ colnames(masterfileEng_OSC) <- c("Prime","Target","Subject","Age","Gender", "Han
                                  "Data","OraStart" ,"TrialCount","TrialType","Relatedness","rt","Resp","Trial.ID","Target.ID","Lexicality","Morphtype","Primetype",
                                  "Logfreq.Zipf.t","Lent","Lenp","Logfreq.Zipf.p","Nt","Np","Language","Accuracy","phoneticFluency","phoneticComprehension","morphComprehension",
                                  "spelling","readingComprehension","vocabulary","oralComprehension","AoA1" ,
-                                 "AoA2","AoA3","AoA4","AoA5","AoA6", "AoA7","AoA8","AoA9","OSC_Primes","OSC_Target")
+                                 "AoA2","AoA3","AoA4","AoA5","AoA6", "AoA7","AoA8","AoA9", "overallProf","OSC_Primes","OSC_Target")
 summary(masterfileEng_OSC)
 
 rm(db)
