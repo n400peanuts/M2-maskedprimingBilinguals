@@ -266,8 +266,8 @@ for(i in unique(masterFile$Subject)){
   proficiency[i] <- unique(masterFile$overallProf[masterFile$Subject==i])
 }
 jpeg(filename = "C:/Users/Eva Viviani/Documents/overallProficiency.jpg", res=300, height=1654, width=2229)
-hist(proficiency, breaks = 10, xlim = c(30, 120), main = '', xlab = 'Proficiency scores', 
-     ylab = 'Subjects', cex.lab=1.5, cex.axis=1.5, cex.sub=1.5)
+hist(proficiency, breaks = 10, xlim = c(30, 120), main = 'Proficiency', xlab = 'score', 
+     ylab = 'Subjects', cex.lab=1.5, cex.axis=2, cex.sub=2)
 dev.off()
 shapiro.test(proficiency) #normal distribution
 rm(proficiency, i)
@@ -465,19 +465,35 @@ d <- d + theme(axis.title.x = element_text(size = rel(1), face = 'bold'))
 d
 ggsave("fourthquartileProficiency.jpg", height=6, width=6, dpi = 2000)
 
-#Let's see how many subjects were contained in these proficiency quantiles
-subset(datartENG, datartENG$overallProf<=54)-> firstQ
-unique(firstQ$Subject)-> firstQ #10 subjects
-subset(datartENG, datartENG$overallProf>54 & datartENG$overallProf<70)-> secondQ
-unique(secondQ$Subject)-> secondQ #9 subjects
+#Let's see how many subjects were contained in these proficiency quantiles + post-hoc analysis
+datartENG$Morphtype <- relevel(datartENG$Morphtype, "OR")
+subset(datartENG, datartENG$overallProf<=quantile(datartENG$overallProf, .25))-> firstQ
+unique(firstQ$Subject) #10 subjects
+lmerFirstq <- lmer(-1000/rt ~ Relatedness * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = firstQ);
+lmerFirstq1 <- lmer(-1000/rt ~ Relatedness * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = subset(firstQ, abs(scale(resid(lmerFirstq)))<2));
+summary(lmerFirstq1)
 
-subset(datartENG, datartENG$overallProf>=70 & datartENG$overallProf<80)-> thirdQ
-unique(thirdQ$Subject)-> thirdQ #9 subjects
+subset(datartENG, datartENG$overallProf>quantile(datartENG$overallProf, .25) & datartENG$overallProf<=quantile(datartENG$overallProf, .50))-> secondQ
+unique(secondQ$Subject) #10 subjects
+lmersecondQ <- lmer(-1000/rt ~ Relatedness * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = secondQ);
+lmersecondQ1 <- lmer(-1000/rt ~ Relatedness * Morphtype  + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = subset(secondQ, abs(scale(resid(lmersecondQ)))<2));
+summary(lmersecondQ1)
 
-subset(datartENG, datartENG$overallProf>=80)-> fourthQ
-unique(fourthQ$Subject)-> fourthQ #9 subjects
+subset(datartENG, datartENG$overallProf>quantile(datartENG$overallProf, .50) & datartENG$overallProf<=quantile(datartENG$overallProf, .75))-> thirdQ
+unique(thirdQ$Subject) #9 subjects
+lmerthirdQ <- lmer(-1000/rt ~ Relatedness * Morphtype * overallProf + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = thirdQ);
+lmerthirdQ1 <- lmer(-1000/rt ~ Relatedness * Morphtype * overallProf + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = subset(thirdQ, abs(scale(resid(lmerthirdQ)))<2));
+summary(lmerthirdQ1)
+
+subset(datartENG, datartENG$overallProf>quantile(datartENG$overallProf, .75))-> fourthQ
+unique(fourthQ$Subject) #8 subjects
+lmerfourthQ <- lmer(-1000/rt ~ Relatedness * Morphtype * overallProf + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = fourthQ);
+lmerfourthQ1 <- lmer(-1000/rt ~ Relatedness * Morphtype * overallProf + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = subset(thirdQ, abs(scale(resid(lmerfourthQ)))<2));
+summary(lmerfourthQ1)
 
 rm(dodge, aa, df)
+rm(firstQ, lmerFirstq1, lmerFirstq, secondQ, lmersecondQ, lmersecondQ1, thirdQ, lmerthirdQ, lmerthirdQ1, fourthQ, lmerfourthQ, lmerfourthQ1)
+
 #---------------------------------------------------------------------------------------------------#
 #                                               END                                                 #
 #---------------------------------------------------------------------------------------------------#
@@ -489,11 +505,11 @@ for(i in unique(masterFile$Subject)){
   AoA[i] <- unique(masterFile$AoA1[masterFile$Subject==i])
 }
 jpeg(filename = "C:/Users/Eva Viviani/Documents/AoA.jpg", res=300, height=1654, width=2229)
-hist(AoA, main = '', xlab = 'Age of acquisition', 
-     ylab = 'Subjects', cex.lab=1.5, cex.axis=1.5, cex.sub=1.5)
+hist(AoA, main = 'Age of acquisition', xlab = 'years', 
+     ylab = 'Subjects', cex.lab=1.5, cex.axis=2, cex.sub=2)
 dev.off()
 shapiro.test(proficiency) #normal distribution
-rm(proficiency, i)
+rm(AoA, i)
 
 #AoA1 "A che et? hai iniziato ad essere esposto alla lingua inglese?"
 proficiencylmer9 <- lmer(-1000/rt ~ Relatedness * AoA1 * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
@@ -591,8 +607,13 @@ plotLMER.fnc(proficiencylmer8, withList = TRUE, fun = inv, pred = "Relatedness",
 plotLMER.fnc(proficiencylmer8, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, 1)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='VERY HIGH PROFICIENCY', ylimit = c(570,640), bty='l');
 par(mfrow=c(1,1));
 
-#controllo dell'assunto classico: 'Stems taken from the transparent sets have >OSC than OP or OR sets.'
+# run these lines to get the datartENG with the OSC paramenter:
+subset(masterfileEng_OSC, masterfileEng_OSC$rt>250 & masterfileEng_OSC$rt<1900 & masterfileEng_OSC$Subject!=16 & masterfileEng_OSC$Subject!=22 & masterfileEng_OSC$Subject!=26 & masterfileEng_OSC$Lexicality=="WORD") -> dataAccENG
+#Then, we select only right answers
+subset(dataAccENG, dataAccENG$Accuracy==1)-> datartENG
 #ok!
+
+#controllo dell'assunto classico: 'Stems taken from the transparent sets have >OSC than OP or OR sets.'
 tapply(datartENG$OSC_Target, datartENG$Morphtype, FUN = fivenum)
 
 #rt ~ morphtype * overallProf SENZA Relatedness e OSC. 
@@ -613,14 +634,19 @@ round(cor(fitted(proficiencylmer9), -1000/datartENG$rt)^2, digits=3)
 
 plotLMER.fnc(proficiencylmer10b, fun = inv, pred = "OSC_Target", intr = list("overallProf", quantile(datartENG$overallProf, c(.25,.50,.75,1)), "end"), addlines = T, ylab='RT(ms)', bty='l'); 
 
+# GAM GRAPHs #
+# first get the definition of vis.gam
+newDef <- deparse(vis.gam)
+# change the line defining the direction of the grey gradient
+newDef[grep("gray\\(seq\\(",newDef)] <- "            pal <- gray(seq(0.9, 0.1, length = nCol))"
+# then define a new function with this new definition
+vis.gam2 <- eval(parse(text=newDef))
+#plot con rt normali
+gam1 <- gam(rt ~ s(OSC_Target, by = overallProf) + s(TrialCount) + s(Logfreq.Zipf.t) + s(Subject, bs = 're') + s(Target, bs = 're'), data = datartENG)
+vis.gam2(gam1, view=c("OSC_Target","overallProf"), type="response", plot.type="contour", color="gray",main="", too.far=.1, xlab='OSC', ylab='Proficiency scores');
+#plot con -1000/rt
 gam1 <- gam(-1000/rt ~ s(OSC_Target, by = overallProf) + s(TrialCount) + s(Logfreq.Zipf.t) + s(Subject, bs = 're') + s(Target, bs = 're'), data = datartENG)
+vis.gam(gam1, view=c("OSC_Target","overallProf"), type="response", plot.type="contour", color="gray", main="", too.far=.1, xlab='OSC', ylab='Proficiency scores');
 
-jpeg(filename = "C:/Users/Eva Viviani/Documents/Rplot.jpg", res=300, height=1654, width=3339)
-vis.gam(gam1, view=c("OSC_Target","overallProf"), type="response", plot.type="contour", main="", too.far=.1, xlab='OSC', ylab='Proficiency scores');
-dev.off()
 
-par(mfrow=c(1,2))
-vis.gam(gam1, view=c("Logfreq.Zipf.t", "Logfreq.Zipf.t"), type="response", plot.type="contour", main="  Trialcount", too.far=.1);
-vis.gam(gam1, view=c("TrialCount"), type="response", plot.type="contour", main=" LogFreq of targets", too.far=.1);
-par(mfrow=c(1,1))
 
