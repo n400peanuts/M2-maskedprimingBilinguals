@@ -7,18 +7,21 @@ rm(list = ls())
 #---------------------------------------------------------------------------------------------------#
 #                               CONCATENATE ALL THE SBJ ENG                                         #
 #---------------------------------------------------------------------------------------------------#
-rotations <- read.table('C:/Users/Eva Viviani/Documents/GitHub/M2-maskedprimingBilinguals/stimoli/rotations.txt', header = T)
+setwd('.../M2-maskedprimingBilinguals/stimoli') #<- set your directory here
+rotations <- read.table('rotations.txt', header = T)
+
+setwd('.../M2-maskedprimingBilinguals/data/raw data/ENG') #<- set again here
 
 eng = NULL
 for (j in 1:40){
   if ((j %% 2) ==0){ #EVEN SUBJ
-    boh <- paste("C:/Users/Eva Viviani/Documents/GitHub/M2-maskedprimingBilinguals/data/raw data/ENG/Output_MPrim_Eng_Subj_", j, ".txt", sep = "")
+    boh <- paste("Output_MPrim_Eng_Subj_", j, ".txt", sep = "")
     pilot_eng <- read.table(boh, header = F, skip = 15,dec = ",")
     colnames(pilot_eng) <- c("Subject", "Age", "Gender", "Handedness", "Rotation","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
     rot_B_eng <- subset(rotations, rotations$Rotation=='B' & rotations$Language=='eng')
     merge(pilot_eng, rot_B_eng, by = "Target", all.x = T)-> pilot_eng
   } else { #ODD
-    boh <- paste("C:/Users/Eva Viviani/Documents/GitHub/M2-maskedprimingBilinguals/data/raw data/ENG/Output_MPrim_Eng_Subj_", j, ".txt", sep = "")
+    boh <- paste("Output_MPrim_Eng_Subj_", j, ".txt", sep = "")
     pilot_eng <- read.table(boh, header = F, skip = 15,dec = ",")
     colnames(pilot_eng) <- c("Subject", "Age", "Gender", "Handedness", "Rotation","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
     rot_A_eng <- subset(rotations, rotations$Rotation=='A' & rotations$Language=='eng')
@@ -33,46 +36,48 @@ for (j in 1:40){
   eng <- rbind(eng,pilot_eng)
 }
 
+rm(rot_A_eng, rot_B_eng, pilot_eng, boh, j)
 #---------------------------------------------------------------------------------------------------#
 #                               CONCATENATE ALL THE SBJ ITA                                         #
 #---------------------------------------------------------------------------------------------------#
 #                                            SS1                                                    #
-ss1 <- read.table("C:/Users/Eva Viviani/Documents/GitHub/M2-maskedprimingBilinguals/data/raw data/ITA/Output_MPrim_Ita_Subj_1.txt", header = F,  skip = 15, dec = ",")
+setwd('.../M2-maskedprimingBilinguals/data/raw data/ITA') #<- set again here
+
+ss1 <- read.table("Output_MPrim_Ita_Subj_1.txt", header = F,  skip = 15, dec = ",")
 colnames(ss1) <- c("Subject", "Age", "Gender", "Handedness", "Rotation","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
 rotA<- subset(rotations, rotations$Rotation=='A' & rotations$Language=='ita')
 merge(ss1, rotA, by = "Target", all.x = T)->ss1
-
 ss1$Prime.y <- NULL
 ss1$Rotation.y <- NULL
-
 summary(ss1) 
 
 #                                            SS2                                                    #
-
-ss2 <- read.table("C:/Users/Eva Viviani/Documents/GitHub/M2-maskedprimingBilinguals/data/raw data/ITA/Output_MPrim_Ita_Subj_2.txt", header = F,  skip = 15, dec = ",")
+ss2 <- read.table("Output_MPrim_Ita_Subj_2.txt", header = F,  skip = 15, dec = ",")
 colnames(ss2) <- c("Subject", "Age", "Gender", "Handedness", "Rotation.x","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
-rotB1<- read.table("C:/Users/Eva Viviani/OneDrive/Documenti/SISSA - Experiments/Masked Priming/bilingualism/Stimoli/rot_B_persoggetto2.txt", header = T, dec = ",")
+
+setwd('.../M2-maskedprimingBilinguals/stimoli') #<- set again here
+
+rotB1<- read.table("rot_B_persoggetto2.txt", header = T, dec = ",")
 colnames(rotB1) <- c("Trial.ID", "Target.ID", "Lexicality", "Morphtype", "Target", "Prime", "Primetype", "Logfreq.Zipf.t", "Lent", "Lenp", "Logfreq.Zipf.p", "Nt", "Np")
 merge(ss2, rotB1, by = "Target", all.x = T)->ss2
-
 ss2$Prime.y <- NULL
-ss2$Language <- c("ita")
+ss2$Language <- c('ita')
 ss2$Language <- as.factor(ss2$Language)
-
 summary(ss2) 
 
 #                                       FROM SS3 TO SS40                                           #                        
+setwd('.../M2-maskedprimingBilinguals/data/raw data/ITA') #<- set again here
 
 ita = NULL
 for (j in 3:40){
   if ((j %% 2) ==0){ #EVEN SUBJ
-    boh <- paste("C:/Users/Eva Viviani/Documents/GitHub/M2-maskedprimingBilinguals/data/raw data/ITA/Output_MPrim_Ita_Subj_", j, ".txt", sep = "")
+    boh <- paste("Output_MPrim_Ita_Subj_", j, ".txt", sep = "")
     pilot_ita <- read.table(boh, header = F, skip = 15,dec = ",")
     colnames(pilot_ita) <- c("Subject", "Age", "Gender", "Handedness", "Rotation","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
     rotB<- subset(rotations, rotations$Rotation=='B' & rotations$Language=='ita')
     merge(pilot_ita, rotB, by = "Target", all.x = T)-> pilot_ita
   } else { #ODD
-    boh <- paste("C:/Users/Eva Viviani/Documents/GitHub/M2-maskedprimingBilinguals/data/raw data/ITA/Output_MPrim_Ita_Subj_", j, ".txt", sep = "")
+    boh <- paste("Output_MPrim_Ita_Subj_", j, ".txt", sep = "")
     pilot_ita <- read.table(boh, header = F, skip = 15,dec = ",")
     colnames(pilot_ita) <- c("Subject", "Age", "Gender", "Handedness", "Rotation","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
     rotA<- subset(rotations, rotations$Rotation=='A' & rotations$Language=='ita')
@@ -89,6 +94,7 @@ for (j in 3:40){
 ita<- rbind(ss2,ita)
 ita <- rbind(ss1,ita)
 
+rm(rotA, rotations, pilot_ita, ss1, ss2, rotB, rotB1, boh, j, rotations)
 #---------------------------------------------------------------------------------------------------#
 #                               MERGE ALL THE SBJ INTO A MASTERFILE                                 #
 #---------------------------------------------------------------------------------------------------#
@@ -100,7 +106,7 @@ masterFile$Accuracy<- 1;
 masterFile$Accuracy[masterFile$Lexicality=="WORD" & masterFile$Resp==1] <- 0 ;
 masterFile$Accuracy[masterFile$Lexicality=="NONWORD" & masterFile$Resp==2] <- 0; 
 
-rm(rotations, rotB, rotA, rot_A_eng, rot_B_eng, rotB1, eng, ita, pilot_eng, pilot_ita, ss1, ss2, boh, j)
+rm(eng, ita)
 #---------------------------------------------------------------------------------------------------#
 #                                          END                                                      #
 #---------------------------------------------------------------------------------------------------#
@@ -928,7 +934,9 @@ masterFile$overallProf <- apply(masterFile[28:34],1,FUN = sum);
 #---------------------------------------------------------------------------------------------------#
 #                                          OSC                                                      #
 #---------------------------------------------------------------------------------------------------#
-read.table('C:/Users/Eva Viviani/Documents/GitHub/M2-maskedprimingBilinguals/stimoli/OSC.txt', header = T)-> db
+setwd('...M2-maskedprimingBilinguals/stimoli') #<- set your directory again here
+
+read.table('OSC.txt', header = T)-> db
 colnames(db) <- c('Prime.x', 'OSC')
 head(masterFile)
 head(db)
