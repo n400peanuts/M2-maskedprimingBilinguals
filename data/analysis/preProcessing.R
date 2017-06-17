@@ -2,23 +2,25 @@
 # ---- The final output is a file called "masterFile" in which there are all the raw data of the experiment
 #----- 14/12/2016
 
+localGitDir <- '~/DriveAtNeuroMi/research/misc/m2-maskedMorphPrimingBilinguals/git/M2-maskedprimingBilinguals/';
+
 #N.B.: ss2 in ITA has one target different from the others subjs (1 & from 3 to 40). Then I chose to upload 1 & 2 seperatly, and in a second moment from 3 to 40.
 rm(list = ls())
 #---------------------------------------------------------------------------------------------------#
 #                               CONCATENATE ALL THE SBJ ENG                                         #
 #---------------------------------------------------------------------------------------------------#
-rotations <- read.table('C:/Users/Eva Viviani/Documents/GitHub/M2-maskedprimingBilinguals/stimoli/rotations.txt', header = T)
+rotations <- read.table(paste(localGitDir,'/stimoli/rotations.txt', sep=''), header = T);
 
 eng = NULL
 for (j in 1:40){
   if ((j %% 2) ==0){ #EVEN SUBJ
-    boh <- paste("C:/Users/Eva Viviani/Documents/GitHub/M2-maskedprimingBilinguals/data/raw data/ENG/Output_MPrim_Eng_Subj_", j, ".txt", sep = "")
+    boh <- paste(localGitDir, '/data/raw data/ENG/Output_MPrim_Eng_Subj_', j, ".txt", sep = "")
     pilot_eng <- read.table(boh, header = F, skip = 15,dec = ",")
     colnames(pilot_eng) <- c("Subject", "Age", "Gender", "Handedness", "Rotation","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
     rot_B_eng <- subset(rotations, rotations$Rotation=='B' & rotations$Language=='eng')
     merge(pilot_eng, rot_B_eng, by = "Target", all.x = T)-> pilot_eng
   } else { #ODD
-    boh <- paste("C:/Users/Eva Viviani/Documents/GitHub/M2-maskedprimingBilinguals/data/raw data/ENG/Output_MPrim_Eng_Subj_", j, ".txt", sep = "")
+    boh <- paste(localGitDir, 'data/raw data/ENG/Output_MPrim_Eng_Subj_', j, ".txt", sep = "")
     pilot_eng <- read.table(boh, header = F, skip = 15,dec = ",")
     colnames(pilot_eng) <- c("Subject", "Age", "Gender", "Handedness", "Rotation","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
     rot_A_eng <- subset(rotations, rotations$Rotation=='A' & rotations$Language=='eng')
@@ -37,7 +39,7 @@ for (j in 1:40){
 #                               CONCATENATE ALL THE SBJ ITA                                         #
 #---------------------------------------------------------------------------------------------------#
 #                                            SS1                                                    #
-ss1 <- read.table("C:/Users/Eva Viviani/Documents/GitHub/M2-maskedprimingBilinguals/data/raw data/ITA/Output_MPrim_Ita_Subj_1.txt", header = F,  skip = 15, dec = ",")
+ss1 <- read.table(paste(localGitDir,'/data/raw data/ITA/Output_MPrim_Ita_Subj_1.txt', sep=''), header = F,  skip = 15, dec = ",")
 colnames(ss1) <- c("Subject", "Age", "Gender", "Handedness", "Rotation","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
 rotA<- subset(rotations, rotations$Rotation=='A' & rotations$Language=='ita')
 merge(ss1, rotA, by = "Target", all.x = T)->ss1
@@ -49,9 +51,9 @@ summary(ss1)
 
 #                                            SS2                                                    #
 
-ss2 <- read.table("C:/Users/Eva Viviani/Documents/GitHub/M2-maskedprimingBilinguals/data/raw data/ITA/Output_MPrim_Ita_Subj_2.txt", header = F,  skip = 15, dec = ",")
+ss2 <- read.table(paste(localGitDir,'/data/raw data/ITA/Output_MPrim_Ita_Subj_2.txt', sep=''), header = F,  skip = 15, dec = ",")
 colnames(ss2) <- c("Subject", "Age", "Gender", "Handedness", "Rotation.x","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
-rotB1<- read.table("C:/Users/Eva Viviani/OneDrive/Documenti/SISSA - Experiments/Masked Priming/bilingualism/Stimoli/rot_B_persoggetto2.txt", header = T, dec = ",")
+rotB1<- read.table(paste(localGitDir,'/Stimoli/rot_B_persoggetto2.txt', sep=''), header = T, dec = ",")
 colnames(rotB1) <- c("Trial.ID", "Target.ID", "Lexicality", "Morphtype", "Target", "Prime", "Primetype", "Logfreq.Zipf.t", "Lent", "Lenp", "Logfreq.Zipf.p", "Nt", "Np")
 merge(ss2, rotB1, by = "Target", all.x = T)->ss2
 
@@ -66,13 +68,13 @@ summary(ss2)
 ita = NULL
 for (j in 3:40){
   if ((j %% 2) ==0){ #EVEN SUBJ
-    boh <- paste("C:/Users/Eva Viviani/Documents/GitHub/M2-maskedprimingBilinguals/data/raw data/ITA/Output_MPrim_Ita_Subj_", j, ".txt", sep = "")
+    boh <- paste(localGitDir, 'data/raw data/ITA/Output_MPrim_Ita_Subj_', j, ".txt", sep = "")
     pilot_ita <- read.table(boh, header = F, skip = 15,dec = ",")
     colnames(pilot_ita) <- c("Subject", "Age", "Gender", "Handedness", "Rotation","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
     rotB<- subset(rotations, rotations$Rotation=='B' & rotations$Language=='ita')
     merge(pilot_ita, rotB, by = "Target", all.x = T)-> pilot_ita
   } else { #ODD
-    boh <- paste("C:/Users/Eva Viviani/Documents/GitHub/M2-maskedprimingBilinguals/data/raw data/ITA/Output_MPrim_Ita_Subj_", j, ".txt", sep = "")
+    boh <- paste(localGitDir, 'data/raw data/ITA/Output_MPrim_Ita_Subj_', j, ".txt", sep = "")
     pilot_ita <- read.table(boh, header = F, skip = 15,dec = ",")
     colnames(pilot_ita) <- c("Subject", "Age", "Gender", "Handedness", "Rotation","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
     rotA<- subset(rotations, rotations$Rotation=='A' & rotations$Language=='ita')
@@ -928,7 +930,7 @@ masterFile$overallProf <- apply(masterFile[28:34],1,FUN = sum);
 #---------------------------------------------------------------------------------------------------#
 #                                          OSC                                                      #
 #---------------------------------------------------------------------------------------------------#
-read.table('C:/Users/Eva Viviani/Documents/GitHub/M2-maskedprimingBilinguals/stimoli/OSC.txt', header = T)-> db
+read.table(paste(localGitDir, 'stimoli/OSC.txt', sep=''), header = T)-> db
 colnames(db) <- c('Prime.x', 'OSC')
 head(masterFile)
 head(db)
