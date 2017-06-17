@@ -16,6 +16,8 @@ inv <- function(x) { -1000/x}
 
 subset(masterFile, Language=="ita")-> masterfileIta
 
+# from here, run only if you want to take a look at the output of the 'diagnostics.R',
+# otherwise, go directly to line n. 36
 sbj.id<- masterfileIta$Subject
 acc<- masterfileIta$Accuracy
 lexicality<- tolower(masterfileIta$Lexicality)
@@ -24,7 +26,11 @@ rt<- masterfileIta$rt
 
 source("Diagnostics.R") #I've uploaded this function into the git folder, so that everyone can import it into R, and use it. 
 diagnostics.f(rt = rt, acc = acc, sbj.id = sbj.id, target = target, lexicality = lexicality, "ita")
+#ok, end!
 
+#--------------------------------------------------------------------------------------------------------#
+#                                 Results of the diagnostics.R:                                          #
+#--------------------------------------------------------------------------------------------------------#
 #Subj. 16 has reported seeing clearly the prime, for this reason will be taken out of the analysis, in addition to the words that scored less than 70% of accuracy. 
 # We filter also Rts from 250 to 1600ms
 subset(target.diagnostics, acc<0.7)-> parolebrutte #.giusto per sapere quali sono
@@ -41,7 +47,8 @@ round(xtabs(datartITA$rt ~ datartITA$Morphtype + datartITA$Primetype) / xtabs(~d
 #---------------------------------------------------------------------------------------------------#
 subset(masterFile, Language=="eng")-> masterfileEng
 
-
+# from here, run only if you want to take a look at the output of the 'diagnostics.R',
+# otherwise, go to line n. 63
 sbj.id<- masterfileEng$Subject
 acc<- masterfileEng$Accuracy
 lexicality<- masterfileEng$Lexicality
@@ -634,19 +641,24 @@ round(cor(fitted(proficiencylmer9), -1000/datartENG$rt)^2, digits=3)
 
 plotLMER.fnc(proficiencylmer10b, fun = inv, pred = "OSC_Target", intr = list("overallProf", quantile(datartENG$overallProf, c(.25,.50,.75,1)), "end"), addlines = T, ylab='RT(ms)', bty='l'); 
 
-# GAM GRAPHs #
+#-----------------------------------------------------------------------------#
+#                         GAM GRAPHs                                          #
+#-----------------------------------------------------------------------------#
+#from 648 to 653, I changed some feature of gam to get the gray scale of color, nothing important
 # first get the definition of vis.gam
 newDef <- deparse(vis.gam)
 # change the line defining the direction of the grey gradient
 newDef[grep("gray\\(seq\\(",newDef)] <- "            pal <- gray(seq(0.9, 0.1, length = nCol))"
 # then define a new function with this new definition
 vis.gam2 <- eval(parse(text=newDef))
+
 #plot con rt normali
 gam1 <- gam(rt ~ s(OSC_Target, by = overallProf) + s(TrialCount) + s(Logfreq.Zipf.t) + s(Subject, bs = 're') + s(Target, bs = 're'), data = datartENG)
-vis.gam2(gam1, view=c("OSC_Target","overallProf"), type="response", plot.type="contour", color="gray",main="", too.far=.1, xlab='OSC', ylab='Proficiency scores');
+vis.gam2(gam1, view=c("OSC_Target","overallProf"), type="response", plot.type="contour", color="gray", main="", too.far=.1, xlab='OSC', ylab='Proficiency scores');
+
 #plot con -1000/rt
 gam1 <- gam(-1000/rt ~ s(OSC_Target, by = overallProf) + s(TrialCount) + s(Logfreq.Zipf.t) + s(Subject, bs = 're') + s(Target, bs = 're'), data = datartENG)
-vis.gam(gam1, view=c("OSC_Target","overallProf"), type="response", plot.type="contour", color="gray", main="", too.far=.1, xlab='OSC', ylab='Proficiency scores');
+vis.gam2(gam1, view=c("OSC_Target","overallProf"), type="response", plot.type="contour", color="gray", main="", too.far=.1, xlab='OSC', ylab='Proficiency scores');
 
 
 
