@@ -2,10 +2,13 @@
 # ---- The final output is a file called "masterFile" in which there are all the raw data of the experiment
 #----- 14/12/2016
 
+#Set your own working directory. This should be (and is assumed to be in the rest of the code) the highest point in the gitHub folder:
+setwd('~/DriveAtNeuroMi/research/misc/m2-maskedMorphPrimingBilinguals/git/M2-maskedprimingBilinguals/');
 localGitDir <- '~/DriveAtNeuroMi/research/misc/m2-maskedMorphPrimingBilinguals/git/M2-maskedprimingBilinguals/';
 
-#N.B.: ss2 in ITA has one target different from the others subjs (1 & from 3 to 40). Then I chose to upload 1 & 2 seperatly, and in a second moment from 3 to 40.
+#Clean the workspace
 rm(list = ls())
+
 #---------------------------------------------------------------------------------------------------#
 #                               CONCATENATE ALL THE SBJ ENG                                         #
 #---------------------------------------------------------------------------------------------------#
