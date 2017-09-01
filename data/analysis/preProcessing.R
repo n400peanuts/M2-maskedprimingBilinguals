@@ -1,13 +1,13 @@
 # ---- Preprocessing of bilingual masked priming experiment
 # ---- The final output is a file called "masterFile" in which there are all the raw data of the experiment
 #----- 14/12/2016
-
-#Set your own working directory. This should be (and is assumed to be in the rest of the code) the highest point in the gitHub folder:
-setwd('~/DriveAtNeuroMi/research/misc/m2-maskedMorphPrimingBilinguals/git/M2-maskedprimingBilinguals/');
-localGitDir <- '~/DriveAtNeuroMi/research/misc/m2-maskedMorphPrimingBilinguals/git/M2-maskedprimingBilinguals/';
-
 #Clean the workspace
 rm(list = ls())
+
+#Set your own working directory. This should be (and is assumed to be in the rest of the code) the highest point in the gitHub folder:
+setwd('C:/Users/Eva Viviani/Documents/GitHub/M2-maskedprimingBilinguals');
+localGitDir <- 'C:/Users/Eva Viviani/Documents/GitHub/M2-maskedprimingBilinguals';
+
 
 #---------------------------------------------------------------------------------------------------#
 #                               CONCATENATE ALL THE SBJ ENG                                         #
@@ -16,7 +16,7 @@ rm(list = ls())
 rotations <- read.table(paste(localGitDir,'/stimoli/rotations.txt', sep=''), header = T);
 
 eng = NULL
-for (j in 1:40){
+for (j in 1:41){
   if ((j %% 2) ==0){ #EVEN SUBJ
     boh <- paste(localGitDir, '/data/raw data/ENG/Output_MPrim_Eng_Subj_', j, ".txt", sep = "")
     pilot_eng <- read.table(boh, header = F, skip = 15,dec = ",")
@@ -66,7 +66,7 @@ summary(ss2)
 #                                       FROM SS3 TO SS40                                           #                        
 
 ita = NULL
-for (j in 3:40){
+for (j in 3:41){
   if ((j %% 2) ==0){ #EVEN SUBJ
     boh <- paste(localGitDir, '/data/raw data/ITA/Output_MPrim_Ita_Subj_', j, ".txt", sep = "")
     pilot_ita <- read.table(boh, header = F, skip = 15,dec = ",")
@@ -91,7 +91,7 @@ for (j in 3:40){
 ita<- rbind(ss2,ita)
 ita <- rbind(ss1,ita)
 
-rm(rotA, rotations, pilot_ita, ss1, ss2, rotB, rotB1, boh, j, rotations)
+rm(rotA, rotations, pilot_ita, ss1, ss2, rotB, rotB1, boh, j)
 #---------------------------------------------------------------------------------------------------#
 #                               MERGE ALL THE SBJ INTO A MASTERFILE                                 #
 #---------------------------------------------------------------------------------------------------#
@@ -469,6 +469,15 @@ masterFile$spelling[masterFile$Subject==40] <- c(7)
 masterFile$readingComprehension[masterFile$Subject==40] <- c(5)
 masterFile$vocabulary[masterFile$Subject==40] <- c(16)
 masterFile$oralComprehension[masterFile$Subject==40] <- c(5)
+
+#                 ss41
+masterFile$phoneticFluency[masterFile$Subject==40] <- c(29)
+masterFile$phoneticComprehension[masterFile$Subject==40] <- c(8)
+masterFile$morphComprehension[masterFile$Subject==40] <- c(10)
+masterFile$spelling[masterFile$Subject==40] <- c(14)
+masterFile$readingComprehension[masterFile$Subject==40] <- c(7)
+masterFile$vocabulary[masterFile$Subject==40] <- c(17)
+masterFile$oralComprehension[masterFile$Subject==40] <- c(6)
 
 #---------------------------------------------------------------------------------------------------#
 #                                              END                                                  #
@@ -916,6 +925,18 @@ masterFile$AoA6[masterFile$Subject==40] <- c(1)
 masterFile$AoA7[masterFile$Subject==40] <- c(2)
 masterFile$AoA8[masterFile$Subject==40] <- c(3)
 masterFile$AoA9[masterFile$Subject==40] <- c(0)
+
+#                 ss41
+masterFile$AoA1[masterFile$Subject==40] <- c(10)
+masterFile$AoA2[masterFile$Subject==40] <- c(4)
+masterFile$AoA3[masterFile$Subject==40] <- c("school")
+masterFile$AoA4[masterFile$Subject==40] <- c(1)
+masterFile$AoA5[masterFile$Subject==40] <- c(2)
+masterFile$AoA6[masterFile$Subject==40] <- c(1)
+masterFile$AoA7[masterFile$Subject==40] <- c(5)
+masterFile$AoA8[masterFile$Subject==40] <- c(2)
+masterFile$AoA9[masterFile$Subject==40] <- c(2)
+
 
 masterFile$AoA3 <- as.factor(masterFile$AoA3)
 
