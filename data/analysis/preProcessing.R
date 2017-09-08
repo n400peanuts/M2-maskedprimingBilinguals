@@ -1,6 +1,7 @@
 # ---- Preprocessing of bilingual masked priming experiment
-# ---- The final output is a file called "masterFile" in which there are all the raw data of the experiment
-#----- 14/12/2016
+# ---- The final output are two files called "masterFile" in which there are all the raw data of the experiment
+# ---- and "masterfileEng_OSC" with the OSC parameter
+#----- 08/09/2017
 #Clean the workspace
 rm(list = ls())
 
@@ -12,26 +13,29 @@ localGitDir <- 'C:/Users/Eva Viviani/Documents/GitHub/M2-maskedprimingBilinguals
 #---------------------------------------------------------------------------------------------------#
 #                               CONCATENATE ALL THE SBJ ENG                                         #
 #---------------------------------------------------------------------------------------------------#
-
 rotations <- read.table(paste(localGitDir,'/stimoli/rotations.txt', sep=''), header = T);
+finalNumberofParticipants <- 80
 
 eng = NULL
-for (j in 1:42){
-  if ((j %% 2) ==0){ #EVEN SUBJ
+for (j in 1:finalNumberofParticipants){
+  if ((j %% 2) ==0 ){ #EVEN SUBJ
     boh <- paste(localGitDir, '/data/raw data/ENG/Output_MPrim_Eng_Subj_', j, ".txt", sep = "")
-    pilot_eng <- read.table(boh, header = F, skip = 15,dec = ",")
-    colnames(pilot_eng) <- c("Subject", "Age", "Gender", "Handedness", "Rotation","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
-    rot_B_eng <- subset(rotations, rotations$Rotation=='B' & rotations$Language=='eng')
-    merge(pilot_eng, rot_B_eng, by = "Target", all.x = T)-> pilot_eng
+    if (file.exists(boh)) {
+      pilot_eng <- read.table(boh, header = F, skip = 15,dec = ",")
+      colnames(pilot_eng) <- c("Subject", "Age", "Gender", "Handedness", "Rotation","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
+      rot_B_eng <- subset(rotations, rotations$Rotation=='B' & rotations$Language=='eng')
+      merge(pilot_eng, rot_B_eng, by = "Target", all.x = T)-> pilot_eng
+    } else {next}
   } else { #ODD
     boh <- paste(localGitDir, '/data/raw data/ENG/Output_MPrim_Eng_Subj_', j, ".txt", sep = "")
-    pilot_eng <- read.table(boh, header = F, skip = 15,dec = ",")
-    colnames(pilot_eng) <- c("Subject", "Age", "Gender", "Handedness", "Rotation","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
-    rot_A_eng <- subset(rotations, rotations$Rotation=='A' & rotations$Language=='eng')
-    merge(pilot_eng, rot_A_eng, by = "Target", all.x = T)-> pilot_eng
+    if (file.exists(boh)) {
+      pilot_eng <- read.table(boh, header = F, skip = 15,dec = ",")
+      colnames(pilot_eng) <- c("Subject", "Age", "Gender", "Handedness", "Rotation","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
+      rot_A_eng <- subset(rotations, rotations$Rotation=='A' & rotations$Language=='eng')
+      merge(pilot_eng, rot_A_eng, by = "Target", all.x = T)-> pilot_eng
+  } else {next}
   }
-  
-  
+
   pilot_eng$Prime.y <- NULL
   pilot_eng$rt <- as.numeric(pilot_eng$rt)
   pilot_eng$Rotation.y <- NULL
@@ -66,21 +70,24 @@ summary(ss2)
 #                                       FROM SS3 TO SS40                                           #                        
 
 ita = NULL
-for (j in 3:42){
+for (j in 3:finalNumberofParticipants){
   if ((j %% 2) ==0){ #EVEN SUBJ
     boh <- paste(localGitDir, '/data/raw data/ITA/Output_MPrim_Ita_Subj_', j, ".txt", sep = "")
-    pilot_ita <- read.table(boh, header = F, skip = 15,dec = ",")
-    colnames(pilot_ita) <- c("Subject", "Age", "Gender", "Handedness", "Rotation","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
-    rotB<- subset(rotations, rotations$Rotation=='B' & rotations$Language=='ita')
-    merge(pilot_ita, rotB, by = "Target", all.x = T)-> pilot_ita
+    if (file.exists(boh)) {
+      pilot_ita <- read.table(boh, header = F, skip = 15,dec = ",")
+      colnames(pilot_ita) <- c("Subject", "Age", "Gender", "Handedness", "Rotation","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
+      rotB<- subset(rotations, rotations$Rotation=='B' & rotations$Language=='ita')
+      merge(pilot_ita, rotB, by = "Target", all.x = T)-> pilot_ita
+    } else {next}
   } else { #ODD
     boh <- paste(localGitDir, '/data/raw data/ITA/Output_MPrim_Ita_Subj_', j, ".txt", sep = "")
+    if (file.exists(boh)) {
     pilot_ita <- read.table(boh, header = F, skip = 15,dec = ",")
     colnames(pilot_ita) <- c("Subject", "Age", "Gender", "Handedness", "Rotation","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
     rotA<- subset(rotations, rotations$Rotation=='A' & rotations$Language=='ita')
     merge(pilot_ita, rotA, by = "Target", all.x = T)-> pilot_ita
+   } else {next}
   }
-  
   pilot_ita$Prime.y <- NULL
   pilot_ita$rt <- as.numeric(pilot_ita$rt)
   pilot_ita$Rotation.y <- NULL
@@ -560,6 +567,15 @@ masterFile$spelling[masterFile$Subject==71] <- c(14)
 masterFile$readingComprehension[masterFile$Subject==71] <- c(4)
 masterFile$vocabulary[masterFile$Subject==71] <- c(14)
 masterFile$oralComprehension[masterFile$Subject==71] <- c(4)
+
+#                 ss73
+masterFile$phoneticFluency[masterFile$Subject==73] <- c(30)
+masterFile$phoneticComprehension[masterFile$Subject==73] <- c(8)
+masterFile$morphComprehension[masterFile$Subject==73] <- c(10)
+masterFile$spelling[masterFile$Subject==73] <- c(11)
+masterFile$readingComprehension[masterFile$Subject==73] <- c(6)
+masterFile$vocabulary[masterFile$Subject==73] <- c(14)
+masterFile$oralComprehension[masterFile$Subject==73] <- c(6)
 
 
 #---------------------------------------------------------------------------------------------------#
@@ -1119,6 +1135,17 @@ masterFile$AoA7[masterFile$Subject==71] <- c(3)
 masterFile$AoA8[masterFile$Subject==71] <- c(1)
 masterFile$AoA9[masterFile$Subject==71] <- c(3)
 
+#                 ss73
+masterFile$AoA1[masterFile$Subject==73] <- c(4)
+masterFile$AoA2[masterFile$Subject==73] <- c(4)
+masterFile$AoA3[masterFile$Subject==73] <- c("school")
+masterFile$AoA4[masterFile$Subject==73] <- c(1)
+masterFile$AoA5[masterFile$Subject==73] <- c(2)
+masterFile$AoA6[masterFile$Subject==73] <- c(1)
+masterFile$AoA7[masterFile$Subject==73] <- c(3)
+masterFile$AoA8[masterFile$Subject==73] <- c(3)
+masterFile$AoA9[masterFile$Subject==73] <- c(0)
+
 masterFile$AoA3 <- as.factor(masterFile$AoA3)
 
 #---------------------------------------------------------------------------------------------------#
@@ -1157,7 +1184,7 @@ colnames(masterfileEng_OSC) <- c("Prime","Target","Subject","Age","Gender", "Han
                                  "AoA2","AoA3","AoA4","AoA5","AoA6", "AoA7","AoA8","AoA9", "overallProf","OSC_Primes","OSC_Target")
 summary(masterfileEng_OSC)
 
-rm(db)
+rm(db, localGitDir, finalNumberofParticipants)
 #---------------------------------------------------------------------------------------------------#
 #                                          END                                                      #
 #---------------------------------------------------------------------------------------------------#
