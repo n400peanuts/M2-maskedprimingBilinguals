@@ -130,11 +130,12 @@ qqnorm(-1000/rt)
 par(mfrow=c(1,1))
 detach(datartITA)
 
+
 library(lmerTest)
 datartITA$Relatedness <- as.factor(datartITA$Relatedness)
 datartITA$Morphtype <- relevel(datartITA$Morphtype, "OP")
 
-italmer1 <- lmer(-1000/rt ~ TrialCount + Rotation + (1|Subject) + (1|Target), data= datartITA, REML = F)
+italmer1 <- lmer(-1000/rt ~ TrialCount + Rotation.x + (1|Subject) + (1|Target), data= datartITA, REML = F)
 summary(italmer1)
 #2
 library(rms)
@@ -183,7 +184,7 @@ ggsave("itaplot.jpg", height=4, width=5, dpi = 1000)
 #---------------------------------------------------------------------------------------------------#
 datartENG$Relatedness <- as.factor(datartENG$Relatedness)
 datartENG$Morphtype <- relevel(datartENG$Morphtype, "OP")
-englmer1 <- lmer(-1000/rt ~ TrialCount + Rotation + (1|Subject) + (1|Target), data= datartENG, REML = F)
+englmer1 <- lmer(-1000/rt ~ TrialCount + Rotation.x + (1|Subject) + (1|Target), data= datartENG, REML = F)
 summary(englmer1)
 #2
 library(rms)
@@ -236,7 +237,7 @@ rm(gg, bb, aa, dodge)
 #   in order to be completely sure that pattern of results in ITA and ENG differ,                   #
 #   we need to have a three-way interaction here btw Relatedness, MorphType and Language            #
 #---------------------------------------------------------------------------------------------------#
-rbind(datartENG[,1:43], datartITA) -> crossExp
+rbind(datartENG[,1:44], datartITA) -> crossExp
 crossExp$Relatedness <- as.factor(crossExp$Relatedness)
 crossExp$Morphtype<- relevel(crossExp$Morphtype,"OR")
 languagelmer1 <- lmer(-1000/rt ~ Relatedness * Morphtype * Language + Logfreq.Zipf.t +rcs(TrialCount) + Lent + (1|Subject) + (1|Target), data = crossExp, REML = F)
@@ -245,11 +246,10 @@ languagelmer2 <- lmer(-1000/rt ~ Relatedness * Morphtype * Language + Logfreq.Zi
 
 summary(languagelmer2)
 summary(languagelmer1)
-anova(languagelmer2) -> temp
 #add separate graph for ita and eng
 par(mfrow=c(1,2))
-ita<-plotLMER.fnc(languagelmer2, fun = inv, pred = "Relatedness", control = list("Languageita", 1),intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, main = "L1 ITALIAN", ylab='RT (ms)', ylim=c(515,640), xlabel = 'Unrelated                                   Related',bty='l')
-eng<-plotLMER.fnc(languagelmer2, fun = inv, pred = "Relatedness", control = list("Languageita", 0),intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, main= 'L2 ENGLISH', ylab='RT (ms)', ylim=c(515,640), xlabel = 'Unrelated                                    Related',bty='l')
+ita<-plotLMER.fnc(languagelmer2, fun = inv, pred = "Relatedness", control = list("Languageita", 1),intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, main = "L1 ITALIAN", ylab='RT (ms)', ylim=c(515,700), xlabel = 'Unrelated                                   Related',bty='l')
+eng<-plotLMER.fnc(languagelmer2, fun = inv, pred = "Relatedness", control = list("Languageita", 0),intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, main= 'L2 ENGLISH', ylab='RT (ms)', ylim=c(515,700), xlabel = 'Unrelated                                    Related',bty='l')
 par(mfrow=c(1,1))
 
 #computing p-values
@@ -265,7 +265,7 @@ round(1-pf(temp[[4]], temp[[1]], 9609-1-sum(temp[[1]])), digits=3) -> temp$pvalu
 #first take a look at variables distributions
 proficiencyData <- datartENG[,c('Target', 'Subject','Age','Gender','Handedness','Rotation.x','phoneticFluency', 'phoneticComprehension','morphComprehension','spelling','readingComprehension','vocabulary','oralComprehension','AoA1', 'AoA2', 'AoA3','AoA4','AoA5','AoA6','AoA7','AoA8','AoA9')];
 proficiencyData <- unique(proficiencyData);
-summary(proficiencyData)
+summary(proficiencyData) 
 
 #histogram of overallProficiency
 proficiency <- NULL
@@ -380,13 +380,15 @@ plotLMER.fnc(proficiencylmer8c, fun = inv, pred = "Relatedness",intr = list("ove
 
 #the three way
 plotLMER.fnc(languagelmer2, fun = inv, pred = "Relatedness", control = list("Languageita", 1),intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, main = "ITA", ylab='RT (ms)', ylim=c(515,640))
+plotLMER.fnc(languagelmer2, fun = inv, pred = "Relatedness", control = list("Languageita", 2),intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, main = "ENG", ylab='RT (ms)')
+
 
 jpeg(filename = "C:/Users/Eva Viviani/Documents/GitHub/M2-maskedprimingBilinguals/Rplot.jpg", res=300, height=1654, width=3339)
 par(mfrow=c(1,4));
-a<- plotLMER.fnc(proficiencylmer8b, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .25)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='VERY LOW PROFICIENCY', ylimit = c(570,640), bty='l'); 
-b<- plotLMER.fnc(proficiencylmer8b, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .50)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='LOW PROFICIENCY', ylimit = c(570,640), bty='l');
-c<- plotLMER.fnc(proficiencylmer8b, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .75)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='HIGH PROFICIENCY', ylimit = c(570,640), bty='l');
-d<- plotLMER.fnc(proficiencylmer8b, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, 1)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='VERY HIGH PROFICIENCY', ylimit = c(570,640), bty='l');
+a<- plotLMER.fnc(proficiencylmer8b, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .25)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='VERY LOW PROFICIENCY', ylimit = c(570,700), bty='l'); 
+b<- plotLMER.fnc(proficiencylmer8b, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .50)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='LOW PROFICIENCY', ylimit = c(570,700), bty='l');
+c<- plotLMER.fnc(proficiencylmer8b, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .75)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='HIGH PROFICIENCY', ylimit = c(570,700), bty='l');
+d<- plotLMER.fnc(proficiencylmer8b, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, 1)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='VERY HIGH PROFICIENCY', ylimit = c(570,700), bty='l');
 par(mfrow=c(1,1));
 dev.off()
 #ah ah, bingo here!!!
@@ -608,10 +610,10 @@ proficiencylmer8c <- lmer(-1000/rt ~ Relatedness * Morphtype * overallProf + rcs
 anova(proficiencylmer8c);
 
 par(mfrow=c(1,4));
-plotLMER.fnc(proficiencylmer8, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .25)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='VERY LOW PROFICIENCY', ylimit = c(570,640), bty='l'); 
-plotLMER.fnc(proficiencylmer8, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .50)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='LOW PROFICIENCY', ylimit = c(570,640), bty='l');
-plotLMER.fnc(proficiencylmer8, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .75)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='HIGH PROFICIENCY', ylimit = c(570,640), bty='l');
-plotLMER.fnc(proficiencylmer8, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, 1)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='VERY HIGH PROFICIENCY', ylimit = c(570,640), bty='l');
+plotLMER.fnc(proficiencylmer8, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .25)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='VERY LOW PROFICIENCY', ylimit = c(570,700), bty='l'); 
+plotLMER.fnc(proficiencylmer8, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .50)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='LOW PROFICIENCY', ylimit = c(570,700), bty='l');
+plotLMER.fnc(proficiencylmer8, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .75)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='HIGH PROFICIENCY', ylimit = c(570,700), bty='l');
+plotLMER.fnc(proficiencylmer8, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, 1)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='VERY HIGH PROFICIENCY', ylimit = c(570,700), bty='l');
 par(mfrow=c(1,1));
 
 # run these lines to get the datartENG with the OSC paramenter:
