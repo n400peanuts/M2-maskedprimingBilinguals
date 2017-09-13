@@ -60,7 +60,7 @@ diagnostics.f(rt = rt, acc = acc, sbj.id = sbj.id, target = target, lexicality =
 
 #Subjs 16 saw the prime. Sbjs 22 and 26 will be taken out because their performance is very far from the others and the accuracy less than 40%, see the output graph from the diagnostics function.
 # We filter also Rts from 250 to 1900ms
-subset(masterfileEng, masterfileEng$rt>250 & masterfileEng$rt<1900 & masterfileEng$Subject!=16 & masterfileEng$Subject!=22 & masterfileEng$Subject!=26 & masterfileEng$Lexicality=="WORD") -> dataAccENG
+subset(masterfileEng, masterfileEng$rt>250 & masterfileEng$rt<1900 & masterfileEng$Subject!=64 & masterfileEng$Subject!=16 & masterfileEng$Subject!=22 & masterfileEng$Subject!=26 & masterfileEng$Lexicality=="WORD") -> dataAccENG
 #Then, we select only right answers
 subset(dataAccENG, dataAccENG$Accuracy==1)-> datartENG
 #First look at the means
@@ -662,7 +662,9 @@ vis.gam2(gam1, view=c("OSC_Target","overallProf"), type="response", plot.type="c
 #plot con -1000/rt
 gam2 <- gam(-1000/rt ~ s(OSC_Target, by = overallProf) + s(TrialCount) + s(Logfreq.Zipf.t) + s(Subject, bs = 're') + s(Target, bs = 're'), data = datartENG);
 summary(gam2);
-vis.gam2(gam1, view=c("OSC_Target","overallProf"), type="response", plot.type="contour", color="gray", main="", too.far=.1, xlab='OSC', ylab='Proficiency scores');
+vis.gam2(gam2, view=c("OSC_Target","overallProf"), type="response", plot.type="contour", color="gray", main="", too.far=.1, xlab='OSC', ylab='Proficiency scores');
+mod.vis.gam(gam2, view=c("OSC_Target","overallProf"), type="response", plot.type="contour", color="gaypride", main="", too.far=.1, xlab='OSC', ylab='Proficiency scores');
+
 
 
 
