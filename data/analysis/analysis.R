@@ -60,9 +60,12 @@ diagnostics.f(rt = rt, acc = acc, sbj.id = sbj.id, target = target, lexicality =
 
 #Subjs 16 saw the prime. Sbjs 22 and 26 will be taken out because their performance is very far from the others and the accuracy less than 40%, see the output graph from the diagnostics function.
 # We filter also Rts from 250 to 1900ms
-subset(masterfileEng, masterfileEng$rt>250 & masterfileEng$rt<1900 & masterfileEng$Subject!=64 & masterfileEng$Subject!=16 & masterfileEng$Subject!=22 & masterfileEng$Subject!=26 & masterfileEng$Lexicality=="WORD") -> dataAccENG
+subset(masterfileEng, masterfileEng$rt>250 & masterfileEng$rt<1900 
+       & masterfileEng$Subject!=64 & masterfileEng$Subject!=16 & masterfileEng$Subject!=22 
+       & masterfileEng$Subject!=26 & masterfileEng$Lexicality=="WORD") -> dataAccENG
 #Then, we select only right answers
 subset(dataAccENG, dataAccENG$Accuracy==1)-> datartENG
+summary(datartENG)
 #First look at the means
 round(xtabs(datartENG$rt ~ datartENG$Morphtype + datartENG$Primetype) / xtabs(~datartENG$Morphtype + datartENG$Primetype), digits = 0)
 
@@ -273,7 +276,7 @@ for(i in unique(masterFile$Subject)){
   proficiency[i] <- unique(masterFile$overallProf[masterFile$Subject==i])
 }
 jpeg(filename = "C:/Users/Eva Viviani/Documents/overallProficiency.jpg", res=300, height=1654, width=2229)
-hist(proficiency, breaks = 10, xlim = c(30, 120), main = 'Proficiency', xlab = 'score', 
+hist(proficiency, breaks = 15, xlim = c(30, 120), main = 'Proficiency', xlab = 'score', 
      ylab = 'Subjects', cex.lab=1.5, cex.axis=2, cex.sub=2)
 dev.off()
 shapiro.test(proficiency) #normal distribution

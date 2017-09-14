@@ -508,7 +508,7 @@ Trial.ID	Target.ID	Lexicality	Morphtype	Target	Prime	Primetype	Logfreq.Zipf.t	Le
 122254	254	NONWORD	NA	blyr	friar	ctrl	NA	4	5	2,98	6	2	A	eng
 122254	254	NONWORD	NA	blyr	friar	ctrl	NA	4	5	2,98	6	2	B	eng
 122255	255	WORD	NA	slit	sleet	ctrl	3,19	4	5	3,36	23	12	A	eng
-112255	255	NONWORD	NA	slit	sleet	rel	NA	4	5	3,36	23	12	B	eng
+112255	255	WORD	NA	slit	sleet	rel	NA	4	5	3,36	23	12	B	eng
 122256	256	NONWORD	NA	trep	tract	ctrl	NA	4	5	3	23	11	A	eng
 112256	256	NONWORD	NA	trep	tract	rel	NA	4	5	3	23	11	B	eng
 112257	257	NONWORD	NA	amshy	ambush	rel	NA	5	6	3,37	0	0	A	eng
