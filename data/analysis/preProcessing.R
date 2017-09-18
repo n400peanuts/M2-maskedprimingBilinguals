@@ -652,6 +652,15 @@ masterFile$readingComprehension[masterFile$Subject==59] <- c(6)
 masterFile$vocabulary[masterFile$Subject==59] <- c(16)
 masterFile$oralComprehension[masterFile$Subject==59] <- c(6)
 
+#                 ss60
+masterFile$phoneticFluency[masterFile$Subject==60] <- c(23)
+masterFile$phoneticComprehension[masterFile$Subject==60] <- c(9)
+masterFile$morphComprehension[masterFile$Subject==60] <- c(7)
+masterFile$spelling[masterFile$Subject==60] <- c(3)
+masterFile$readingComprehension[masterFile$Subject==60] <- c(2)
+masterFile$vocabulary[masterFile$Subject==60] <- c(13)
+masterFile$oralComprehension[masterFile$Subject==60] <- c(1)
+
 #                 ss61
 masterFile$phoneticFluency[masterFile$Subject==61] <- c(16)
 masterFile$phoneticComprehension[masterFile$Subject==61] <- c(8)
@@ -660,6 +669,15 @@ masterFile$spelling[masterFile$Subject==61] <- c(0)
 masterFile$readingComprehension[masterFile$Subject==61] <- c(6)
 masterFile$vocabulary[masterFile$Subject==61] <- c(17)
 masterFile$oralComprehension[masterFile$Subject==61] <- c(5)
+
+#                 ss62
+masterFile$phoneticFluency[masterFile$Subject==62] <- c(20)
+masterFile$phoneticComprehension[masterFile$Subject==62] <- c(10)
+masterFile$morphComprehension[masterFile$Subject==62] <- c(9)
+masterFile$spelling[masterFile$Subject==62] <- c(6)
+masterFile$readingComprehension[masterFile$Subject==62] <- c(3)
+masterFile$vocabulary[masterFile$Subject==62] <- c(18)
+masterFile$oralComprehension[masterFile$Subject==62] <- c(3)
 
 #                 ss63
 masterFile$phoneticFluency[masterFile$Subject==63] <- c(31)
@@ -706,6 +724,15 @@ masterFile$readingComprehension[masterFile$Subject==67] <- c(5)
 masterFile$vocabulary[masterFile$Subject==67] <- c(13)
 masterFile$oralComprehension[masterFile$Subject==67] <- c(6)
 
+#                 ss68
+masterFile$phoneticFluency[masterFile$Subject==68] <- c(24)
+masterFile$phoneticComprehension[masterFile$Subject==68] <- c(8)
+masterFile$morphComprehension[masterFile$Subject==68] <- c(10)
+masterFile$spelling[masterFile$Subject==68] <- c(6)
+masterFile$readingComprehension[masterFile$Subject==68] <- c(4)
+masterFile$vocabulary[masterFile$Subject==68] <- c(18)
+masterFile$oralComprehension[masterFile$Subject==68] <- c(6)
+
 #                 ss69
 masterFile$phoneticFluency[masterFile$Subject==69] <- c(20)
 masterFile$phoneticComprehension[masterFile$Subject==69] <- c(10)
@@ -742,6 +769,15 @@ masterFile$readingComprehension[masterFile$Subject==73] <- c(6)
 masterFile$vocabulary[masterFile$Subject==73] <- c(14)
 masterFile$oralComprehension[masterFile$Subject==73] <- c(6)
 
+#                 ss74
+masterFile$phoneticFluency[masterFile$Subject==74] <- c(18)
+masterFile$phoneticComprehension[masterFile$Subject==74] <- c(12)
+masterFile$morphComprehension[masterFile$Subject==74] <- c(10)
+masterFile$spelling[masterFile$Subject==74] <- c(6)
+masterFile$readingComprehension[masterFile$Subject==74] <- c(6)
+masterFile$vocabulary[masterFile$Subject==74] <- c(19)
+masterFile$oralComprehension[masterFile$Subject==74] <- c(6)
+
 #                 ss75
 masterFile$phoneticFluency[masterFile$Subject==75] <- c(27)
 masterFile$phoneticComprehension[masterFile$Subject==75] <- c(5)
@@ -750,6 +786,15 @@ masterFile$spelling[masterFile$Subject==75] <- c(9)
 masterFile$readingComprehension[masterFile$Subject==75] <- c(3)
 masterFile$vocabulary[masterFile$Subject==75] <- c(16)
 masterFile$oralComprehension[masterFile$Subject==75] <- c(2)
+
+#                 ss76
+masterFile$phoneticFluency[masterFile$Subject==76] <- c(16)
+masterFile$phoneticComprehension[masterFile$Subject==76] <- c(7)
+masterFile$morphComprehension[masterFile$Subject==76] <- c(9)
+masterFile$spelling[masterFile$Subject==76] <- c(6)
+masterFile$readingComprehension[masterFile$Subject==76] <- c(5)
+masterFile$vocabulary[masterFile$Subject==76] <- c(15)
+masterFile$oralComprehension[masterFile$Subject==76] <- c(6)
 
 #                 ss77
 masterFile$phoneticFluency[masterFile$Subject==77] <- c(39)
@@ -760,6 +805,24 @@ masterFile$readingComprehension[masterFile$Subject==77] <- c(3)
 masterFile$vocabulary[masterFile$Subject==77] <- c(18)
 masterFile$oralComprehension[masterFile$Subject==77] <- c(6)
 
+#                 ss78
+masterFile$phoneticFluency[masterFile$Subject==78] <- c(16)
+masterFile$phoneticComprehension[masterFile$Subject==78] <- c(10)
+masterFile$morphComprehension[masterFile$Subject==78] <- c(9)
+masterFile$spelling[masterFile$Subject==78] <- c(3)
+masterFile$readingComprehension[masterFile$Subject==78] <- c(5)
+masterFile$vocabulary[masterFile$Subject==78] <- c(14)
+masterFile$oralComprehension[masterFile$Subject==78] <- c(5)
+
+#                 ss79
+masterFile$phoneticFluency[masterFile$Subject==79] <- c(29)
+masterFile$phoneticComprehension[masterFile$Subject==79] <- c(10)
+masterFile$morphComprehension[masterFile$Subject==79] <- c(10)
+masterFile$spelling[masterFile$Subject==79] <- c(6)
+masterFile$readingComprehension[masterFile$Subject==79] <- c(6)
+masterFile$vocabulary[masterFile$Subject==79] <- c(17)
+masterFile$oralComprehension[masterFile$Subject==79] <- c(6)
+
 #                 ss80
 masterFile$phoneticFluency[masterFile$Subject==80] <- c(23)
 masterFile$phoneticComprehension[masterFile$Subject==80] <- c(12)
@@ -769,6 +832,23 @@ masterFile$readingComprehension[masterFile$Subject==80] <- c(6)
 masterFile$vocabulary[masterFile$Subject==80] <- c(13)
 masterFile$oralComprehension[masterFile$Subject==80] <- c(5)
 
+#                 ss81
+masterFile$phoneticFluency[masterFile$Subject==81] <- c(22)
+masterFile$phoneticComprehension[masterFile$Subject==81] <- c(11)
+masterFile$morphComprehension[masterFile$Subject==81] <- c(10)
+masterFile$spelling[masterFile$Subject==81] <- c(14)
+masterFile$readingComprehension[masterFile$Subject==81] <- c(5)
+masterFile$vocabulary[masterFile$Subject==81] <- c(17)
+masterFile$oralComprehension[masterFile$Subject==81] <- c(6)
+
+#                 ss82
+masterFile$phoneticFluency[masterFile$Subject==82] <- c(39)
+masterFile$phoneticComprehension[masterFile$Subject==82] <- c(12)
+masterFile$morphComprehension[masterFile$Subject==82] <- c(10)
+masterFile$spelling[masterFile$Subject==82] <- c(17)
+masterFile$readingComprehension[masterFile$Subject==82] <- c(7)
+masterFile$vocabulary[masterFile$Subject==82] <- c(19)
+masterFile$oralComprehension[masterFile$Subject==82] <- c(6)
 
 #---------------------------------------------------------------------------------------------------#
 #                                              END                                                  #
@@ -1428,6 +1508,17 @@ masterFile$AoA7[masterFile$Subject==59] <- c(4)
 masterFile$AoA8[masterFile$Subject==59] <- c(2)
 masterFile$AoA9[masterFile$Subject==59] <- c(2)
 
+#                 ss60
+masterFile$AoA1[masterFile$Subject==60] <- c(6)
+masterFile$AoA2[masterFile$Subject==60] <- c(3)
+masterFile$AoA3[masterFile$Subject==60] <- c("school")
+masterFile$AoA4[masterFile$Subject==60] <- c(1)
+masterFile$AoA5[masterFile$Subject==60] <- c(2)
+masterFile$AoA6[masterFile$Subject==60] <- c(1)
+masterFile$AoA7[masterFile$Subject==60] <- c(2)
+masterFile$AoA8[masterFile$Subject==60] <- c(3)
+masterFile$AoA9[masterFile$Subject==60] <- c(0)
+
 #                 ss61
 masterFile$AoA1[masterFile$Subject==61] <- c(7)
 masterFile$AoA2[masterFile$Subject==61] <- c(4)
@@ -1438,6 +1529,17 @@ masterFile$AoA6[masterFile$Subject==61] <- c(2)
 masterFile$AoA7[masterFile$Subject==61] <- c(4)
 masterFile$AoA8[masterFile$Subject==61] <- c(2)
 masterFile$AoA9[masterFile$Subject==61] <- c(4)
+
+#                 ss62
+masterFile$AoA1[masterFile$Subject==62] <- c(5)
+masterFile$AoA2[masterFile$Subject==62] <- c(2)
+masterFile$AoA3[masterFile$Subject==62] <- c("school")
+masterFile$AoA4[masterFile$Subject==62] <- c(1)
+masterFile$AoA5[masterFile$Subject==62] <- c(2)
+masterFile$AoA6[masterFile$Subject==62] <- c(1)
+masterFile$AoA7[masterFile$Subject==62] <- c(3)
+masterFile$AoA8[masterFile$Subject==62] <- c(2)
+masterFile$AoA9[masterFile$Subject==62] <- c(1)
 
 #                 ss63
 masterFile$AoA1[masterFile$Subject==63] <- c(4)
@@ -1494,6 +1596,17 @@ masterFile$AoA7[masterFile$Subject==67] <- c(2)
 masterFile$AoA8[masterFile$Subject==67] <- c(2)
 masterFile$AoA9[masterFile$Subject==67] <- c(1)
 
+#                 ss68
+masterFile$AoA1[masterFile$Subject==68] <- c(6)
+masterFile$AoA2[masterFile$Subject==68] <- c(4)
+masterFile$AoA3[masterFile$Subject==68] <- c("school")
+masterFile$AoA4[masterFile$Subject==68] <- c(1)
+masterFile$AoA5[masterFile$Subject==68] <- c(2)
+masterFile$AoA6[masterFile$Subject==68] <- c(1)
+masterFile$AoA7[masterFile$Subject==68] <- c(4)
+masterFile$AoA8[masterFile$Subject==68] <- c(3)
+masterFile$AoA9[masterFile$Subject==68] <- c(0)
+
 #                 ss69
 masterFile$AoA1[masterFile$Subject==69] <- c(6)
 masterFile$AoA2[masterFile$Subject==69] <- c(4)
@@ -1538,6 +1651,17 @@ masterFile$AoA7[masterFile$Subject==73] <- c(3)
 masterFile$AoA8[masterFile$Subject==73] <- c(3)
 masterFile$AoA9[masterFile$Subject==73] <- c(0)
 
+#                 ss74
+masterFile$AoA1[masterFile$Subject==74] <- c(0)
+masterFile$AoA2[masterFile$Subject==74] <- c(3)
+masterFile$AoA3[masterFile$Subject==74] <- c("school")
+masterFile$AoA4[masterFile$Subject==74] <- c(1)
+masterFile$AoA5[masterFile$Subject==74] <- c(1)
+masterFile$AoA6[masterFile$Subject==74] <- c(2)
+masterFile$AoA7[masterFile$Subject==74] <- c(4)
+masterFile$AoA8[masterFile$Subject==74] <- c(1)
+masterFile$AoA9[masterFile$Subject==74] <- c(4)
+
 #                 ss75
 masterFile$AoA1[masterFile$Subject==75] <- c(8)
 masterFile$AoA2[masterFile$Subject==75] <- c(3)
@@ -1548,6 +1672,17 @@ masterFile$AoA6[masterFile$Subject==75] <- c(2)
 masterFile$AoA7[masterFile$Subject==75] <- c(3)
 masterFile$AoA8[masterFile$Subject==75] <- c(1)
 masterFile$AoA9[masterFile$Subject==75] <- c(3)
+
+#                 ss76
+masterFile$AoA1[masterFile$Subject==76] <- c(5)
+masterFile$AoA2[masterFile$Subject==76] <- c(3)
+masterFile$AoA3[masterFile$Subject==76] <- c("school")
+masterFile$AoA4[masterFile$Subject==76] <- c(1)
+masterFile$AoA5[masterFile$Subject==76] <- c(2)
+masterFile$AoA6[masterFile$Subject==76] <- c(1)
+masterFile$AoA7[masterFile$Subject==76] <- c(3)
+masterFile$AoA8[masterFile$Subject==76] <- c(2)
+masterFile$AoA9[masterFile$Subject==76] <- c(3)
 
 #                 ss77
 masterFile$AoA1[masterFile$Subject==77] <- c(8)
@@ -1560,6 +1695,28 @@ masterFile$AoA7[masterFile$Subject==77] <- c(4)
 masterFile$AoA8[masterFile$Subject==77] <- c(2)
 masterFile$AoA9[masterFile$Subject==77] <- c(2)
 
+#                 ss78
+masterFile$AoA1[masterFile$Subject==78] <- c(5)
+masterFile$AoA2[masterFile$Subject==78] <- c(3)
+masterFile$AoA3[masterFile$Subject==78] <- c("school")
+masterFile$AoA4[masterFile$Subject==78] <- c(1)
+masterFile$AoA5[masterFile$Subject==78] <- c(2)
+masterFile$AoA6[masterFile$Subject==78] <- c(2)
+masterFile$AoA7[masterFile$Subject==78] <- c(4)
+masterFile$AoA8[masterFile$Subject==78] <- c(1)
+masterFile$AoA9[masterFile$Subject==78] <- c(3)
+
+#                 ss79
+masterFile$AoA1[masterFile$Subject==79] <- c(10)
+masterFile$AoA2[masterFile$Subject==79] <- c(2)
+masterFile$AoA3[masterFile$Subject==79] <- c("school")
+masterFile$AoA4[masterFile$Subject==79] <- c(1)
+masterFile$AoA5[masterFile$Subject==79] <- c(2)
+masterFile$AoA6[masterFile$Subject==79] <- c(2)
+masterFile$AoA7[masterFile$Subject==79] <- c(4)
+masterFile$AoA8[masterFile$Subject==79] <- c(2)
+masterFile$AoA9[masterFile$Subject==79] <- c(4)
+
 #                 ss80
 masterFile$AoA1[masterFile$Subject==80] <- c(6)
 masterFile$AoA2[masterFile$Subject==80] <- c(3)
@@ -1570,6 +1727,28 @@ masterFile$AoA6[masterFile$Subject==80] <- c(1)
 masterFile$AoA7[masterFile$Subject==80] <- c(3)
 masterFile$AoA8[masterFile$Subject==80] <- c(3)
 masterFile$AoA9[masterFile$Subject==80] <- c(0)
+
+#                 ss81
+masterFile$AoA1[masterFile$Subject==81] <- c(7)
+masterFile$AoA2[masterFile$Subject==81] <- c(4)
+masterFile$AoA3[masterFile$Subject==81] <- c("school")
+masterFile$AoA4[masterFile$Subject==81] <- c(1)
+masterFile$AoA5[masterFile$Subject==81] <- c(2)
+masterFile$AoA6[masterFile$Subject==81] <- c(1)
+masterFile$AoA7[masterFile$Subject==81] <- c(4)
+masterFile$AoA8[masterFile$Subject==81] <- c(3)
+masterFile$AoA9[masterFile$Subject==81] <- c(0)
+
+#                 ss82
+masterFile$AoA1[masterFile$Subject==82] <- c(2)
+masterFile$AoA2[masterFile$Subject==82] <- c(4)
+masterFile$AoA3[masterFile$Subject==82] <- c("home")
+masterFile$AoA4[masterFile$Subject==82] <- c(1)
+masterFile$AoA5[masterFile$Subject==82] <- c(1)
+masterFile$AoA6[masterFile$Subject==82] <- c(1)
+masterFile$AoA7[masterFile$Subject==82] <- c(4)
+masterFile$AoA8[masterFile$Subject==82] <- c(2)
+masterFile$AoA9[masterFile$Subject==82] <- c(1)
 
 masterFile$AoA3 <- as.factor(masterFile$AoA3)
 
