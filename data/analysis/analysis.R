@@ -33,8 +33,9 @@ diagnostics.f(rt = rt, acc = acc, sbj.id = sbj.id, target = target, lexicality =
 #--------------------------------------------------------------------------------------------------------#
 #Subj. 16 has reported seeing clearly the prime, for this reason will be taken out of the analysis, in addition to the words that scored less than 70% of accuracy. 
 # We filter also Rts from 250 to 1600ms
-subset(target.diagnostics, acc<0.7)-> parolebrutte #.giusto per sapere quali sono
-subset(masterfileIta, masterfileIta$rt>250 & masterfileIta$rt<1600 & masterfileIta$Subject!=16 & masterfileIta$Target!= "congruo" & masterfileIta$Target!= "guado" & masterfileIta$Target!= "guano" & masterfileIta$Target!= "uggia" & masterfileIta$Target!= "vello" & masterfileIta$Target!= "avo" & masterfileIta$Lexicality=="WORD") -> dataAccITA
+subset(target.diagnostics, acc<0.6)-> parolebrutte #.giusto per sapere quali sono
+subset(masterfileIta, masterfileIta$rt>300 & masterfileIta$Subject!=15 & masterfileIta$Subject!=2 & masterfileIta$Subject!=31  & masterfileIta$Subject!=43
+        & masterfileIta$Target!= "guano" & masterfileIta$Target!= "uggia" & masterfileIta$Target!= "vello" & masterfileIta$Lexicality=="WORD") -> dataAccITA
 #Then, we select only right answers
 subset(dataAccITA, dataAccITA$Accuracy==1)-> datartITA
 summary(datartITA)
@@ -58,11 +59,24 @@ rt<-masterfileEng$rt
 
 diagnostics.f(rt = rt, acc = acc, sbj.id = sbj.id, target = target, lexicality = lexicality, "eng")
 
-#Subjs 16 saw the prime. Sbjs 22 and 26 will be taken out because their performance is very far from the others and the accuracy less than 40%, see the output graph from the diagnostics function.
-# We filter also Rts from 250 to 1900ms
-subset(masterfileEng, masterfileEng$rt>250 & masterfileEng$rt<1900 
-       & masterfileEng$Subject!=64 & masterfileEng$Subject!=16 & masterfileEng$Subject!=22 
-       & masterfileEng$Subject!=26 & masterfileEng$Lexicality=="WORD") -> dataAccENG
+#Subj. 26 *likely* confused the YES/NO buttons
+#the correlation below shows a frequency effect, so he didn't answer just by chance:
+cor(masterfileEng[masterfileEng$Subject==26 & masterfileEng$Lexicality=='WORD', 
+                  c('rt','Logfreq.Zipf.t')], use = 'pairwise.complete.obs')
+
+masterFile$Accuracy[masterFile$Subject==26 & masterFile$Accuracy==1] <- 2;
+masterFile$Accuracy[masterFile$Subject==26 & masterFile$Accuracy==0] <- 3;
+
+masterFile$Accuracy[masterFile$Subject==26 & masterFile$Accuracy==2] <- 0;
+masterFile$Accuracy[masterFile$Subject==26 & masterFile$Accuracy==3] <- 1;
+
+
+
+#Subjs 15 and 43 saw the prime. Sbjs 22 will be taken out because their performance is very far from the others and the accuracy less than 40%, see the output graph from the diagnostics function.
+# We filter also Rts from 350 to 1800ms
+subset(masterfileEng, masterfileEng$rt>350 & masterfileEng$rt<1800 
+       & masterfileEng$Subject!=15 & masterfileEng$Subject!=22 & masterfileEng$Subject!=43 
+       & masterfileEng$Lexicality=="WORD") -> dataAccENG
 #Then, we select only right answers
 subset(dataAccENG, dataAccENG$Accuracy==1)-> datartENG
 summary(datartENG)
@@ -82,7 +96,7 @@ xtabs( ~ masterfileEng$Resp + masterfileEng$Subject) #look at response given by 
 masterfileEng <- subset(masterfileEng, masterfileEng$Resp != 0)
 
 
-sbj.numbers <- subset(masterfileEng, masterfileEng$Subject!= "16" & masterfileEng$Subject!= "22" & masterfileEng$Subject!= "26") #remove sbj 16 as his d' value is NAN
+sbj.numbers <- subset(masterfileEng, masterfileEng$Subject!= "15" & masterfileEng$Subject!= "22") #remove sbj 16 as his d' value is NAN
 sbj.numbers <- unique(sbj.numbers$Subject)
 
 dprimes <- vector(length=length(sbj.numbers), mode="integer");
@@ -110,6 +124,8 @@ for (s in sbj.numbers)
 
 bySs_dprimes <- data.frame(subject, dprimes)
 mean_dprime <- mean(bySs_dprimes$dprimes)
+
+hist(bySs_dprimes$dprimes)
 
 # check if d' value differ from 0
 t.test(bySs_dprimes$dprimes, mu= 0)
@@ -185,6 +201,8 @@ ggsave("itaplot.jpg", height=4, width=5, dpi = 1000)
 #---------------------------------------------------------------------------------------------------#
 #                                                    ENG                                            #
 #---------------------------------------------------------------------------------------------------#
+datartENG <- datartENG[datartENG$Target!='slit',]
+
 datartENG$Relatedness <- as.factor(datartENG$Relatedness)
 datartENG$Morphtype <- relevel(datartENG$Morphtype, "OP")
 englmer1 <- lmer(-1000/rt ~ TrialCount + Rotation.x + (1|Subject) + (1|Target), data= datartENG, REML = F)
@@ -304,14 +322,14 @@ par(mfrow=c(1,1))
 dev.off()
 
 #correlation
-round(cor(proficiencyData[,6:12]), digits = 2)
-collin.fnc(proficiencyData[,6:12]) #see baayen clustering, condition number K
+round(cor(proficiencyData[,7:13]), digits = 2)
+collin.fnc(proficiencyData[,7:13]) #see baayen clustering, condition number K
 library(corrplot)
-corrplot(cor(proficiencyData[,6:12]), type = "lower", order = "hclust", diag = T, method = "circle", outline = T, addgrid.col = F, tl.col = "black", tl.pos = "n")
-corrplot(cor(proficiencyData[,6:12]), order = "hclust")
+corrplot(cor(proficiencyData[,7:13]), type = "lower", order = "hclust", diag = T, method = "circle", outline = T, addgrid.col = F, tl.col = "black", tl.pos = "n")
+corrplot(cor(proficiencyData[,7:13]), order = "hclust")
 
 #tentative of clustering
-plot(varclus(as.matrix(proficiencyData[,6:12])))
+plot(varclus(as.matrix(proficiencyData[,7:13])))
 
 #mixed-models of Proficiency with one variable at time 
 
@@ -371,6 +389,7 @@ anova(proficiencylmer0, proficiencylmer8); #ok, overall proficiency works nicely
 anova(proficiencylmer8); #mainly through interaction with morphtype; but close to significance in interaction with relatedness too. Let see what role outliers play here:
 
 proficiencylmer8b <- lmer(-1000/rt ~ Relatedness * Morphtype * overallProf + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = subset(datartENG, abs(scale(resid(proficiencylmer8)))<2));
+summary(proficiencylmer8b)
 anova(proficiencylmer8b); #wow, huge change! there must be many outliers, and really quite atypical. Which may be ok, it's L2 after all. If this is the story, cutting a little higher, say 2.5SD, should give p values half way btw here and the original model
 
 proficiencylmer8c <- lmer(-1000/rt ~ Relatedness * Morphtype * overallProf + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = subset(datartENG, abs(scale(resid(proficiencylmer8)))<2.5));
@@ -387,11 +406,11 @@ plotLMER.fnc(languagelmer2, fun = inv, pred = "Relatedness", control = list("Lan
 
 
 jpeg(filename = "C:/Users/Eva Viviani/Documents/GitHub/M2-maskedprimingBilinguals/Rplot.jpg", res=300, height=1654, width=3339)
-par(mfrow=c(1,4));
-a<- plotLMER.fnc(proficiencylmer8b, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .25)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='VERY LOW PROFICIENCY', ylimit = c(570,700), bty='l'); 
-b<- plotLMER.fnc(proficiencylmer8b, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .50)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='LOW PROFICIENCY', ylimit = c(570,700), bty='l');
-c<- plotLMER.fnc(proficiencylmer8b, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .75)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='HIGH PROFICIENCY', ylimit = c(570,700), bty='l');
-d<- plotLMER.fnc(proficiencylmer8b, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, 1)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='VERY HIGH PROFICIENCY', ylimit = c(570,700), bty='l');
+par(mfrow=c(1,3));
+a<- plotLMER.fnc(proficiencylmer8b, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .1)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='VERY LOW PROFICIENCY', ylimit = c(570,700), bty='l'); 
+b<- plotLMER.fnc(proficiencylmer8b, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .5)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='LOW PROFICIENCY', ylimit = c(570,700), bty='l');
+#c<- plotLMER.fnc(proficiencylmer8b, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .6)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='HIGH PROFICIENCY', ylimit = c(570,700), bty='l');
+d<- plotLMER.fnc(proficiencylmer8b, withList = TRUE, fun = inv, pred = "Relatedness",control = list("overallProf", quantile(datartENG$overallProf, .9)), intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='VERY HIGH PROFICIENCY', ylimit = c(570,700), bty='l');
 par(mfrow=c(1,1));
 dev.off()
 #ah ah, bingo here!!!
@@ -520,7 +539,7 @@ jpeg(filename = "C:/Users/Eva Viviani/Documents/AoA.jpg", res=300, height=1654, 
 hist(AoA, main = 'Age of acquisition', xlab = 'years', 
      ylab = 'Subjects', cex.lab=1.5, cex.axis=2, cex.sub=2)
 dev.off()
-shapiro.test(proficiency) #normal distribution
+shapiro.test(AoA) #normal distribution
 rm(AoA, i)
 
 #AoA1 "A che et? hai iniziato ad essere esposto alla lingua inglese?"
@@ -559,7 +578,8 @@ plotLMER.fnc(proficiencylmer11, fun = inv, pred = "Relatedness",control = list("
 par(mfrow=c(1,1));
 
 #AoA3 "In quale contesto hai iniziato ad essere esposto alla lingua inglese? Casa o scuola?"
-proficiencylmer12 <- lmer(-1000/rt ~ Relatedness * AoA3 * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = subset(datartENG, abs(scale(resid(proficiencylmer11)))<2))
+proficiencylmer12 <- lmer(-1000/rt ~ Relatedness * AoA3 * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
+proficiencylmer12b <- lmer(-1000/rt ~ Relatedness * AoA3 * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = subset(datartENG, abs(scale(resid(proficiencylmer12)))<2))
 anova(proficiencylmer0, proficiencylmer12) 
 anova(proficiencylmer12)
 summary(datartENG$AoA3) #too unbalanced
@@ -582,7 +602,7 @@ proficiencylmer15b <- lmer(-1000/rt ~ Relatedness * AoA7 * Morphtype + rcs(Trial
 anova(proficiencylmer0, proficiencylmer15) 
 anova(proficiencylmer15b) #useless
 
-#AoA8 "Qual ? la terza lingua che conosci meglio dopo la tua madrelingua? 1: eng 2: altro 3: nessun'altra"
+#AoA8 "Qual è la terza lingua che conosci meglio dopo la tua madrelingua? 1: eng 2: altro 3: nessun'altra"
 summary(as.factor(datartENG$AoA8))
 proficiencylmer16 <- lmer(-1000/rt ~ Relatedness * as.factor(AoA8) * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
 proficiencylmer16b <- lmer(-1000/rt ~ Relatedness * as.factor(AoA8) * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = subset(datartENG, abs(scale(resid(proficiencylmer16)))<2))
@@ -620,7 +640,7 @@ plotLMER.fnc(proficiencylmer8, withList = TRUE, fun = inv, pred = "Relatedness",
 par(mfrow=c(1,1));
 
 # run these lines to get the datartENG with the OSC paramenter:
-subset(masterfileEng_OSC, masterfileEng_OSC$rt>250 & masterfileEng_OSC$rt<1900 & masterfileEng_OSC$Subject!=16 & masterfileEng_OSC$Subject!=22 & masterfileEng_OSC$Subject!=26 & masterfileEng_OSC$Lexicality=="WORD") -> dataAccENG
+subset(masterfileEng_OSC, masterfileEng_OSC$rt>350 & masterfileEng_OSC$rt<1800 & masterfileEng_OSC$Subject!=15 & masterfileEng_OSC$Subject!=22 & masterfileEng_OSC$Subject!=43 & masterfileEng_OSC$Lexicality=="WORD") -> dataAccENG
 #Then, we select only right answers
 subset(dataAccENG, dataAccENG$Accuracy==1)-> datartENG
 #ok!
@@ -651,6 +671,7 @@ plotLMER.fnc(proficiencylmer10b, fun = inv, pred = "OSC_Target", intr = list("ov
 #-----------------------------------------------------------------------------#
 #from 648 to 653, I changed some feature of gam to get the gray scale of color, nothing important
 # first get the definition of vis.gam
+source('mod.vis.gam.R')
 newDef <- deparse(vis.gam)
 # change the line defining the direction of the grey gradient
 newDef[grep("gray\\(seq\\(",newDef)] <- "            pal <- gray(seq(0.9, 0.1, length = nCol))"

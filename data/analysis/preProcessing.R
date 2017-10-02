@@ -14,7 +14,7 @@ localGitDir <- 'C:/Users/Eva Viviani/Documents/GitHub/M2-maskedprimingBilinguals
 #                               CONCATENATE ALL THE SBJ ENG                                         #
 #---------------------------------------------------------------------------------------------------#
 rotations <- read.table(paste(localGitDir,'/stimoli/rotations.txt', sep=''), header = T, dec = ',');
-finalNumberofParticipants <- 80
+finalNumberofParticipants <- 82
 
 eng = NULL
 for (j in 1:finalNumberofParticipants){
@@ -110,7 +110,6 @@ masterFile$Accuracy<- 1;
 masterFile$Accuracy[masterFile$Lexicality=="WORD" & masterFile$Resp==1] <- 0 ;
 masterFile$Accuracy[masterFile$Lexicality=="NONWORD" & masterFile$Resp==2] <- 0; 
 masterFile$Accuracy[ masterFile$Resp==-1] <- 0; 
-masterFile$Accuracy[ masterFile$Resp==0] <- 0; 
 
 
 rm(eng, ita)
