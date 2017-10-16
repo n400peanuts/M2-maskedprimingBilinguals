@@ -12,6 +12,7 @@ library(ggplot2)
 library(rms)
 library(doBy)
 library(mgcv)
+library(effects)
 inv <- function(x) { -1000/x}
 
 subset(masterFile, Language=="ita")-> masterfileIta
@@ -178,37 +179,32 @@ anova(italmer5b)
 
 aa<-plotLMER.fnc(italmer5b, fun = inv, withList = TRUE, pred = "Relatedness", intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, xlabel ="Relatedness" , ylabel = "-1000/rt", main = "ITA")
 
-df <- do.call(rbind, aa$Relatedness)
-names(df)[names(df) == "Levels"] <- "Relatedness"
-df$Morphtype <- rep(c("OR", "OP", "TR"), each =2)
-# plot using ggplot
-limitsforgraph <- summaryBy(rt ~ Morphtype + Relatedness, data=subset(datartITA, abs(scale(resid(italmer5)))<2), FUN=c(length,mean,sd))
-names(limitsforgraph)[names(limitsforgraph)=="rt.length"] <- "N"
-limitsforgraph$se <- limitsforgraph$rt.sd / sqrt(limitsforgraph$N)
-limitsforgraph$mean <- df$Y
+df <- effect("Relatedness:Morphtype",italmer5b) 
+df <- as.data.frame(df)
+df$fit <- inv(df$fit)
+df$lower <- inv(df$lower)
+df$upper <- inv(df$upper)
 
 dodge <- position_dodge(width = 0.1)
-bb  <-ggplot(data = df, aes(x = Relatedness, y = Y, col = Morphtype ,group = Morphtype)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
-bb  <- bb + scale_y_continuous("RT(ms)",limits=c(480,650))
-bb  <- bb + geom_errorbar(aes(ymin = limitsforgraph$mean - limitsforgraph$se, ymax = limitsforgraph$mean + limitsforgraph$se), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
+bb  <-ggplot(data = df, aes(x = Relatedness, y = fit, col = Morphtype ,group = Morphtype)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
+bb  <- bb + geom_errorbar(aes(ymin = df$lower, ymax = df$upper), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
+bb  <- bb + scale_y_continuous("RT(ms)",limits=c(510,675))
 bb  <- bb + theme(axis.title.y = element_text(size = rel(1.5), angle = 90))
 bb  <- bb + theme(axis.text.y = element_text(angle = 00, hjust = 1, size=13, face = 'bold', colour = 'black'))
 bb  <- bb + labs(x = "UNRELATED       RELATED ")
 bb  <- bb + theme(axis.title.x = element_text(size = rel(1), face = 'bold'))
 bb
-ggsave("itaplot.jpg", height=4, width=5, dpi = 1000)
+
+ggsave("itaplot.jpg", height=6, width=6, dpi = 2000)
 
 #---------------------------------------------------------------------------------------------------#
 #                                                    ENG                                            #
 #---------------------------------------------------------------------------------------------------#
-datartENG <- datartENG[datartENG$Target!='slit',]
-
 datartENG$Relatedness <- as.factor(datartENG$Relatedness)
 datartENG$Morphtype <- relevel(datartENG$Morphtype, "OP")
 englmer1 <- lmer(-1000/rt ~ TrialCount + Rotation.x + (1|Subject) + (1|Target), data= datartENG, REML = F)
 summary(englmer1)
 #2
-library(rms)
 englmer2 <- lmer(-1000/rt ~ rcs(TrialCount) + (1|Subject) + (1|Target), data= datartENG, REML = F)
 anova(englmer1, englmer2)
 summary(englmer2)
@@ -228,30 +224,28 @@ anova(englmer5, englmer4)
 summary(englmer5)
 #5b
 englmer5b <- lmer(-1000/rt ~ Relatedness * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data= subset(datartENG, abs(scale(resid(englmer5)))<2), REML = F)
+englmer5b <- lmer(-1000/rt ~ Relatedness * Morphtype + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data= subset(datartENG, abs(scale(resid(englmer5)))<2), REML = F)
 summary(englmer5b)
 anova(englmer5b)
 
 aa<- plotLMER.fnc(englmer5b, fun = inv, withList = TRUE, pred = "Relatedness", intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, xlabel ="Relatedness" , ylabel = "-1000/rt", main = "ENG")
 
-df <- do.call(rbind, aa$Relatedness)
-names(df)[names(df) == "Levels"] <- "Relatedness"
-df$Morphtype <- rep(c("OR", "OP", "TR"), each =2)
-# plot using ggplot
-limitsforgraph <- summaryBy(rt ~ Morphtype + Relatedness, data=subset(datartENG, abs(scale(resid(englmer5b)))<2), FUN=c(length,mean,sd))
-names(limitsforgraph)[names(limitsforgraph)=="rt.length"] <- "N"
-limitsforgraph$se <- limitsforgraph$rt.sd / sqrt(limitsforgraph$N)
-limitsforgraph$mean <- df$Y
+df <- effect("Relatedness:Morphtype",englmer5b) 
+df <- as.data.frame(df)
+df$fit <- inv(df$fit)
+df$lower <- inv(df$lower)
+df$upper <- inv(df$upper)
 
 dodge <- position_dodge(width = 0.1)
-gg  <- ggplot(data = df, aes(x = Relatedness, y = Y, col = Morphtype ,group = Morphtype)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
-gg  <- gg + scale_y_continuous("RT(ms)",limits=c(480,650))
-gg  <- gg + geom_errorbar(aes(ymin = limitsforgraph$mean - limitsforgraph$se, ymax = limitsforgraph$mean + limitsforgraph$se), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
+gg  <-ggplot(data = df, aes(x = Relatedness, y = fit, col = Morphtype ,group = Morphtype)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
+gg  <- gg + geom_errorbar(aes(ymin = df$lower, ymax = df$upper), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
+gg  <- gg + scale_y_continuous("RT(ms)",limits=c(510,672))
 gg  <- gg + theme(axis.title.y = element_text(size = rel(1.5), angle = 90))
 gg  <- gg + theme(axis.text.y = element_text(angle = 00, hjust = 1, size=13, face = 'bold', colour = 'black'))
 gg  <- gg + labs(x = "UNRELATED       RELATED ")
 gg  <- gg + theme(axis.title.x = element_text(size = rel(1), face = 'bold'))
 gg
-ggsave("engplot.jpg", height=4, width=5, dpi = 2000)
+ggsave("engplot.jpg", height=6, width=6, dpi = 2000)
 rm(gg, bb, aa, dodge)
 #---------------------------------------------------------------------------------------------------#
 #                                     Cross-experiment interaction                                  #
@@ -389,6 +383,7 @@ anova(proficiencylmer0, proficiencylmer8); #ok, overall proficiency works nicely
 anova(proficiencylmer8); #mainly through interaction with morphtype; but close to significance in interaction with relatedness too. Let see what role outliers play here:
 
 proficiencylmer8b <- lmer(-1000/rt ~ Relatedness * Morphtype * overallProf + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = subset(datartENG, abs(scale(resid(proficiencylmer8)))<2));
+proficiencylmer8b <- lmer(-1000/rt ~ Relatedness * Morphtype * overallProf + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = subset(datartENG, abs(scale(resid(proficiencylmer8)))<2));
 summary(proficiencylmer8b)
 anova(proficiencylmer8b); #wow, huge change! there must be many outliers, and really quite atypical. Which may be ok, it's L2 after all. If this is the story, cutting a little higher, say 2.5SD, should give p values half way btw here and the original model
 
@@ -417,18 +412,18 @@ dev.off()
 #heavily modulated
 
 #Primo quartile
-df <- do.call(rbind, a$Relatedness)
-names(df)[names(df) == "Levels"] <- "Relatedness"
-df$Morphtype <- rep(c("OR", "OP", "TR"), each =2)
+df <- effect("Relatedness:Morphtype:overallProf",proficiencylmer8b) 
+df <- as.data.frame(df)
+df$fit <- inv(df$fit)
+df$lower <- inv(df$lower)
+df$upper <- inv(df$upper)
+
+subset(df, df$overallProf==40)-> verylowProf
 # plot using ggplot
-limitsforgraph <- summaryBy(rt ~ Morphtype + Relatedness, data=subset(datartENG, abs(scale(resid(proficiencylmer8)))<2), FUN=c(length,mean,sd))
-names(limitsforgraph)[names(limitsforgraph)=="rt.length"] <- "N"
-limitsforgraph$se <- limitsforgraph$rt.sd / sqrt(limitsforgraph$N)
-limitsforgraph$mean <- df$Y
 dodge <- position_dodge(width = 0.1)
-a <-ggplot(data = df, aes(x = Relatedness, y = Y, col = Morphtype ,group = Morphtype)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
-a <- a + scale_y_continuous("RT(ms)",limits=c(550,650))
-a <- a + geom_errorbar(aes(ymin = limitsforgraph$mean - limitsforgraph$se, ymax = limitsforgraph$mean + limitsforgraph$se), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
+a <-ggplot(data = verylowProf, aes(x = Relatedness, y = fit, col = Morphtype ,group = Morphtype)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
+a <- a + geom_errorbar(aes(ymin = verylowProf$lower, ymax =verylowProf$upper), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
+a <- a + scale_y_continuous("RT(ms)",limits=c(550,710))
 a <- a + theme(axis.title.y = element_text(size = rel(1.5), angle = 90))
 a <- a + theme(axis.text.y = element_text(angle = 00, hjust = 1, size=13, face = 'bold', colour = 'black'))
 a <- a + labs(x = "UNRELATED       RELATED ")
@@ -437,18 +432,12 @@ a
 ggsave("firsquartileProficiency.jpg", height=6, width=6, dpi = 2000)
 
 #Secondo quartile
-df <- do.call(rbind, b$Relatedness)
-names(df)[names(df) == "Levels"] <- "Relatedness"
-df$Morphtype <- rep(c("OR", "OP", "TR"), each =2)
-# plot using ggplot
-limitsforgraph <- summaryBy(rt ~ Morphtype + Relatedness, data=subset(datartENG, abs(scale(resid(proficiencylmer8)))<2), FUN=c(length,mean,sd))
-names(limitsforgraph)[names(limitsforgraph)=="rt.length"] <- "N"
-limitsforgraph$se <- limitsforgraph$rt.sd / sqrt(limitsforgraph$N)
-limitsforgraph$mean <- df$Y
+subset(df, df$overallProf==60)-> lowProf
+
 dodge <- position_dodge(width = 0.1)
-b <-ggplot(data = df, aes(x = Relatedness, y = Y, col = Morphtype ,group = Morphtype)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
-b <- b + scale_y_continuous("RT(ms)",limits=c(550,650))
-b <- b + geom_errorbar(aes(ymin = limitsforgraph$mean - limitsforgraph$se, ymax = limitsforgraph$mean + limitsforgraph$se), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
+b <-ggplot(data = lowProf, aes(x = Relatedness, y = fit, col = Morphtype ,group = Morphtype)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
+b <- b + geom_errorbar(aes(ymin = lowProf$lower, ymax = lowProf$upper), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
+b <- b + scale_y_continuous("RT(ms)",limits=c(550,710))
 b <- b + theme(axis.title.y = element_text(size = rel(1.5), angle = 90))
 b <- b + theme(axis.text.y = element_text(angle = 00, hjust = 1, size=13, face = 'bold', colour = 'black'))
 b <- b + labs(x = "UNRELATED       RELATED ")
@@ -457,18 +446,12 @@ b
 ggsave("secondquartileProficiency.jpg", height=6, width=6, dpi = 2000)
 
 #Terzo quartile
-df <- do.call(rbind, c$Relatedness)
-names(df)[names(df) == "Levels"] <- "Relatedness"
-df$Morphtype <- rep(c("OR", "OP", "TR"), each =2)
-# plot using ggplot
-limitsforgraph <- summaryBy(rt ~ Morphtype + Relatedness, data=subset(datartENG, abs(scale(resid(proficiencylmer8)))<2), FUN=c(length,mean,sd))
-names(limitsforgraph)[names(limitsforgraph)=="rt.length"] <- "N"
-limitsforgraph$se <- limitsforgraph$rt.sd / sqrt(limitsforgraph$N)
-limitsforgraph$mean <- df$Y
+subset(df, df$overallProf==80)-> highProf
+
 dodge <- position_dodge(width = 0.1)
-c <-ggplot(data = df, aes(x = Relatedness, y = Y, col = Morphtype ,group = Morphtype)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
-c <- c + scale_y_continuous("RT(ms)",limits=c(550,650))
-c <- c + geom_errorbar(aes(ymin = limitsforgraph$mean - limitsforgraph$se, ymax = limitsforgraph$mean + limitsforgraph$se), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
+c <-ggplot(data = highProf, aes(x = Relatedness, y = fit, col = Morphtype ,group = Morphtype)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
+c <- c + geom_errorbar(aes(ymin = highProf$lower, ymax = highProf$upper), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
+c <- c + scale_y_continuous("RT(ms)",limits=c(550,710))
 c <- c + theme(axis.title.y = element_text(size = rel(1.5), angle = 90))
 c <- c + theme(axis.text.y = element_text(angle = 00, hjust = 1, size=13, face = 'bold', colour = 'black'))
 c <- c + labs(x = "UNRELATED       RELATED ")
@@ -477,18 +460,12 @@ c
 ggsave("thirdquartileProficiency.jpg", height=6, width=6, dpi = 2000)
 
 #quarto quartile
-df <- do.call(rbind, d$Relatedness)
-names(df)[names(df) == "Levels"] <- "Relatedness"
-df$Morphtype <- rep(c("OR", "OP", "TR"), each =2)
-# plot using ggplot
-limitsforgraph <- summaryBy(rt ~ Morphtype + Relatedness, data=subset(datartENG, abs(scale(resid(proficiencylmer8)))<2), FUN=c(length,mean,sd))
-names(limitsforgraph)[names(limitsforgraph)=="rt.length"] <- "N"
-limitsforgraph$se <- limitsforgraph$rt.sd / sqrt(limitsforgraph$N)
-limitsforgraph$mean <- df$Y
+subset(df, df$overallProf>80)-> veryhighProf
+
 dodge <- position_dodge(width = 0.1)
-d <-ggplot(data = df, aes(x = Relatedness, y = Y, col = Morphtype ,group = Morphtype)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
-d <- d + scale_y_continuous("RT(ms)",limits=c(550,650))
-d <- d + geom_errorbar(aes(ymin = limitsforgraph$mean - limitsforgraph$se, ymax = limitsforgraph$mean + limitsforgraph$se), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
+d <-ggplot(data = veryhighProf, aes(x = Relatedness, y = fit, col = Morphtype ,group = Morphtype)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
+d <- d + geom_errorbar(aes(ymin = veryhighProf$lower, ymax = veryhighProf$upper), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
+d <- d + scale_y_continuous("RT(ms)",limits=c(550,710))
 d <- d + theme(axis.title.y = element_text(size = rel(1.5), angle = 90))
 d <- d + theme(axis.text.y = element_text(angle = 00, hjust = 1, size=13, face = 'bold', colour = 'black'))
 d <- d + labs(x = "UNRELATED       RELATED ")
