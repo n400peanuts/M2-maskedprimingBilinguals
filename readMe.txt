@@ -1,5 +1,5 @@
 This experiment is a masked morphological priming on Italian-English bilinguals. 
-Data were collected in November 2016 and consists of 40 participants.
+Data were collected in November 2016 and September 2017 and consists of 81 participants.
 Each of them completed in addition to the masked priming: 
 (1) a Proficiency test and 
 (2) a Survey about the general linguistic knowledge (AoA survey)
