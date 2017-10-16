@@ -98,7 +98,7 @@ mod.vis.gam<-function (x, view = NULL, cond = list(), n.grid = 30, too.far = 0,
     zlab <- type
   else stop("type must be \"link\" or \"response\"")
   fv <- predict.gam(x, newdata = newd, se.fit = TRUE, type = type)
-  fv$fit = -1000/(fv$fit)   #INSERT THIS LINE HERE WITH WHATEVER FUNCTION YOU WANT TO MODIFY THE FITTED VALUES BY
+  fv$fit = -1000/(fv$fit)   #INSERT THIS LINE TO GET RTs TRANSFORMED IN REAL MILLISECONDS
   z <- fv$fit
   if (too.far > 0) {
     ex.tf <- exclude.too.far(v1, v2, x$model[, view[1]], 
@@ -158,10 +158,9 @@ mod.vis.gam<-function (x, view = NULL, cond = list(), n.grid = 30, too.far = 0,
       con.col <- 1
     }
     else if (color == "gaypride") {
-      colfunc<-colorRampPalette(c("#f814fb","#cd14fb", "#6904f3","#0496f3","#04e5f3","#04f3a1", "#04f347",
-                                  "#daf304", "#f6ff0e", "#ffcf0e", "red"))
+      colfunc<-colorRampPalette(c("#002de6","#09ff77", "#e8fd08","#fd0000"))
       pal <- colfunc(nCol)
-      con.col <- 2
+      con.col <- 1
     }
     else stop("color scheme not recognised")
     if (is.null(contour.col)) 

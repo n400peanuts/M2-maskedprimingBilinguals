@@ -648,7 +648,7 @@ plotLMER.fnc(proficiencylmer10b, fun = inv, pred = "OSC_Target", intr = list("ov
 #-----------------------------------------------------------------------------#
 #from 648 to 653, I changed some feature of gam to get the gray scale of color, nothing important
 # first get the definition of vis.gam
-source('mod.vis.gam.R')
+source(paste(localGitDir,'/data/analysis/mod.vis.gam.R', sep = ''))
 newDef <- deparse(vis.gam)
 # change the line defining the direction of the grey gradient
 newDef[grep("gray\\(seq\\(",newDef)] <- "            pal <- gray(seq(0.9, 0.1, length = nCol))"
@@ -664,7 +664,14 @@ vis.gam2(gam1, view=c("OSC_Target","overallProf"), type="response", plot.type="c
 gam2 <- gam(-1000/rt ~ s(OSC_Target, by = overallProf) + s(TrialCount) + s(Logfreq.Zipf.t) + s(Subject, bs = 're') + s(Target, bs = 're'), data = datartENG);
 summary(gam2);
 vis.gam2(gam2, view=c("OSC_Target","overallProf"), type="response", plot.type="contour", color="gray", main="", too.far=.1, xlab='OSC', ylab='Proficiency scores');
-mod.vis.gam(gam2, view=c("OSC_Target","overallProf"), type="response", plot.type="contour", color="gaypride", main="", too.far=.1, xlab='OSC', ylab='Proficiency scores');
+
+
+#For poster presentation
+jpeg(filename = "C:/Users/eva_v/Documents/GitHub/M2-maskedprimingBilinguals/GAMplot.jpg", res=300, height=1654, width=3339)
+mod.vis.gam(gam2, view=c("OSC_Target","overallProf"), type="response", plot.type="contour", color="gaypride", main="", 
+            too.far=.1, xlab='OSC', ylab='PROFICIENCY', lwd = 2, font = 2, font.lab = 2, font.axis = 2, cex.axis =1.5,
+            cex.lab=1.5);
+dev.off()
 
 
 
