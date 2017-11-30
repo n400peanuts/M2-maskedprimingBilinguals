@@ -7,7 +7,7 @@ both available on basecamp.
 -------------------------------------------------------------------------------------------------------------------
 This repo contains: 
 In data/raw data: all the ppts ".txt" files devided in ITA and ENG, as they came out from python.
-In data/analysi: pre-processing.R and analysis files
+In data/analysis: pre-processing.R and analysis files
 In stimoli: rotations complete of all parameters, useful to pre-process data.
 To directly run the analysis, run the preProcessing.R file and then the analysis.R file. 
 

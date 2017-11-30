@@ -13,6 +13,11 @@ library(rms)
 library(doBy)
 library(mgcv)
 library(effects)
+library(plyr)
+library(corrplot)
+library(ggpubr)
+
+
 inv <- function(x) { -1000/x}
 
 subset(masterFile, Language=="ita")-> masterfileIta
@@ -43,6 +48,10 @@ summary(datartITA)
 
 #First look at the means
 round(xtabs(datartITA$rt ~ datartITA$Morphtype + datartITA$Primetype) / xtabs(~datartITA$Morphtype + datartITA$Primetype), digits = 0)
+stdErr <- function(x) {sd(x)/ sqrt(length(x))}
+round(tapply(datartITA$rt, list(datartITA$Morphtype, datartITA$Primetype), sd), digits = 0)
+round(tapply(datartITA$rt, list(datartITA$Morphtype, datartITA$Primetype), stdErr), digits = 1)
+
 
 #---------------------------------------------------------------------------------------------------#
 #                                         ENG f.Diagnostics                                         #
@@ -83,6 +92,7 @@ subset(dataAccENG, dataAccENG$Accuracy==1)-> datartENG
 summary(datartENG)
 #First look at the means
 round(xtabs(datartENG$rt ~ datartENG$Morphtype + datartENG$Primetype) / xtabs(~datartENG$Morphtype + datartENG$Primetype), digits = 0)
+round(tapply(datartENG$rt, list(datartENG$Morphtype, datartENG$Primetype), sd), digits = 0)
 
 #clean up the workspace
 rm(rt, acc, sbj.id, target, lexicality, masterfileIta, masterfileEng);
@@ -153,7 +163,7 @@ detach(datartITA)
 
 library(lmerTest)
 datartITA$Relatedness <- as.factor(datartITA$Relatedness)
-datartITA$Morphtype <- relevel(datartITA$Morphtype, "OP")
+datartITA$Morphtype <- relevel(datartITA$Morphtype, "OR")
 
 italmer1 <- lmer(-1000/rt ~ TrialCount + Rotation.x + (1|Subject) + (1|Target), data= datartITA, REML = F)
 summary(italmer1)
@@ -177,7 +187,7 @@ italmer5b <- lmer(-1000/rt ~ Relatedness * Morphtype + Logfreq.Zipf.t + (1|Subje
 summary(italmer5b)
 anova(italmer5b)
 
-aa<-plotLMER.fnc(italmer5b, fun = inv, withList = TRUE, pred = "Relatedness", intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, xlabel ="Relatedness" , ylabel = "-1000/rt", main = "ITA")
+plotLMER.fnc(italmer5b, fun = inv, withList = TRUE, pred = "Relatedness", intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, xlabel ="Relatedness" , ylabel = "-1000/rt", main = "ITA")
 
 df <- effect("Relatedness:Morphtype",italmer5b) 
 df <- as.data.frame(df)
@@ -186,16 +196,20 @@ df$lower <- inv(df$lower)
 df$upper <- inv(df$upper)
 
 dodge <- position_dodge(width = 0.1)
-bb  <-ggplot(data = df, aes(x = Relatedness, y = fit, col = Morphtype ,group = Morphtype)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
+bb  <-ggplot(data = df, aes(x = Relatedness, y = fit, col = Morphtype ,group = Morphtype)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 3.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
 bb  <- bb + geom_errorbar(aes(ymin = df$lower, ymax = df$upper), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
 bb  <- bb + scale_y_continuous("RT(ms)",limits=c(510,675))
 bb  <- bb + theme(axis.title.y = element_text(size = rel(1.5), angle = 90))
-bb  <- bb + theme(axis.text.y = element_text(angle = 00, hjust = 1, size=13, face = 'bold', colour = 'black'))
-bb  <- bb + labs(x = "UNRELATED       RELATED ")
-bb  <- bb + theme(axis.title.x = element_text(size = rel(1), face = 'bold'))
+bb  <- bb + theme(axis.text.y = element_text(angle = 00, hjust = 1, size=10, colour = 'black'))
+bb  <- bb + theme(axis.text.x = element_blank())
+bb  <- bb + labs(x = "unrelated                      related ")
+bb  <- bb + theme(axis.title.x = element_text(size = rel(1)))
+bb <- bb + labs(title='L1 - Italian')
+bb <- bb + theme(plot.title= element_text(angle = 00, hjust=0.5, size=15, face = 'bold', colour = 'black'))
+bb <- bb + theme(legend.title = element_text(size = 8))
+bb <- bb + theme(legend.text = element_text(size = 8))
 bb
-
-ggsave("itaplot.jpg", height=6, width=6, dpi = 2000)
+ggsave("itaplot.jpg")
 
 #---------------------------------------------------------------------------------------------------#
 #                                                    ENG                                            #
@@ -228,7 +242,7 @@ englmer5b <- lmer(-1000/rt ~ Relatedness * Morphtype + Logfreq.Zipf.t + Lent + (
 summary(englmer5b)
 anova(englmer5b)
 
-aa<- plotLMER.fnc(englmer5b, fun = inv, withList = TRUE, pred = "Relatedness", intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, xlabel ="Relatedness" , ylabel = "-1000/rt", main = "ENG")
+plotLMER.fnc(englmer5b, fun = inv, withList = TRUE, pred = "Relatedness", intr = list("Morphtype", c("OR", "OP", "TR"), "end"), addlines = T, xlabel ="Relatedness" , ylabel = "-1000/rt", main = "ENG")
 
 df <- effect("Relatedness:Morphtype",englmer5b) 
 df <- as.data.frame(df)
@@ -237,15 +251,20 @@ df$lower <- inv(df$lower)
 df$upper <- inv(df$upper)
 
 dodge <- position_dodge(width = 0.1)
-gg  <-ggplot(data = df, aes(x = Relatedness, y = fit, col = Morphtype ,group = Morphtype)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
+gg  <-ggplot(data = df, aes(x = Relatedness, y = fit, col = Morphtype ,group = Morphtype)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 3.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
 gg  <- gg + geom_errorbar(aes(ymin = df$lower, ymax = df$upper), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
-gg  <- gg + scale_y_continuous("RT(ms)",limits=c(510,672))
+gg  <- gg + scale_y_continuous("RT(ms)",limits=c(510,675))
 gg  <- gg + theme(axis.title.y = element_text(size = rel(1.5), angle = 90))
-gg  <- gg + theme(axis.text.y = element_text(angle = 00, hjust = 1, size=13, face = 'bold', colour = 'black'))
-gg  <- gg + labs(x = "UNRELATED       RELATED ")
-gg  <- gg + theme(axis.title.x = element_text(size = rel(1), face = 'bold'))
+gg  <- gg + theme(axis.text.y = element_text(angle = 00, hjust = 1, size=10, colour = 'black'))
+gg  <- gg + theme(axis.text.x = element_blank())
+gg  <- gg + labs(x = "unrelated                      related ")
+gg  <- gg + theme(axis.title.x = element_text(size = rel(1)))
+gg <- gg + labs(title='L2 - English')
+gg <- gg + theme(plot.title= element_text(angle = 00, hjust=0.5, size=15, face = 'bold', colour = 'black'))
+gg <- gg + theme(legend.title = element_text(size = 8))
+gg <- gg + theme(legend.text = element_text(size = 8))
 gg
-ggsave("engplot.jpg", height=6, width=6, dpi = 2000)
+ggsave("engplot.jpg")
 rm(gg, bb, aa, dodge)
 #---------------------------------------------------------------------------------------------------#
 #                                     Cross-experiment interaction                                  #
@@ -279,7 +298,6 @@ round(1-pf(temp[[4]], temp[[1]], 9609-1-sum(temp[[1]])), digits=3) -> temp$pvalu
 #---------------------------------------------------------------------------------------------------#
 #first take a look at variables distributions
 proficiencyData <- datartENG[,c('Target', 'Subject','Age','Gender','Handedness','Rotation.x','phoneticFluency', 'phoneticComprehension','morphComprehension','spelling','readingComprehension','vocabulary','oralComprehension','AoA1', 'AoA2', 'AoA3','AoA4','AoA5','AoA6','AoA7','AoA8','AoA9')];
-proficiencyData <- unique(proficiencyData);
 summary(proficiencyData) 
 
 #histogram of overallProficiency
@@ -287,38 +305,90 @@ proficiency <- NULL
 for(i in unique(masterFile$Subject)){
   proficiency[i] <- unique(masterFile$overallProf[masterFile$Subject==i])
 }
-jpeg(filename = "C:/Users/Eva Viviani/Documents/overallProficiency.jpg", res=300, height=1654, width=2229)
-hist(proficiency, breaks = 15, xlim = c(30, 120), main = 'Proficiency', xlab = 'score', 
-     ylab = 'Subjects', cex.lab=1.5, cex.axis=2, cex.sub=2)
+jpeg(filename = "C:/Users/eva_v/Documents/overallProficiency.jpg", res=300, height=2500, width=3229)
+hist(proficiency, breaks = 15, xlim = c(30, 120), ylim = c(0,14), main = 'Proficiency', 
+     xlab = 'score', ylab = '', cex.lab=2, cex.axis=2, cex.sub=4, cex.main=3)
+title(ylab = 'Subjects', cex.lab=1.5)
 dev.off()
 shapiro.test(proficiency) #normal distribution
 rm(proficiency, i)
 
+phoneticFluency <- NULL
+for (i in unique(proficiencyData$Subject)){
+  phoneticFluency[i] <- unique(proficiencyData$phoneticFluency[proficiencyData$Subject==i])
+}
+
+phoneticComprehension <- NULL
+for (i in unique(proficiencyData$Subject)){
+phoneticComprehension[i] <- unique(proficiencyData$phoneticComprehension[proficiencyData$Subject==i])
+}
+
+morphComprehension <- NULL
+for (i in unique(proficiencyData$Subject)){
+  morphComprehension[i] <- unique(proficiencyData$morphComprehension[proficiencyData$Subject==i])
+}
+
+spelling <- NULL
+for (i in unique(proficiencyData$Subject)){
+  spelling[i] <- unique(proficiencyData$spelling[proficiencyData$Subject==i])
+}
+
+readingComprehension <- NULL
+for (i in unique(proficiencyData$Subject)){
+  readingComprehension[i] <- unique(proficiencyData$readingComprehension[proficiencyData$Subject==i])
+}
+
+vocabulary <- NULL
+for (i in unique(proficiencyData$Subject)){
+  vocabulary[i] <- unique(proficiencyData$vocabulary[proficiencyData$Subject==i])
+}
+
+oralComprehension <- NULL
+for (i in unique(proficiencyData$Subject)){
+  oralComprehension[i] <- unique(proficiencyData$oralComprehension[proficiencyData$Subject==i])
+}
+
+#Data Proficiency normalization:
+datartENG$z.overallProf <-scale(datartENG[28:34], scale = T);
+datartENG$scale.overallProf <- apply(datartENG$z.overallProf,1,FUN = sum);
+
 
 #histrograms of Proficiency's subtests
-jpeg(filename = "C:/Users/Eva Viviani/Documents/ProficiencySubtests.jpg", res=300, height=1654, width=3339)
+jpeg(filename = "C:/Users/eva_v/Documents/ProficiencySubtests.jpg", res=300, height=2200, width=4339)
 par(mfrow=c(2,4))
-hist(unique(proficiencyData$phoneticFluency), breaks = seq(0,50,5), 
-     main = 'Fluency', xlab = 'Scores', ylab = 'Subjects', cex.lab=1.5, cex.axis=1.5, cex.sub=1.5) 
-hist(proficiencyData$phoneticComprehension, breaks = seq(0,15,1),
-     main = 'Phonetic comprehension', xlab = 'Scores', ylab = 'Subjects', cex.lab=1.5, cex.axis=1.5, cex.sub=1.5)
-hist(proficiencyData$morphComprehension, breaks = seq(0,10,1),
-     main = 'Morphologic comprehension', xlab = 'Scores', ylab = 'Subjects', cex.lab=1.5, cex.axis=1.5, cex.sub=1.5) 
-hist(proficiencyData$spelling, breaks = seq(0,20,2),
-     main = 'Spelling', xlab = 'Scores', ylab = 'Subjects', cex.lab=1.5, cex.axis=1.5, cex.sub=1.5) 
-hist(proficiencyData$readingComprehension, breaks = seq(0,7,1),
-     main = 'Reading comprehension', xlab = 'Scores', ylab = 'Subjects', cex.lab=1.5, cex.axis=1.5, cex.sub=1.5) 
-hist(proficiencyData$vocabulary, breaks = seq(0,20,2),
-     main = 'Vocabulary', xlab = 'Scores', ylab = 'Subjects', cex.lab=1.5, cex.axis=1.5, cex.sub=1.5) 
-hist(proficiencyData$oralComprehension, breaks = seq(0,6,1),
-     main = 'Oral comprehension', xlab = 'Scores', ylab = 'Subjects', cex.lab=1.5, cex.axis=1.5, cex.sub=1.5) 
+hist(phoneticFluency, breaks = seq(0,50,5), ylim = c(0,20),
+     main = 'Fluency', xlab = 'Scores', ylab = '', cex.lab=2, cex.axis=2, cex.sub=4, cex.main=2) 
+title(ylab = 'Subjects', cex.lab=1.5)
+hist(phoneticComprehension, breaks = seq(0,15,1),ylim = c(0,20),
+     main = 'Phonemic comprehension', xlab = 'Scores', ylab = '', cex.lab=2, cex.axis=2, cex.sub=4, cex.main=2)
+title(ylab = 'Subjects', cex.lab=1.5)
+ 
+hist(morphComprehension, breaks = seq(0,10,1), ylim = c(0,40),
+     main = 'Morphologic comprehension', xlab = 'Scores', ylab = '', cex.lab=2, cex.axis=2, cex.sub=4, cex.main=2) 
+title(ylab = 'Subjects', cex.lab=1.5)
+ 
+hist(spelling, breaks = seq(0,20,2),ylim = c(0,20),
+     main = 'Spelling', xlab = 'Scores', ylab = '', cex.lab=2, cex.axis=2, cex.sub=4, cex.main=2) 
+title(ylab = 'Subjects', cex.lab=1.5)
+ 
+hist(readingComprehension, breaks = seq(0,7,1),ylim = c(0,25),
+     main = 'Reading comprehension', xlab = 'Scores', ylab = '', cex.lab=2, cex.axis=2, cex.sub=4, cex.main=2) 
+title(ylab = 'Subjects', cex.lab=1.5)
+ 
+hist(vocabulary, breaks = seq(0,20,2),ylim = c(0,40),
+     main = 'Vocabulary', xlab = 'Scores', ylab = '', cex.lab=2, cex.axis=2, cex.sub=4, cex.main=2) 
+title(ylab = 'Subjects', cex.lab=1.5)
+ 
+hist(oralComprehension, breaks = seq(0,6,1),ylim = c(0,40),
+     main = 'Oral comprehension', xlab = 'Scores', ylab = '', cex.lab=2, cex.axis=2, cex.sub=4, cex.main=2) 
+title(ylab = 'Subjects', cex.lab=1.5)
+ 
 par(mfrow=c(1,1))
 dev.off()
 
 #correlation
 round(cor(proficiencyData[,7:13]), digits = 2)
 collin.fnc(proficiencyData[,7:13]) #see baayen clustering, condition number K
-library(corrplot)
 corrplot(cor(proficiencyData[,7:13]), type = "lower", order = "hclust", diag = T, method = "circle", outline = T, addgrid.col = F, tl.col = "black", tl.pos = "n")
 corrplot(cor(proficiencyData[,7:13]), order = "hclust")
 
@@ -378,16 +448,16 @@ anova(proficiencylmer0,proficiencylmer7)
 anova(proficiencylmer7)
 
 #mixed model with morphtype * overallProf e Relatedness * overallProf + 3way interaction
-proficiencylmer8 <- lmer(-1000/rt ~ Relatedness * Morphtype * overallProf + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG);
+proficiencylmer8 <- lmer(-1000/rt ~ Relatedness * Morphtype * scale.overallProf + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG);
 anova(proficiencylmer0, proficiencylmer8); #ok, overall proficiency works nicely. Let's check how:
 anova(proficiencylmer8); #mainly through interaction with morphtype; but close to significance in interaction with relatedness too. Let see what role outliers play here:
 
-proficiencylmer8b <- lmer(-1000/rt ~ Relatedness * Morphtype * overallProf + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = subset(datartENG, abs(scale(resid(proficiencylmer8)))<2));
+proficiencylmer8b <- lmer(-1000/rt ~ Relatedness * Morphtype * scale.overallProf + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = subset(datartENG, abs(scale(resid(proficiencylmer8)))<2));
 proficiencylmer8b <- lmer(-1000/rt ~ Relatedness * Morphtype * overallProf + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = subset(datartENG, abs(scale(resid(proficiencylmer8)))<2));
 summary(proficiencylmer8b)
 anova(proficiencylmer8b); #wow, huge change! there must be many outliers, and really quite atypical. Which may be ok, it's L2 after all. If this is the story, cutting a little higher, say 2.5SD, should give p values half way btw here and the original model
 
-proficiencylmer8c <- lmer(-1000/rt ~ Relatedness * Morphtype * overallProf + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = subset(datartENG, abs(scale(resid(proficiencylmer8)))<2.5));
+proficiencylmer8c <- lmer(-1000/rt ~ Relatedness * Morphtype * scale.overallProf + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = subset(datartENG, abs(scale(resid(proficiencylmer8)))<2.5));
 anova(proficiencylmer8c); #yeah, exactly as expected. So, I surely trust prof-by-morphtype, which is very reliable; and probably also prof-by-relatedness, which resist some outliers. The three way, I'm not sure, it really seems to be destroyed by just a few outliers. So, let's check out the nature of the effects:
 
 #prof-by-morphtype
@@ -418,44 +488,44 @@ df$fit <- inv(df$fit)
 df$lower <- inv(df$lower)
 df$upper <- inv(df$upper)
 
-subset(df, df$overallProf==40)-> verylowProf
+subset(df, df$overallProf<=40)-> verylowProf
 # plot using ggplot
 dodge <- position_dodge(width = 0.1)
 a <-ggplot(data = verylowProf, aes(x = Relatedness, y = fit, col = Morphtype ,group = Morphtype)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
 a <- a + geom_errorbar(aes(ymin = verylowProf$lower, ymax =verylowProf$upper), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
-a <- a + scale_y_continuous("RT(ms)",limits=c(550,710))
-a <- a + theme(axis.title.y = element_text(size = rel(1.5), angle = 90))
+a <- a + scale_y_continuous("RT(ms)",limits=c(530,710))
+a <- a + theme(axis.title.y = element_text(size = rel(1.5), angle = 90)) + ggtitle('Very low proficiency \n1st quartile') + theme(plot.title = element_text(hjust = 0.5))
 a <- a + theme(axis.text.y = element_text(angle = 00, hjust = 1, size=13, face = 'bold', colour = 'black'))
-a <- a + labs(x = "UNRELATED       RELATED ")
-a <- a + theme(axis.title.x = element_text(size = rel(1), face = 'bold'))
+a <- a + labs(x = "UNRELATED       RELATED ") + theme(axis.text.x=element_blank(), axis.ticks.x=element_blank())
+a <- a + theme(axis.title.x = element_text(size = rel(1), face = 'bold')) +  theme(legend.position="none")
 a
 ggsave("firsquartileProficiency.jpg", height=6, width=6, dpi = 2000)
 
 #Secondo quartile
-subset(df, df$overallProf==60)-> lowProf
+subset(df, df$overallProf> 40 & df$overallProf<=60)-> lowProf
 
 dodge <- position_dodge(width = 0.1)
 b <-ggplot(data = lowProf, aes(x = Relatedness, y = fit, col = Morphtype ,group = Morphtype)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
 b <- b + geom_errorbar(aes(ymin = lowProf$lower, ymax = lowProf$upper), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
-b <- b + scale_y_continuous("RT(ms)",limits=c(550,710))
-b <- b + theme(axis.title.y = element_text(size = rel(1.5), angle = 90))
+b <- b + scale_y_continuous(limits=c(530,710)) + ylab(NULL) + theme(axis.title.y=element_blank(), axis.text.y=element_blank())
+b <- b + theme(axis.title.y = element_text(size = rel(1.5), angle = 90)) + ggtitle('Low proficiency \n2nd quartile') + theme(plot.title = element_text(hjust = 0.5))
 b <- b + theme(axis.text.y = element_text(angle = 00, hjust = 1, size=13, face = 'bold', colour = 'black'))
-b <- b + labs(x = "UNRELATED       RELATED ")
-b <- b + theme(axis.title.x = element_text(size = rel(1), face = 'bold'))
+b <- b + labs(x = "UNRELATED       RELATED ") + theme(axis.text.x=element_blank(), axis.ticks.x=element_blank())
+b <- b + theme(axis.title.x = element_text(size = rel(1), face = 'bold')) +  theme(legend.position="none")
 b
 ggsave("secondquartileProficiency.jpg", height=6, width=6, dpi = 2000)
 
 #Terzo quartile
-subset(df, df$overallProf==80)-> highProf
+subset(df, df$overallProf>60 & df$overallProf<=80)-> highProf
 
 dodge <- position_dodge(width = 0.1)
 c <-ggplot(data = highProf, aes(x = Relatedness, y = fit, col = Morphtype ,group = Morphtype)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
 c <- c + geom_errorbar(aes(ymin = highProf$lower, ymax = highProf$upper), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
-c <- c + scale_y_continuous("RT(ms)",limits=c(550,710))
-c <- c + theme(axis.title.y = element_text(size = rel(1.5), angle = 90))
+c <- c + scale_y_continuous(limits=c(530,710)) + ylab(NULL) + theme(axis.title.y=element_blank(), axis.text.y=element_blank())
+c <- c + theme(axis.title.y = element_text(size = rel(1.5), angle = 90))  + ggtitle('High proficiency \n3rd quartile') + theme(plot.title = element_text(hjust = 0.5))
 c <- c + theme(axis.text.y = element_text(angle = 00, hjust = 1, size=13, face = 'bold', colour = 'black'))
-c <- c + labs(x = "UNRELATED       RELATED ")
-c <- c + theme(axis.title.x = element_text(size = rel(1), face = 'bold'))
+c <- c + labs(x = "UNRELATED       RELATED ") + theme(axis.text.x=element_blank(), axis.ticks.x=element_blank())
+c <- c + theme(axis.title.x = element_text(size = rel(1), face = 'bold')) +  theme(legend.position="none")
 c
 ggsave("thirdquartileProficiency.jpg", height=6, width=6, dpi = 2000)
 
@@ -465,13 +535,21 @@ subset(df, df$overallProf>80)-> veryhighProf
 dodge <- position_dodge(width = 0.1)
 d <-ggplot(data = veryhighProf, aes(x = Relatedness, y = fit, col = Morphtype ,group = Morphtype)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
 d <- d + geom_errorbar(aes(ymin = veryhighProf$lower, ymax = veryhighProf$upper), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
-d <- d + scale_y_continuous("RT(ms)",limits=c(550,710))
-d <- d + theme(axis.title.y = element_text(size = rel(1.5), angle = 90))
+d <- d + scale_y_continuous(limits=c(530,710)) + ylab(NULL) + theme(axis.title.y=element_blank(), axis.text.y=element_blank())
+d <- d + theme(axis.title.y = element_text(size = rel(1.5), angle = 90)) + ggtitle('Very high proficiency \n4th quartile') + theme(plot.title = element_text(hjust = 0.5))
 d <- d + theme(axis.text.y = element_text(angle = 00, hjust = 1, size=13, face = 'bold', colour = 'black'))
-d <- d + labs(x = "UNRELATED       RELATED ")
-d <- d + theme(axis.title.x = element_text(size = rel(1), face = 'bold'))
+d <- d + labs(x = "UNRELATED       RELATED ") + theme(axis.text.x=element_blank(), axis.ticks.x=element_blank())
+d <- d + theme(axis.title.x = element_text(size = rel(1), face = 'bold')) +  theme(legend.position="none")
 d
 ggsave("fourthquartileProficiency.jpg", height=6, width=6, dpi = 2000)
+
+#plot all together
+a<-ggarrange(a, b, c , d + rremove("x.text"),
+          ncol = 4, nrow = 1, common.legend = TRUE, legend = "bottom")
+ggplot() + aes(proficiency) + geom_histogram(binwidth= 4.5,bins = 17, colour="black", fill="white") + xlim(30,120) + ylim(0,14)
+
+
+ggsave("overallProf.jpg", height=8, width=15)
 
 #Let's see how many subjects were contained in these proficiency quantiles + post-hoc analysis
 datartENG$Morphtype <- relevel(datartENG$Morphtype, "OR")
