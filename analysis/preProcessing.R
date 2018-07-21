@@ -3,23 +3,24 @@
 # ---- and "masterfileEng_OSC" with the OSC parameter
 #----- 08/09/2017
 #Clean the workspace
-rm(list = ls())
+rm(list = ls());
 
 #Set your own working directory. This should be (and is assumed to be in the rest of the code) the highest point in the gitHub folder:
-setwd('C:/Users/eva_v/Documents/GitHub/M2-maskedprimingBilinguals');
 localGitDir <- 'C:/Users/eva_v/Documents/GitHub/M2-maskedprimingBilinguals';
+localGitDir <- '~/Google Drive File Stream/My Drive/research/misc/m2-maskedMorphPrimingBilinguals/git/M2-maskedprimingBilinguals/';
+setwd(localGitDir);
 
 
 #---------------------------------------------------------------------------------------------------#
 #                               CONCATENATE ALL THE SBJ ENG                                         #
 #---------------------------------------------------------------------------------------------------#
-rotations <- read.table(paste(localGitDir,'/stimoli/rotations.txt', sep=''), header = T, dec = ',');
+rotations <- read.table(paste(localGitDir,'/stimuli/rotations.txt', sep=''), header = T, dec = ',');
 finalNumberofParticipants <- 82
 
 eng = NULL
 for (j in 1:finalNumberofParticipants){
   if ((j %% 2) ==0 ){ #EVEN SUBJ
-    boh <- paste(localGitDir, '/data/raw data/ENG/Output_MPrim_Eng_Subj_', j, ".txt", sep = "")
+    boh <- paste(localGitDir, '/data/eng/Output_MPrim_Eng_Subj_', j, ".txt", sep = "")
     if (file.exists(boh)) {
       pilot_eng <- read.table(boh, header = F, skip = 15,dec = ",")
       colnames(pilot_eng) <- c("Subject", "Age", "Gender", "Handedness", "Rotation","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
@@ -27,7 +28,7 @@ for (j in 1:finalNumberofParticipants){
       merge(pilot_eng, rot_B_eng, by = "Target", all.x = T)-> pilot_eng
     } else {next}
   } else { #ODD
-    boh <- paste(localGitDir, '/data/raw data/ENG/Output_MPrim_Eng_Subj_', j, ".txt", sep = "")
+    boh <- paste(localGitDir, '/data/eng/Output_MPrim_Eng_Subj_', j, ".txt", sep = "")
     if (file.exists(boh)) {
       pilot_eng <- read.table(boh, header = F, skip = 15,dec = ",")
       colnames(pilot_eng) <- c("Subject", "Age", "Gender", "Handedness", "Rotation","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
@@ -43,12 +44,12 @@ for (j in 1:finalNumberofParticipants){
   eng <- rbind(eng,pilot_eng)
 }
 
-rm(rot_A_eng, rot_B_eng, pilot_eng, boh, j)
+rm(rot_A_eng, rot_B_eng, pilot_eng, boh, j);
 #---------------------------------------------------------------------------------------------------#
 #                               CONCATENATE ALL THE SBJ ITA                                         #
 #---------------------------------------------------------------------------------------------------#
 #                                            SS1                                                    #
-ss1 <- read.table(paste(localGitDir,'/data/raw data/ITA/Output_MPrim_Ita_Subj_1.txt', sep=''), header = F,  skip = 15, dec = ",")
+ss1 <- read.table(paste(localGitDir,'/data/ita/Output_MPrim_Ita_Subj_1.txt', sep=''), header = F,  skip = 15, dec = ",")
 colnames(ss1) <- c("Subject", "Age", "Gender", "Handedness", "Rotation","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
 rotA<- subset(rotations, rotations$Rotation=='A' & rotations$Language=='ita')
 merge(ss1, rotA, by = "Target", all.x = T)->ss1
@@ -57,9 +58,9 @@ ss1$Rotation.y <- NULL
 summary(ss1) 
 
 #                                            SS2                                                    #
-ss2 <- read.table(paste(localGitDir,'/data/raw data/ITA/Output_MPrim_Ita_Subj_2.txt', sep=''), header = F,  skip = 15, dec = ",")
+ss2 <- read.table(paste(localGitDir,'/data/ita/Output_MPrim_Ita_Subj_2.txt', sep=''), header = F,  skip = 15, dec = ",")
 colnames(ss2) <- c("Subject", "Age", "Gender", "Handedness", "Rotation.x","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
-rotB1<- read.table(paste(localGitDir,'/Stimoli/rot_B_persoggetto2.txt', sep=''), header = T, dec = ",")
+rotB1<- read.table(paste(localGitDir,'/stimuli/rot_B_persoggetto2.txt', sep=''), header = T, dec = ",")
 colnames(rotB1) <- c("Trial.ID", "Target.ID", "Lexicality", "Morphtype", "Target", "Prime", "Primetype", "Logfreq.Zipf.t", "Lent", "Lenp", "Logfreq.Zipf.p", "Nt", "Np")
 merge(ss2, rotB1, by = "Target", all.x = T)->ss2
 ss2$Prime.y <- NULL
@@ -72,7 +73,7 @@ summary(ss2)
 ita = NULL
 for (j in 3:finalNumberofParticipants){
   if ((j %% 2) ==0){ #EVEN SUBJ
-    boh <- paste(localGitDir, '/data/raw data/ITA/Output_MPrim_Ita_Subj_', j, ".txt", sep = "")
+    boh <- paste(localGitDir, '/data/ita/Output_MPrim_Ita_Subj_', j, ".txt", sep = "")
     if (file.exists(boh)) {
       pilot_ita <- read.table(boh, header = F, skip = 15,dec = ",")
       colnames(pilot_ita) <- c("Subject", "Age", "Gender", "Handedness", "Rotation","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
@@ -80,7 +81,7 @@ for (j in 3:finalNumberofParticipants){
       merge(pilot_ita, rotB, by = "Target", all.x = T)-> pilot_ita
     } else {next}
   } else { #ODD
-    boh <- paste(localGitDir, '/data/raw data/ITA/Output_MPrim_Ita_Subj_', j, ".txt", sep = "")
+    boh <- paste(localGitDir, '/data/ita/Output_MPrim_Ita_Subj_', j, ".txt", sep = "")
     if (file.exists(boh)) {
     pilot_ita <- read.table(boh, header = F, skip = 15,dec = ",")
     colnames(pilot_ita) <- c("Subject", "Age", "Gender", "Handedness", "Rotation","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
@@ -119,6 +120,10 @@ rm(eng, ita)
 #---------------------------------------------------------------------------------------------------#
 #                       ADD RESULTS OF PROFICIENCY TEST TO THE MASTERFILE                           #
 #---------------------------------------------------------------------------------------------------#
+
+#as per my email, please consolidate all these numbers in a table (outside of R), and then import the table in one step.
+#also, as per my comments in the paper, fix the names of the columns (e.g., phoneMic fluency, rather than phoneTic fluency)
+
 #                 ss1
 masterFile$phoneticFluency[masterFile$Subject==1] <- c(15)
 masterFile$phoneticComprehension[masterFile$Subject==1] <- c(8)
@@ -1763,7 +1768,7 @@ masterFile$overallProf <- apply(masterFile[28:34],1,FUN = sum);
 #---------------------------------------------------------------------------------------------------#
 #                                          OSC                                                      #
 #---------------------------------------------------------------------------------------------------#
-read.table(paste(localGitDir, '/stimoli/OSC.txt', sep=''), header = T)-> db
+read.table(paste(localGitDir, '/stimuli/OSC.txt', sep=''), header = T)-> db
 colnames(db) <- c('Prime.x', 'OSC')
 head(masterFile)
 head(db)
@@ -1791,3 +1796,5 @@ rm(db, localGitDir, finalNumberofParticipants)
 #---------------------------------------------------------------------------------------------------#
 #                                          END                                                      #
 #---------------------------------------------------------------------------------------------------#
+
+#write the master file out of R, as per my mail; and before this, super obsessive check that everything  is perfect in the dataframe (again, as per my email)
