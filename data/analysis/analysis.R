@@ -4,7 +4,7 @@
 
 #---- Diagnostics.Rfunction of Davide Crepaldi (see: http://www.davidecrepaldi.net/wordpress/software-utilities-2/)
 #---------------------------------------------------------------------------------------------------#
-#                                         ITA f.Diagnostics                                         #
+####                                         ITA f.Diagnostics                                   ####
 #---------------------------------------------------------------------------------------------------#
 library(languageR)
 library(lmerTest)
@@ -16,6 +16,7 @@ library(effects)
 library(plyr)
 library(corrplot)
 library(ggpubr)
+localGitDir <- 'C:/Users/eva_v/Documents/GitHub/M2-maskedprimingBilinguals';
 
 
 inv <- function(x) { -1000/x}
@@ -35,13 +36,13 @@ diagnostics.f(rt = rt, acc = acc, sbj.id = sbj.id, target = target, lexicality =
 #ok, end!
 
 #--------------------------------------------------------------------------------------------------------#
-#                                 Results of the diagnostics.R:                                          #
+####                                 Results of the diagnostics.R:                                    ####
 #--------------------------------------------------------------------------------------------------------#
 #Subj. 16 has reported seeing clearly the prime, for this reason will be taken out of the analysis, in addition to the words that scored less than 70% of accuracy. 
 # We filter also Rts from 250 to 1600ms
 subset(target.diagnostics, acc<0.6)-> parolebrutte #.giusto per sapere quali sono
-subset(masterfileIta, masterfileIta$rt>300 & masterfileIta$Subject!=15 & masterfileIta$Subject!=2 & masterfileIta$Subject!=31  & masterfileIta$Subject!=43
-        & masterfileIta$Target!= "guano" & masterfileIta$Target!= "uggia" & masterfileIta$Target!= "vello" & masterfileIta$Lexicality=="WORD") -> dataAccITA
+subset(masterfileIta, masterfileIta$rt>300 & masterfileIta$Subject!=15 & masterfileIta$Subject!=2 & masterfileIta$Subject!=31  & masterfileIta$Subject!=43 & masterfileIta$Target!= "guano" & masterfileIta$Target!= "uggia" & masterfileIta$Target!= "vello" & masterfileIta$Lexicality=="WORD") -> dataAccITA
+
 #Then, we select only right answers
 subset(dataAccITA, dataAccITA$Accuracy==1)-> datartITA
 summary(datartITA)
@@ -54,7 +55,7 @@ round(tapply(datartITA$rt, list(datartITA$Morphtype, datartITA$Primetype), stdEr
 
 
 #---------------------------------------------------------------------------------------------------#
-#                                         ENG f.Diagnostics                                         #
+####                                         ENG f.Diagnostics                                   ####
 #---------------------------------------------------------------------------------------------------#
 subset(masterFile, Language=="eng")-> masterfileEng
 
@@ -98,7 +99,7 @@ round(tapply(datartENG$rt, list(datartENG$Morphtype, datartENG$Primetype), sd), 
 rm(rt, acc, sbj.id, target, lexicality, masterfileIta, masterfileEng);
 
 #---------------------------------------------------------------------------------------------------#
-#                                         d primes analysis                                         #
+####                                         d primes analysis                                   ####
 #---------------------------------------------------------------------------------------------------#
 masterfileEng <- subset(masterFile, masterFile$Language=='eng')
 xtabs( ~ masterfileEng$Resp + masterfileEng$Subject) #look at response given by sbjs
@@ -150,7 +151,7 @@ rm(counter, dprimes, subject, s, sbj.numbers, table, dprime, mean_dprime)
 #                                                    END                                            #
 #---------------------------------------------------------------------------------------------------#
 #---------------------------------------------------------------------------------------------------#
-#                                                    ITA                                            #
+####                                                    ITA                                       ####
 #---------------------------------------------------------------------------------------------------#
 attach(datartITA)
 par(mfrow=c(1,3))
@@ -161,14 +162,12 @@ par(mfrow=c(1,1))
 detach(datartITA)
 
 
-library(lmerTest)
 datartITA$Relatedness <- as.factor(datartITA$Relatedness)
-datartITA$Morphtype <- relevel(datartITA$Morphtype, "OR")
+datartITA$Morphtype <- relevel(datartITA$Morphtype, "OP")
 
 italmer1 <- lmer(-1000/rt ~ TrialCount + Rotation.x + (1|Subject) + (1|Target), data= datartITA, REML = F)
 summary(italmer1)
 #2
-library(rms)
 italmer2 <- lmer(-1000/rt ~ rcs(TrialCount) + (1|Subject) + (1|Target), data= datartITA, REML = F)
 anova(italmer1, italmer2)
 summary(italmer2)
@@ -212,10 +211,10 @@ bb
 ggsave("itaplot.jpg")
 
 #---------------------------------------------------------------------------------------------------#
-#                                                    ENG                                            #
+####                                                    ENG                                         ####
 #---------------------------------------------------------------------------------------------------#
 datartENG$Relatedness <- as.factor(datartENG$Relatedness)
-datartENG$Morphtype <- relevel(datartENG$Morphtype, "OP")
+datartENG$Morphtype <- relevel(datartENG$Morphtype, "OR")
 englmer1 <- lmer(-1000/rt ~ TrialCount + Rotation.x + (1|Subject) + (1|Target), data= datartENG, REML = F)
 summary(englmer1)
 #2
@@ -231,11 +230,12 @@ summary(englmer3)
 englmer4 <- lmer(-1000/rt ~ rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data= datartENG, REML = F)
 anova(englmer3, englmer4)
 #5
-datartENG$Morphtype <- relevel(datartENG$Morphtype, "OR")
+datartENG$Morphtype <- relevel(datartENG$Morphtype, "OP")
 datartENG$Relatedness <- as.factor(datartENG$Relatedness)
 englmer5 <- lmer(-1000/rt ~ Relatedness * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent +(1|Subject) + (1|Target), data= datartENG, REML = F)
 anova(englmer5, englmer4)
 summary(englmer5)
+anova(englmer5)
 #5b
 englmer5b <- lmer(-1000/rt ~ Relatedness * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data= subset(datartENG, abs(scale(resid(englmer5)))<2), REML = F)
 englmer5b <- lmer(-1000/rt ~ Relatedness * Morphtype + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data= subset(datartENG, abs(scale(resid(englmer5)))<2), REML = F)
@@ -267,7 +267,7 @@ gg
 ggsave("engplot.jpg")
 rm(gg, bb, aa, dodge)
 #---------------------------------------------------------------------------------------------------#
-#                                     Cross-experiment interaction                                  #
+####                                     Cross-experiment interaction                             ####
 #   in order to be completely sure that pattern of results in ITA and ENG differ,                   #
 #   we need to have a three-way interaction here btw Relatedness, MorphType and Language            #
 #---------------------------------------------------------------------------------------------------#
@@ -294,7 +294,7 @@ round(1-pf(temp[[4]], temp[[1]], 9609-1-sum(temp[[1]])), digits=3) -> temp$pvalu
 #                                               END                                                 #
 #---------------------------------------------------------------------------------------------------#
 #---------------------------------------------------------------------------------------------------#
-#                                     Language proficiency analysis                                 #
+####                                     Language proficiency analysis                            ####
 #---------------------------------------------------------------------------------------------------#
 #first take a look at variables distributions
 proficiencyData <- datartENG[,c('Target', 'Subject','Age','Gender','Handedness','Rotation.x','phoneticFluency', 'phoneticComprehension','morphComprehension','spelling','readingComprehension','vocabulary','oralComprehension','AoA1', 'AoA2', 'AoA3','AoA4','AoA5','AoA6','AoA7','AoA8','AoA9')];
@@ -449,6 +449,7 @@ anova(proficiencylmer7)
 
 #mixed model with morphtype * overallProf e Relatedness * overallProf + 3way interaction
 proficiencylmer8 <- lmer(-1000/rt ~ Relatedness * Morphtype * scale.overallProf + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG);
+proficiencylmer8 <- lmer(-1000/rt ~ Relatedness * Morphtype * overallProf + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG);
 anova(proficiencylmer0, proficiencylmer8); #ok, overall proficiency works nicely. Let's check how:
 anova(proficiencylmer8); #mainly through interaction with morphtype; but close to significance in interaction with relatedness too. Let see what role outliers play here:
 
@@ -457,7 +458,7 @@ proficiencylmer8b <- lmer(-1000/rt ~ Relatedness * Morphtype * overallProf + Log
 summary(proficiencylmer8b)
 anova(proficiencylmer8b); #wow, huge change! there must be many outliers, and really quite atypical. Which may be ok, it's L2 after all. If this is the story, cutting a little higher, say 2.5SD, should give p values half way btw here and the original model
 
-proficiencylmer8c <- lmer(-1000/rt ~ Relatedness * Morphtype * scale.overallProf + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = subset(datartENG, abs(scale(resid(proficiencylmer8)))<2.5));
+proficiencylmer8c <- lmer(-1000/rt ~ Relatedness * Morphtype * overallProf + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = subset(datartENG, abs(scale(resid(proficiencylmer8)))<2.5));
 anova(proficiencylmer8c); #yeah, exactly as expected. So, I surely trust prof-by-morphtype, which is very reliable; and probably also prof-by-relatedness, which resist some outliers. The three way, I'm not sure, it really seems to be destroyed by just a few outliers. So, let's check out the nature of the effects:
 
 #prof-by-morphtype
@@ -584,18 +585,99 @@ rm(firstQ, lmerFirstq1, lmerFirstq, secondQ, lmersecondQ, lmersecondQ1, thirdQ, 
 #                                               END                                                 #
 #---------------------------------------------------------------------------------------------------#
 #---------------------------------------------------------------------------------------------------#
-#                                               AoA                                                 #
+####                                               AoA                                            ####
 #---------------------------------------------------------------------------------------------------#
 AoA <- NULL
 for(i in unique(masterFile$Subject)){
   AoA[i] <- unique(masterFile$AoA1[masterFile$Subject==i])
 }
-jpeg(filename = "C:/Users/Eva Viviani/Documents/AoA.jpg", res=300, height=1654, width=2229)
+jpeg(filename = "C:/Users/eva_v/OneDrive/Documenti/SISSA - Experiments/Masked Priming/bilingualism/paper/AoA.jpg", res=300, height=1654, width=2229)
 hist(AoA, main = 'Age of acquisition', xlab = 'years', 
      ylab = 'Subjects', cex.lab=1.5, cex.axis=2, cex.sub=2)
 dev.off()
 shapiro.test(AoA) #normal distribution
 rm(AoA, i)
+
+AoA <- masterFile[,35:43]
+AoA1 <- NULL
+for(i in unique(masterFile$Subject)){
+  AoA1[i] <- unique(AoA$AoA1[masterFile$Subject==i])
+}
+hist(AoA1, main = 'Age of exposition to L2', xlab = 'years', 
+     ylab = 'Subjects', cex.lab=1.5, cex.axis=2, cex.sub=2)
+
+AoA2 <- NULL
+for(i in unique(masterFile$Subject)){
+  AoA2[i] <- unique(AoA$AoA2[masterFile$Subject==i])
+}
+tab2 <- table(AoA2)
+hist(AoA2, main = 'Daily usage of L2', xlab = '1= never 5= everyday', 
+     ylab = 'Subjects', cex.lab=1.5, cex.axis=2, cex.sub=2)
+
+barplot(tab2, main = 'Daily usage of L2', ylab = 'Subjects', 
+        cex.lab=1.5, cex.axis=2, cex.sub=2, cex.names=1.5, xlab='1= never 5= everyday')
+
+
+AoA3 <- NULL
+for(i in unique(masterFile$Subject)){
+  AoA3[i] <- unique(AoA$AoA3[masterFile$Subject==i])
+}
+tab <- table(AoA3)
+barplot(tab, main = 'Context of exposition to L2', ylab = 'Subjects', 
+        cex.lab=1.5, cex.axis=2, cex.sub=2, names.arg=c("home", "school"), cex.names=1.5)
+
+AoA5 <- NULL
+for(i in unique(masterFile$Subject)){
+  AoA5[i] <- unique(masterFile$AoA5[masterFile$Subject==i])
+}
+tab5 <- table(AoA5)
+barplot(tab5, main = 'Exposition to multiple languages', ylab = 'Subjects', 
+        cex.lab=1.5, cex.axis=2, cex.sub=2, names.arg=c("yes", "no"), cex.names=1.5)
+
+AoA7 <- NULL
+for(i in unique(masterFile$Subject)){
+  AoA7[i] <- unique(masterFile$AoA7[masterFile$Subject==i])
+}
+tab7 <- table(AoA7)
+barplot(tab7, main = 'Subjective rating of proficiency in L2', ylab = 'Subjects', 
+        cex.lab=1.5, cex.axis=2, cex.sub=2, names.arg=c("1", "2", "3", "4", "5"), cex.names=1.5, xlab = '1=basic 5=advanced')
+
+AoA8 <- NULL
+for(i in unique(masterFile$Subject)){
+  AoA8[i] <- unique(masterFile$AoA8[masterFile$Subject==i])
+}
+tab8 <- table(AoA8)
+barplot(tab8, main = 'Third language', ylab = 'Subjects', 
+        cex.lab=1.5, cex.axis=2, cex.sub=2, names.arg=c("English", "Others", "none"), cex.names=1.5, xlab = '')
+
+
+AoA9 <- NULL
+for(i in unique(masterFile$Subject)){
+  AoA9[i] <- unique(masterFile$AoA9[masterFile$Subject==i])
+}
+tab9 <- table(AoA9)
+barplot(tab9[2:6], main = 'Subjective rating of proficiency in L3', ylab = 'Subjects', 
+        cex.lab=1.5, cex.axis=2, cex.sub=2, names.arg=c("1", "2", "3", "4", "5"), cex.names=1.5, xlab = '1=basic 5=advanced')
+
+jpeg(filename = "C:/Users/eva_v/OneDrive/Documenti/SISSA - Experiments/Masked Priming/bilingualism/paper/AoA.jpg", res=300, height=1654, width=3529)
+par(mfrow=c(2,4))
+hist(AoA1, main = 'Age of exposition to L2', xlab = 'years', 
+     ylab = 'Subjects', cex.lab=1.5, cex.axis=2, cex.sub=2)
+barplot(tab2, main = 'Daily usage of L2', ylab = 'Subjects', 
+        cex.lab=1.5, cex.axis=2, cex.sub=2, cex.names=1.5, xlab='1= never 5= everyday')
+barplot(tab, main = 'Context of exposition to L2', ylab = 'Subjects', 
+        cex.lab=1.5, cex.axis=2, cex.sub=2, names.arg=c("home", "school"), cex.names=1.5)
+barplot(tab7, main = 'Subjective rating of proficiency in L2', ylab = 'Subjects', 
+        cex.lab=1.5, cex.axis=2, cex.sub=2, names.arg=c("1", "2", "3", "4", "5"), cex.names=1.5, xlab = '1=basic 5=advanced')
+barplot(tab5, main = 'Exposition to multiple languages', ylab = 'Subjects', 
+        cex.lab=1.5, cex.axis=2, cex.sub=2, names.arg=c("yes", "no"), cex.names=1.5)
+barplot(tab8, main = 'Third language', ylab = 'Subjects', 
+        cex.lab=1.5, cex.axis=2, cex.sub=2, names.arg=c("English", "Others", "none"), cex.names=1.5, xlab = '')
+
+barplot(tab9[2:6], main = 'Subjective rating of proficiency in L3', ylab = 'Subjects', 
+        cex.lab=1.5, cex.axis=2, cex.sub=2, names.arg=c("1", "2", "3", "4", "5"), cex.names=1.5, xlab = '1=basic 5=advanced')
+par(mfrow=c(1,1))
+dev.off()
 
 #AoA1 "A che et? hai iniziato ad essere esposto alla lingua inglese?"
 proficiencylmer9 <- lmer(-1000/rt ~ Relatedness * AoA1 * Morphtype + rcs(TrialCount) + Logfreq.Zipf.t + Lent + (1|Subject) + (1|Target), data = datartENG)
@@ -736,7 +818,7 @@ vis.gam2 <- eval(parse(text=newDef))
 #plot con rt normali
 gam1 <- gam(rt ~ s(OSC_Target, by = overallProf) + s(TrialCount) + s(Logfreq.Zipf.t) + s(Subject, bs = 're') + s(Target, bs = 're'), data = datartENG)
 summary(gam1);
-vis.gam2(gam1, view=c("OSC_Target","overallProf"), type="response", plot.type="contour", color="gray", main="", too.far=.1, xlab='OSC', ylab='Proficiency scores');
+mod.vis.gam(gam1, view=c("OSC_Target","overallProf"), type="response", plot.type="contour", color="gray", main="", too.far=.1, xlab='OSC', ylab='Proficiency scores');
 
 #plot con -1000/rt
 gam2 <- gam(-1000/rt ~ s(OSC_Target, by = overallProf) + s(TrialCount) + s(Logfreq.Zipf.t) + s(Subject, bs = 're') + s(Target, bs = 're'), data = datartENG);
