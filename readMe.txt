@@ -1,15 +1,16 @@
-This experiment is a masked morphological priming on Italian-English bilinguals. 
-Data were collected in November 2016 and September 2017 and consists of 81 participants.
+This experiment is a masked morphological priming on L1-Italian, L2-English bilinguals. 
+Data were collected between November 2016 and September 2017, and consists of 81 participants.
 Each of them completed in addition to the masked priming: 
-(1) a Proficiency test and 
-(2) a Survey about the general linguistic knowledge (AoA survey)
-both available on basecamp.
--------------------------------------------------------------------------------------------------------------------
+(1) a Proficiency test; 
+(2) a Survey about the general linguistic knowledge of L2 (AoA survey).
+
 This repo contains: 
-In data/raw data: all the ppts ".txt" files devided in ITA and ENG, as they came out from python.
-In data/analysis: pre-processing.R and analysis files
-In stimoli: rotations complete of all parameters, useful to pre-process data.
-To directly run the analysis, run the preProcessing.R file and then the analysis.R file. 
+In /raw data, all the participants' data files, separately for ITA and ENG, as they came out from the acquisition procedure.
+In /analysis: the pre-processing and the analysis scripts.
+In /stimuli: the stimuli used for the masked priming experiment, complete with all covariates (e.g., word frequency, word length).
 
+To replicate the analysis reported in the paper, you simply have to go through analysis.R.
 
-Eva    
+Eva Viviani and Davide Crepaldi
+SISSA, Trieste, Italy
+September 2018    

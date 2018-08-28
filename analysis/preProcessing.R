@@ -1,119 +1,124 @@
-# ---- Preprocessing of bilingual masked priming experiment
-# ---- The final output is called "masterFile" in which there are all the raw data of the experiment
-#----- 10/08/2018
+#-----------------------------------------------------------------------------------------------#
+# Data preprocessing                                                                            #
+# Morphological masked priming experiment on L1-ITA, L2-ENG bilingual speakers/readers          #
+# Paper titled 'L2 form priming turns into morphological facilitation with growing proficiency' #
+# Submitted to JML, September 2018                                                              #  
+# Eva Viviani and Davide Crepaldi, SISSA                                                        #
+#-----------------------------------------------------------------------------------------------#
+
+#This script merges the individual data files from each individual participant; fix variables names and nature, when necessary; import and merge stimuli features; and import and merge proficiency and AoA data for each participant. It generates a dataset ready for the analysis, which is called 'preprocessedData.txt'.
+
 #Clean the workspace
 rm(list = ls());
 
-#Set your own working directory. This should be (and is assumed to be in the rest of the code) the highest point in the gitHub folder:
-localGitDir <- 'C:/Users/eva_v/Documents/GitHub/M2-maskedprimingBilinguals';
-#localGitDir <- '~/Google Drive File Stream/My Drive/research/misc/m2-maskedMorphPrimingBilinguals/git/M2-maskedprimingBilinguals/';
+#Set your own working directory. This should be (and is assumed to be in the rest of the code) the highest point in your local gitHub folder:
+#localGitDir <- 'C:/Users/eva_v/Documents/GitHub/M2-maskedprimingBilinguals';
+localGitDir <- '~/Google Drive File Stream/My Drive/research/misc/m2-maskedMorphPrimingBilinguals/git/M2-maskedprimingBilinguals/';
 setwd(localGitDir);
 
-#-----------------------------------------------------------------------------------------------------#
-####                               CONCATENATE ALL THE SBJ ENG                                     ####
-#-----------------------------------------------------------------------------------------------------#
-rotations <- read.table(paste(localGitDir,'/stimuli/stimuli.txt', sep=''), header = T, dec = ',');
-rotations$OSCp <- as.numeric(sub(",",".", rotations$OSCp, fixed = T));
-rotations$OSCt <- as.numeric(sub(",",".", rotations$OSCt, fixed = T));
-
+#------------------------------------------------------------------#
+#### concatenate data from individual participants, English set ####
+#------------------------------------------------------------------#
 finalNumberofParticipants <- 84;
 
 eng = NULL;
-for (j in 1:finalNumberofParticipants){
-  if ((j %% 2) ==0 ){ #EVEN SUBJ
-    boh <- paste(localGitDir, '/data/eng/Output_MPrim_Eng_Subj_', j, ".txt", sep = "")
-    if (file.exists(boh)) {
-      pilot_eng <- read.table(boh, header = F, skip = 15,dec = ",")
-      colnames(pilot_eng) <- c("Subject", "Age", "Gender", "Handedness", "Rotation","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
-      rot_B_eng <- subset(rotations, rotations$Rotation=='B' & rotations$Language=='eng')
-      merge(pilot_eng, rot_B_eng, by = "Target", all.x = T)-> pilot_eng
-    } else {next}
-  } else { #ODD
-    boh <- paste(localGitDir, '/data/eng/Output_MPrim_Eng_Subj_', j, ".txt", sep = "")
-    if (file.exists(boh)) {
-      pilot_eng <- read.table(boh, header = F, skip = 15,dec = ",")
-      colnames(pilot_eng) <- c("Subject", "Age", "Gender", "Handedness", "Rotation","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
-      rot_A_eng <- subset(rotations, rotations$Rotation=='A' & rotations$Language=='eng')
-      merge(pilot_eng, rot_A_eng, by = "Target", all.x = T)-> pilot_eng
-  } else {next}
-  }
+for (j in 1:finalNumberofParticipants)
+  {
+  fileName <- paste(localGitDir, '/rawData/eng/Output_MPrim_Eng_Subj_', j, ".txt", sep = "");
+  if (file.exists(fileName)) 
+      {
+      temp <- read.table(fileName, header = F, skip = 15, dec = ","); #the parameter dec should disappear, there's no decimals in the output files
+      eng <- rbind(eng, temp);
+      }
+      else 
+      {next};
+  print(j);
+  };
 
-  pilot_eng$Prime.y <- NULL
-  pilot_eng$rt <- as.numeric(pilot_eng$rt)
-  pilot_eng$Rotation.y <- NULL
-  pilot_eng$Relatedness <- NULL
-  
-  eng <- rbind(eng,pilot_eng)
-};
+summary(eng);
+rm(temp, finalNumberofParticipants, fileName, j);
 
-rm(rot_A_eng, rot_B_eng, pilot_eng, boh, j);
-#----------------------------------------------------------------------------------------------------#
-####                               CONCATENATE ALL THE SBJ ITA                                    ####
-#----------------------------------------------------------------------------------------------------#
-#We substituted 'boccia' with 'gomito' in rot B after the sbj 2. 
-#Therefore there are 1201 targets in rotations, instead of 1200.
+#------------------------------------------------------------------#
+#### concatenate data from individual participants, Italian set ####
+#------------------------------------------------------------------#
+finalNumberofParticipants <- 84;
 
 ita = NULL;
-for (j in 1:finalNumberofParticipants){
-  if ((j %% 2) ==0){ #EVEN SUBJ
-    boh <- paste(localGitDir, '/data/ita/Output_MPrim_Ita_Subj_', j, ".txt", sep = "")
-    if (file.exists(boh)) {
-      pilot_ita <- read.table(boh, header = F, skip = 15,dec = ",")
-      colnames(pilot_ita) <- c("Subject", "Age", "Gender", "Handedness", "Rotation","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
-      rotB<- subset(rotations, rotations$Rotation=='B' & rotations$Language=='ita')
-      merge(pilot_ita, rotB, by = "Target", all.x = T)-> pilot_ita
-    } else {next}
-  } else { #ODD
-    boh <- paste(localGitDir, '/data/ita/Output_MPrim_Ita_Subj_', j, ".txt", sep = "")
-    if (file.exists(boh)) {
-    pilot_ita <- read.table(boh, header = F, skip = 15,dec = ",")
-    colnames(pilot_ita) <- c("Subject", "Age", "Gender", "Handedness", "Rotation","Data", "OraStart", "TrialCount", "TrialType", "Prime", "Target", "Relatedness", "rt", "Resp")
-    rotA<- subset(rotations, rotations$Rotation=='A' & rotations$Language=='ita')
-    merge(pilot_ita, rotA, by = "Target", all.x = T)-> pilot_ita
-   } else {next}
+for (j in 1:finalNumberofParticipants)
+{
+  fileName <- paste(localGitDir, '/rawData/ita/Output_MPrim_Ita_Subj_', j, ".txt", sep = "");
+  if (file.exists(fileName)) 
+  {
+    temp <- read.table(fileName, header = F, skip = 15, dec = ",");
+    ita <- rbind(ita, temp);
   }
-  pilot_ita$Prime.y <- NULL
-  pilot_ita$rt <- as.numeric(pilot_ita$rt)
-  pilot_ita$Rotation.y <- NULL
-  pilot_ita$Relatedness <- NULL
-  
-  ita <- rbind(ita,pilot_ita)
+  else 
+  {next};
+  print(j);
 };
 
-rm(rotA, rotations, pilot_ita, rotB, boh, j);
-#----------------------------------------------------------------------------------------------------#
-####                               MERGE ALL THE SBJ INTO A MASTERFILE                            ####
-#----------------------------------------------------------------------------------------------------#
-rbind(ita,eng)-> masterFile;
-masterFile$Logfreq.Zipf.p <- as.numeric(sub(",",".", masterFile$Logfreq.Zipf.p, fixed = T));
-masterFile$Logfreq.Zipf.t <- as.numeric(sub(",",".", masterFile$Logfreq.Zipf.t, fixed = T));
-#                                    Accuracy column creation                                       # 
-masterFile$Accuracy<- 1; 
-masterFile$Accuracy[masterFile$Lexicality=="WORD" & masterFile$Resp==1] <- 0 ;
-masterFile$Accuracy[masterFile$Lexicality=="NONWORD" & masterFile$Resp==2] <- 0; 
-masterFile$Accuracy[ masterFile$Resp==-1] <- 0; 
+summary(ita);
+rm(temp, finalNumberofParticipants, fileName, j);
 
+#--------------------------------------------------------------------#
+#### join all data in the masterfile, and fix variables as needed ####
+#--------------------------------------------------------------------#
+rbind(ita,eng) -> masterFile;
+rm(ita,eng);
 
-rm(eng, ita);
+#rename variables
+colnames(masterFile) <- c("subject", "age", "gender", "handedness", "rotation","data", "oraStart", "trialCount", "trialType", "prime", "target", "relatedness", "rt", "resp");
+#get rid of variables we don't need
+masterFile <- masterFile[,c('subject', 'age', 'gender', 'handedness', 'trialCount', 'prime', 'target', 'rt', 'resp')];
 
-#---------------------------------------------------------------------------------------------------------#
-####                       ADD RESULTS OF PROFICIENCY TEST AND AoA TO THE MASTERFILE                   ####
-#---------------------------------------------------------------------------------------------------------#
-read.table(paste(localGitDir, '/stimuli/proficiency&AoA.txt', sep = ''), header = T)-> profAoA
-merge(masterFile, profAoA, by = 'Subject')-> masterFile;
+#-----------------------------------------#
+#### import feature stimuli, and merge ####
+#-----------------------------------------#
+stimFeatures <- read.table(paste(localGitDir, '/stimuli/stimuli.txt', sep=''), header=T, sep='\t', dec='.'); 
+summary(stimFeatures);
+#we won't need these:
+stimFeatures$trialId <- NULL;
+stimFeatures$targetId <- NULL;
 
-colnames(masterFile) <- c('subject', 'target', 'age', 'gender', 'handedness', 'rotation',
-                          'data', 'oraStart', 'trialCount', 'trialType', 'prime', 'rt',
-                          'resp', 'trialId', 'targetId', 'lexicality', 'morphType', 'relatedness',
-                          'logfreqzipfT', 'lenT', 'lenP', 'logfreqzipfP', 'nT', 'nP',
-                          'language', 'oscP', 'oscT', 'accuracy', 'phonemicFluency', 'phonemicComprehension',
-                          'morphComprehension', 'spelling', 'readingComprehension', 'vocabulary', 'oralComprehension',
-                          'aoa1', 'aoa2', 'aoa3', 'aoa4', 'aoa5', 'aoa6');
+stimFeatures$blender <- paste(stimFeatures$prime, stimFeatures$target, sep='');
+masterFile$blender <- paste(masterFile$prime, masterFile$target, sep='');
+masterFile <- merge(masterFile, stimFeatures, by='blender');
+#we lose one datapoint cause sbj2 had a wrong target in the ITA set ('boccia' instead of 'gomito')
 
-#---------------------------------------------------------------------------------------------------------#
-####                              WRITE THE OUTPUT 'MASTERFILE.TXT'                                    ####
-#---------------------------------------------------------------------------------------------------------#
-write.table(masterFile, paste(localGitDir, '/stimuli/masterFile.txt', sep = ''), row.names = F, col.names = T, quote = F);
-rm(finalNumberofParticipants, localGitDir, profAoA);
+#let's doublecheck everything's fine
+summary(masterFile);
+summary(as.character(masterFile$target.x)==as.character(masterFile$target.y));
+summary(as.character(masterFile$prime.x)==as.character(masterFile$prime.y)); #all fine
+
+masterFile$blender <- NULL;
+masterFile$prime.x <- NULL;
+masterFile$target.x <- NULL;
+names(masterFile)[10:11] <- c('target','prime');
+
+#------------------------#
+#### compute accuracy ####
+#------------------------#
+masterFile$accuracy <- 1; 
+masterFile$accuracy[masterFile$lexicality=="word" & masterFile$resp==1] <- 0 ;
+masterFile$accuracy[masterFile$Lexicality=="nonword" & masterFile$resp==2] <- 0; 
+masterFile$accuracy[masterFile$resp==-1] <- 0; 
+
+summary(masterFile);
+
+#------------------------------------#
+#### add proficiency and AoA data ####
+#------------------------------------#
+sbjFeatures <- read.table(paste(localGitDir, '/rawData/proficiencyAoA.txt', sep = ''), header = T);
+head(sbjFeatures);
+summary(sbjFeatures);
+
+masterFile <- merge(masterFile, sbjFeatures, by = 'subject');
+head(masterFile);
+summary(masterFile);
+
+#--------------------------------------------#
+#### write the preprocessed data out of R ####
+#--------------------------------------------#
+write.table(masterFile, paste(localGitDir, '/preprocessedData.txt', sep=''), row.names=F, col.names=T, sep='\t', dec='.');
 
 
