@@ -12,8 +12,8 @@
 rm(list = ls());
 
 #Set your own working directory. This should be (and is assumed to be in the rest of the code) the highest point in your local gitHub folder:
-#localGitDir <- 'C:/Users/eva_v/Documents/GitHub/M2-maskedprimingBilinguals';
-localGitDir <- '~/Google Drive File Stream/My Drive/research/misc/m2-maskedMorphPrimingBilinguals/git/M2-maskedprimingBilinguals/';
+localGitDir <- 'C:/Users/eva_v/Documents/GitHub/M2-maskedprimingBilinguals';
+#localGitDir <- '~/Google Drive File Stream/My Drive/research/misc/m2-maskedMorphPrimingBilinguals/git/M2-maskedprimingBilinguals/';
 setwd(localGitDir);
 
 #------------------------------------------------------------------#
@@ -27,7 +27,7 @@ for (j in 1:finalNumberofParticipants)
   fileName <- paste(localGitDir, '/rawData/eng/Output_MPrim_Eng_Subj_', j, ".txt", sep = "");
   if (file.exists(fileName)) 
       {
-      temp <- read.table(fileName, header = F, skip = 15, dec = ","); #the parameter dec should disappear, there's no decimals in the output files
+      temp <- read.table(fileName, header = F, skip = 15); #the parameter dec should disappear, there's no decimals in the output files
       eng <- rbind(eng, temp);
       }
       else 
@@ -49,7 +49,7 @@ for (j in 1:finalNumberofParticipants)
   fileName <- paste(localGitDir, '/rawData/ita/Output_MPrim_Ita_Subj_', j, ".txt", sep = "");
   if (file.exists(fileName)) 
   {
-    temp <- read.table(fileName, header = F, skip = 15, dec = ",");
+    temp <- read.table(fileName, header = F, skip = 15);
     ita <- rbind(ita, temp);
   }
   else 
@@ -80,8 +80,8 @@ summary(stimFeatures);
 stimFeatures$trialId <- NULL;
 stimFeatures$targetId <- NULL;
 
-stimFeatures$blender <- paste(stimFeatures$prime, stimFeatures$target, sep='');
-masterFile$blender <- paste(masterFile$prime, masterFile$target, sep='');
+stimFeatures$blender <- as.factor(paste(stimFeatures$prime, stimFeatures$target, sep=''));
+masterFile$blender <- as.factor(paste(masterFile$prime, masterFile$target, sep=''));
 masterFile <- merge(masterFile, stimFeatures, by='blender');
 #we lose one datapoint cause sbj2 had a wrong target in the ITA set ('boccia' instead of 'gomito')
 
@@ -121,4 +121,4 @@ summary(masterFile);
 #--------------------------------------------#
 write.table(masterFile, paste(localGitDir, '/preprocessedData.txt', sep=''), row.names=F, col.names=T, sep='\t', dec='.');
 
-
+rm(sbjFeatures, stimFeatures, localGitDir);

@@ -1,4 +1,4 @@
-subject phonemicFluency phonemicComprehension morphComprehension spelling readingComprehension vocabulary oralComprehension AoA1 AoA2 AoA3 AoA4 AoA5 AoA6
+subject phonemicFluency phonemicComprehension morphComprehension spelling readingComprehension vocabulary oralComprehension aoa1 aoa2 aoa3 aoa4 aoa5 aoa6
 1 15 8 10 10 4 11 5 6 1 school 2 3 yes
 2 11 1 8 1 1 8 2 3 1 school 1 1 yes
 3 32 7 10 14 6 19 6 4 2 home 2 4 yes
