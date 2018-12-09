@@ -348,7 +348,6 @@ dev.off();
 
 detach(pptFeatures);
 
-
 #-----------------------------#
 #### proficiency modelling ####
 #-----------------------------#
@@ -356,67 +355,83 @@ detach(pptFeatures);
 dataEng <- merge(dataEng, pptFeatures[,c('subject','overallProf')], by='subject');
 
 #phonemicFluency
-proficiencylmer0 <- lmer(-1000/rt ~ relatedness * morphType + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
-proficiencylmer1 <- lmer(-1000/rt ~ relatedness * morphType * phonemicFluency + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
+proficiencylmer0 <- lmer(-1000/rt ~ relatedness * morphType + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
+proficiencylmer1 <- lmer(-1000/rt ~ relatedness * morphType * phonemicFluency + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
 anova(proficiencylmer0, proficiencylmer1);
 anova(proficiencylmer1);
 
 #check the effect of outliers
-proficiencylmer1b <- lmer(-1000/rt ~ relatedness * morphType * phonemicFluency + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer1)))<2), REML=F);
+proficiencylmer1b <- lmer(-1000/rt ~ relatedness * morphType * phonemicFluency + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer1)))<2), REML=F);
 anova(proficiencylmer1b); #wow, huge change! There must be many outliers, and really quite atypical. Which may be ok, it's L2 after all. Let see if the pattern holds with the other indexes, and then we'll take a closer look.
 
+pippo <- data.frame(effect('relatedness:morphType:phonemicFluency', proficiencylmer1b, se=list(level=.95), xlevels=4));
+pippo[,c('fit','lower','upper')] <- inv(pippo[,c('fit','lower','upper')]);
+ggplot(data = pippo, aes(x=relatedness, y=fit)) +
+  #geom_line() +
+  geom_point() +
+  geom_errorbar(aes(ymin=lower, ymax=upper), width=.2) +
+  facet_grid(morphType ~ phonemicFluency)
+
 #phonemicComprehension
-proficiencylmer2 <- lmer(-1000/rt ~ relatedness *  morphType * phonemicComprehension + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
+proficiencylmer2 <- lmer(-1000/rt ~ relatedness *  morphType * phonemicComprehension + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
 anova(proficiencylmer0, proficiencylmer2);
 anova(proficiencylmer2);
 
 #check the effect of outliers
-proficiencylmer2b <- lmer(-1000/rt ~ relatedness *  morphType * phonemicComprehension + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer2)))<2), REML=F);
+proficiencylmer2b <- lmer(-1000/rt ~ relatedness *  morphType * phonemicComprehension + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer2)))<2), REML=F);
 anova(proficiencylmer2b);
 
 #morphComprehension
-proficiencylmer3 <- lmer(-1000/rt ~ relatedness *  morphType * morphComprehension + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
-anova(proficiencylmer0,proficiencylmer3) ;
+proficiencylmer3 <- lmer(-1000/rt ~ relatedness *  morphType * morphComprehension + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
+anova(proficiencylmer0,proficiencylmer3);
 anova(proficiencylmer3);
 
 #check the effect of outliers
-proficiencylmer3b <- lmer(-1000/rt ~ relatedness *  morphType * morphComprehension + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer3)))<2), REML=F);
+proficiencylmer3b <- lmer(-1000/rt ~ relatedness *  morphType * morphComprehension + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer3)))<2), REML=F);
 anova(proficiencylmer3b);
 
+pippo <- data.frame(effect('relatedness:morphType:morphComprehension', proficiencylmer3b, se=list(level=.95), xlevels=4));
+pippo[,c('fit','lower','upper')] <- inv(pippo[,c('fit','lower','upper')]);
+ggplot(data = pippo, aes(x=relatedness, y=fit)) +
+  #geom_line() +
+  geom_point() +
+  geom_errorbar(aes(ymin=lower, ymax=upper), width=.2) +
+  facet_grid(morphType ~ morphComprehension)
+
 #spelling
-proficiencylmer4 <- lmer(-1000/rt ~ relatedness * morphType * spelling + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
-anova(proficiencylmer0, proficiencylmer4) ;
+proficiencylmer4 <- lmer(-1000/rt ~ relatedness * morphType * spelling + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
+anova(proficiencylmer0, proficiencylmer4);
 anova(proficiencylmer4);
 
 #check the effect of outliers
-proficiencylmer4b <- lmer(-1000/rt ~ relatedness * morphType * spelling + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer4)))<2), REML=F);
+proficiencylmer4b <- lmer(-1000/rt ~ relatedness * morphType * spelling + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer4)))<2), REML=F);
 anova(proficiencylmer4b);
 
 #readingComprehension
-proficiencylmer5 <- lmer(-1000/rt ~ relatedness * morphType * readingComprehension + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
+proficiencylmer5 <- lmer(-1000/rt ~ relatedness * morphType * readingComprehension + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
 anova(proficiencylmer0, proficiencylmer5); 
 anova(proficiencylmer5);
 
 #check the effect of outliers
-proficiencylmer5b <- lmer(-1000/rt ~ relatedness * morphType * readingComprehension + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer5)))<2), REML=F);
+proficiencylmer5b <- lmer(-1000/rt ~ relatedness * morphType * readingComprehension + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer5)))<2), REML=F);
 anova(proficiencylmer5b);
 
 #vocabulary
-proficiencylmer6 <- lmer(-1000/rt ~ relatedness * morphType * vocabulary + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
+proficiencylmer6 <- lmer(-1000/rt ~ relatedness * morphType * vocabulary + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
 anova(proficiencylmer0,proficiencylmer6)
 anova(proficiencylmer6);
 
 #check the effect of outliers
-proficiencylmer6b <- lmer(-1000/rt ~ relatedness * morphType * vocabulary + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer6)))<2), REML=F);
+proficiencylmer6b <- lmer(-1000/rt ~ relatedness * morphType * vocabulary + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer6)))<2), REML=F);
 anova(proficiencylmer6b);
 
 #oralComprehension
-proficiencylmer7 <- lmer(-1000/rt ~ relatedness * morphType * oralComprehension + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
+proficiencylmer7 <- lmer(-1000/rt ~ relatedness * morphType * oralComprehension + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
 anova(proficiencylmer0,proficiencylmer7) ;
 anova(proficiencylmer7);
 
 #check the effect of outliers
-proficiencylmer7b <- lmer(-1000/rt ~ relatedness * morphType * oralComprehension + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer7)))<2), REML=F);
+proficiencylmer7b <- lmer(-1000/rt ~ relatedness * morphType * oralComprehension + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer7)))<2), REML=F);
 anova(proficiencylmer7b);
 
 #overall proficiency
@@ -428,8 +443,7 @@ anova(proficiencylmer8);
 
 #check the effect of outliers
 proficiencylmer8b <- lmer(-1000/rt ~ relatedness * morphType * overallProf  + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer8)))<2), REML = F);
-anova(proficiencylmer8b); #huge change here too. Let's take a closer look:
-
+anova(proficiencylmer8b); #huge change here too.
 
 #it's about many outliers?
 summary(italmer3a)[[3]];
@@ -462,8 +476,8 @@ dev.off()
 #### new plot of proficiency - check it out####
 library(effects);
 inv <- function(x) {-1000/x};
-df <- effect("relatedness:morphType:overallProf",proficiencylmer8b) #effect extract the data from the model
-df <- as.data.frame(df)
+df <- effect("relatedness:morphType:overallProf", proficiencylmer8b); #effect extract the data from the model
+df <- as.data.frame(df);
 df$fit <- inv(df$fit) #inversion of the rt
 df$lower <- inv(df$lower)
 df$upper <- inv(df$upper)
