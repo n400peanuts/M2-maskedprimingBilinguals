@@ -12,8 +12,8 @@
 rm(list = ls());
 
 #set your local working directory. This should be (and is assumed to be in the rest of the code) the highest point in your local gitHub folder:
-#localGitDir <- 'C:/Users/eva_v/Documents/GitHub/M2-maskedprimingBilinguals';
-localGitDir <- '~/Google Drive File Stream/My Drive/research/misc/m2-maskedMorphPrimingBilinguals/git/M2-maskedprimingBilinguals/';
+localGitDir <- 'C:/Users/eva_v/Documents/GitHub/M2-maskedprimingBilinguals';
+#localGitDir <- '~/Google Drive File Stream/My Drive/research/misc/m2-maskedMorphPrimingBilinguals/git/M2-maskedprimingBilinguals/';
 setwd(localGitDir);
 
 # This script works on the outcome of preProcessing.R, which you can upload here:
@@ -300,7 +300,7 @@ sort( round(cor(pptFeatures[,c(6:12)], use='pairwise.complete.obs'), digits=2) )
 #compute overall proficiency by summing by-sbj each individual score, standardized 
 #here we standardize for each subtest and then we take the mean out of it. This procedure guarantees the same weight for every subtest.
 pptFeatures$overallProf <- apply(scale(pptFeatures[,6:12]), 1, FUN=mean); 
-
+pptFeatures$overallProf2 <- apply(scale(pptFeatures[,c(6,8,9)]), 1, FUN=mean);
 attach(pptFeatures);
 
 #check score distributions
@@ -353,6 +353,10 @@ detach(pptFeatures);
 #-----------------------------#
 #we put overallProf in the main dataset
 dataEng <- merge(dataEng, pptFeatures[,c('subject','overallProf')], by='subject');
+dataEng <- merge(dataEng, pptFeatures[,c('subject','overallProf2')], by='subject');
+round(cor(pptFeatures[,c(19:20)], use='pairwise.complete.obs'), digits=2);
+
+dataEng$morphType <- relevel(dataEng$morphType, "or");
 
 #phonemicFluency
 proficiencylmer0 <- lmer(-1000/rt ~ relatedness * morphType + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
@@ -363,6 +367,7 @@ anova(proficiencylmer1);
 #check the effect of outliers
 proficiencylmer1b <- lmer(-1000/rt ~ relatedness * morphType * phonemicFluency + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer1)))<2), REML=F);
 anova(proficiencylmer1b); #wow, huge change! There must be many outliers, and really quite atypical. Which may be ok, it's L2 after all. Let see if the pattern holds with the other indexes, and then we'll take a closer look.
+summary(proficiencylmer1b);
 
 pippo <- data.frame(effect('relatedness:morphType:phonemicFluency', proficiencylmer1b, se=list(level=.95), xlevels=4));
 pippo[,c('fit','lower','upper')] <- inv(pippo[,c('fit','lower','upper')]);
@@ -389,8 +394,9 @@ anova(proficiencylmer3);
 #check the effect of outliers
 proficiencylmer3b <- lmer(-1000/rt ~ relatedness *  morphType * morphComprehension + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer3)))<2), REML=F);
 anova(proficiencylmer3b);
+summary(proficiencylmer3b);
 
-pippo <- data.frame(effect('relatedness:morphType:morphComprehension', proficiencylmer3b, se=list(level=.95), xlevels=4));
+pippo <- data.frame(effect('relatedness:morphType:morphComprehension', proficiencylmer3b, se=list(level=.95), xlevels=3));
 pippo[,c('fit','lower','upper')] <- inv(pippo[,c('fit','lower','upper')]);
 ggplot(data = pippo, aes(x=relatedness, y=fit)) +
   #geom_line() +
@@ -406,6 +412,15 @@ anova(proficiencylmer4);
 #check the effect of outliers
 proficiencylmer4b <- lmer(-1000/rt ~ relatedness * morphType * spelling + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer4)))<2), REML=F);
 anova(proficiencylmer4b);
+summary(proficiencylmer4b);
+
+pippo <- data.frame(effect('relatedness:morphType:spelling', proficiencylmer4b, se=list(level=.95), xlevels=list(spelling=quantile(dataEng$spelling, probs = c(.20,.50,.80)))));
+pippo[,c('fit','lower','upper')] <- inv(pippo[,c('fit','lower','upper')]);
+ggplot(data = pippo, aes(x=relatedness, y=fit)) +
+  #geom_line() +
+  geom_point() +
+  geom_errorbar(aes(ymin=lower, ymax=upper), width=.2) +
+  facet_grid(morphType ~ spelling)
 
 #readingComprehension
 proficiencylmer5 <- lmer(-1000/rt ~ relatedness * morphType * readingComprehension + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
@@ -437,13 +452,16 @@ anova(proficiencylmer7b);
 #overall proficiency
 dataEng$morphType <- relevel(dataEng$morphType, "or");
 contrasts(dataEng$morphType);
-proficiencylmer8 <- lmer(-1000/rt ~ relatedness * morphType * overallProf  + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
+proficiencylmer8 <- lmer(-1000/rt ~ relatedness * morphType * overallProf2 + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
 anova(proficiencylmer0, proficiencylmer8); #we need to take out rcs(trialCount) for the plot because it result in an error
 anova(proficiencylmer8);
 
 #check the effect of outliers
-proficiencylmer8b <- lmer(-1000/rt ~ relatedness * morphType * overallProf  + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer8)))<2), REML = F);
+proficiencylmer8b <- lmer(-1000/rt ~ relatedness * morphType * overallProf2  + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer8)))<2), REML = F);
 anova(proficiencylmer8b); #huge change here too.
+summary(proficiencylmer8b);
+
+summary(glht(proficiencylmer8b, linfct=mcp(morphType="Tukey", overallProf="Tukey")))
 
 #it's about many outliers?
 summary(italmer3a)[[3]];
@@ -714,6 +732,12 @@ par(mfrow=c(1,1));
 #controllo dell'assunto classico: 'Stems taken from the transparent sets have >OSC than OP or OR sets.'
 tapply(dataEng$oscTarget, dataEng$morphType, FUN = fivenum)
 
+proficiencylmer9 <- lmer(-1000/rt ~ oscTarget * relatedness * overallProf + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng);
+anova(proficiencylmer9)
+proficiencylmer9b <- lmer(-1000/rt ~ oscTarget * relatedness * overallProf + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer9)))<2));
+anova(proficiencylmer9b)
+summary(proficiencylmer9b)
+
 #rt ~ morphtype * overallProf SENZA relatedness e OSC. 
 proficiencylmer9 <- lmer(-1000/rt ~ morphType * overallProf + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng);
 anova(proficiencylmer9)
@@ -730,8 +754,13 @@ anova(proficiencylmer10b)
 round(cor(fitted(proficiencylmer10), -1000/dataEng$rt[!is.na(dataEng$oscTargetarget)])^2, digits=3)
 round(cor(fitted(proficiencylmer9), -1000/dataEng$rt)^2, digits=3)
 
-plotLMER.fnc(proficiencylmer10b, fun = inv, pred = "oscTarget", intr = list("overallProf", quantile(dataEng$overallProf, c(.25,.50,.75,1)), "end"), addlines = T, ylab='RT(ms)', bty='l'); 
+par(mfrow=c(1,3));
+plotLMER.fnc(proficiencylmer9b, fun = inv, pred = "relatedness", intr = list("oscTarget", quantile(dataEng$oscTarget, c(.15,.50,.85), na.rm=T), "end"), addlines = T, ylab='RT(ms)', bty='l', control=list('overallProf', quantile(dataEng$overallProf, probs=.15, na.rm=T))); 
+plotLMER.fnc(proficiencylmer9b, fun = inv, pred = "relatedness", intr = list("oscTarget", quantile(dataEng$oscTarget, c(.15,.50,.85), na.rm=T), "end"), addlines = T, ylab='RT(ms)', bty='l', control=list('overallProf', quantile(dataEng$overallProf, probs=.5, na.rm=T))); 
+plotLMER.fnc(proficiencylmer9b, fun = inv, pred = "relatedness", intr = list("oscTarget", quantile(dataEng$oscTarget, c(.15,.50,.85), na.rm=T), "end"), addlines = T, ylab='RT(ms)', bty='l', control=list('overallProf', quantile(dataEng$overallProf, probs=.85, na.rm=T))); 
 
+par(mfrow=c(1,1));
+plotLMER.fnc(proficiencylmer9b, fun = inv, pred = "oscTarget", intr = list("overallProf", quantile(dataEng$overallProf, c(.15,.50,.85), na.rm=T), "end"), addlines = T, ylab='RT(ms)', bty='l'); 
 #-----------------------------------------------------------------------------#
 #                         GAM GRAPHs                                          #
 #-----------------------------------------------------------------------------#
@@ -745,11 +774,14 @@ newDef <- deparse(vis.gam)
 newDef[grep("gray\\(seq\\(",newDef)] <- "            pal <- gray(seq(0.9, 0.1, length = nCol))"
 # then define a new function with this new definition
 visGam <- eval(parse(text=newDef))
+source(paste(localGitDir, '/tools/mod.vis.gam.R', sep = ''))
 
 #plot con rt normali
-gam1 <- gam(-1000/rt ~ s(oscTarget, by = overallProf) + s(trialCount) + s(freqTarget) + s(subject, bs = 're') + s(target, bs = 're'), data = dataEng)
-summary(gam1);
-vis.gam(gam1, view=c("oscTarget","overallProf"), type="response", plot.type="contour")
+gam1 <- gam(-1000/rt ~ te(oscTarget, overallProf2, by=relatedness) + s(trialCount) + s(freqTarget) + s(subject, bs = 're') + s(target, bs = 're'), data = dataEng)
+gam2 <- gam(-1000/rt ~ te(oscTarget, overallProf2) + s(trialCount) + s(freqTarget) + s(subject, bs = 're') + s(target, bs = 're'), data = dataEng)
+anova(gam1, gam2, test='F');
+summary(gam2);
+mod.vis.gam(gam2, view=c("oscTarget","overallProf2"), type="response", plot.type="contour", too.far=.1)
 visGam(gam1, view=c("oscTarget","overallProf"), type="response", plot.type="contour", color="gray", main="", too.far=.1, xlab='OSC', ylab='Proficiency scores');
 
 #plot con -1000/rt
