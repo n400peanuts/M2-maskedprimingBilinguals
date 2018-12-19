@@ -37,6 +37,7 @@ library(effects);
 library(plyr);
 library(corrplot);
 library(ggpubr);
+library(ez)
 
 inv <- function(x) {-1000/x};
 
@@ -88,10 +89,11 @@ hist(masterFileIta$rt[masterFileIta$rt<500], breaks=seq(0,500,20));
 hist(masterFileIta$rt[masterFileIta$rt>1500], breaks=seq(1500,3000,50));
 # based on these graph we cut distributions at 2500ms and 280ms
 
-dataItaAcc <- subset(masterFileIta, lexicality=="word" & accuracy==1);
-dataIta <- subset(dataItaAcc, rt>280 & rt<2500 & subject!=15 & subject!=2 & subject!=31 & target!= "guano" & target!= "uggia" & target!= "vello");
-nrow(dataItaAcc)-nrow(dataIta);
-(nrow(dataItaAcc)-nrow(dataIta)) / nrow(dataItaAcc);
+dataItaAcc <- subset(masterFileIta, lexicality=="word");
+dataItaTemp <- subset(dataItaAcc, accuracy==1);
+dataIta <- subset(dataItaTemp, rt>280 & rt<2500 & subject!=15 & subject!=2 & subject!=31 & target!= "guano" & target!= "uggia" & target!= "vello");
+nrow(dataItaTemp)-nrow(dataIta);
+(nrow(dataItaTemp)-nrow(dataIta)) / nrow(dataItaTemp);
 nrow(dataIta)
 
 summary(dataIta);
@@ -134,10 +136,11 @@ rm(outlierGraphStore, rt, target, lexicality, acc, sbj.id);
 hist(masterFileEng$rt[masterFileEng$rt<500], breaks=seq(0,500,20)); #very continuous towards zero; perhaps some technical problem with the response box? Weird though, only in English. Anyway, deflection in the curve around 300ms, so let's cut there
 hist(masterFileEng$rt[masterFileEng$rt>1500], breaks=seq(1500,5500,50)); #clear outliers over 2000ms
 
-dataEngAcc <- subset(masterFileEng, lexicality=="word" & accuracy==1);
-dataEng <- subset(dataEngAcc, rt>300 & rt<2000 & subject!=15 & subject!=22 & subject!=43);
-nrow(dataEngAcc)-nrow(dataEng);
-(nrow(dataEngAcc)-nrow(dataEng)) / nrow(dataEngAcc);
+dataEngAcc <- subset(masterFileEng, lexicality=="word");
+dataEngTemp <- subset(dataEngAcc, accuracy==1);
+dataEng <- subset(dataEngTemp, rt>300 & rt<2000 & subject!=15 & subject!=22 & subject!=43);
+nrow(dataEngTemp)-nrow(dataEng);
+(nrow(dataEngTemp)-nrow(dataEng)) / nrow(dataEngTemp);
 nrow(dataEng);
 
 summary(dataEng);
@@ -148,8 +151,8 @@ rm(masterFileIta, masterFileEng, diagnostics.f, sbj.diagnostics, target.diagnost
 #-----------------#
 #### raw means ####
 #-----------------#
-mean(masterFileIta$accuracy); mean(dataIta$rt);
-mean(masterFileEng$accuracy); mean(dataEng$rt);
+mean(dataItaAcc$accuracy); mean(dataIta$rt);
+mean(dataEngAcc$accuracy); mean(dataEng$rt);
 
 aggregate(rt ~ relatedness + morphType, FUN=mean, data=dataIta);
 aggregate(rt ~ relatedness + morphType, FUN=mean, data=dataEng);
@@ -631,96 +634,33 @@ anova(aoalmer5b);
 #-----------#
 #### osc ####
 #-----------#
-#
-#First, let's recap:
-#rt ~ morphtype * overallProf e relatedness * overallProf + 3way interaction
-proficiencylmer8 <- lmer(-1000/rt ~ relatedness * morphType * overallProf + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng);
-anova(proficiencylmer8);
-proficiencylmer8b <- lmer(-1000/rt ~ relatedness * morphType * overallProf + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer8)))<2));
-anova(proficiencylmer8b); 
-proficiencylmer8c <- lmer(-1000/rt ~ relatedness * morphType * overallProf + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer8)))<2.5));
-anova(proficiencylmer8c);
+#this is currently the best model for English:
+proficiencylmer1 <- lmer(-1000/rt ~ relatedness * morphType * phonemicFluency + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
 
-par(mfrow=c(1,4));
-plotLMER.fnc(proficiencylmer8, withList = TRUE, fun = inv, pred = "relatedness",control = list("overallProf", quantile(dataEng$overallProf, .25)), intr = list("morphType", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='VERY LOW PROFICIENCY', ylimit = c(570,700), bty='l'); 
-plotLMER.fnc(proficiencylmer8, withList = TRUE, fun = inv, pred = "relatedness",control = list("overallProf", quantile(dataEng$overallProf, .50)), intr = list("morphType", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='LOW PROFICIENCY', ylimit = c(570,700), bty='l');
-plotLMER.fnc(proficiencylmer8, withList = TRUE, fun = inv, pred = "relatedness",control = list("overallProf", quantile(dataEng$overallProf, .75)), intr = list("morphType", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='HIGH PROFICIENCY', ylimit = c(570,700), bty='l');
-plotLMER.fnc(proficiencylmer8, withList = TRUE, fun = inv, pred = "relatedness",control = list("overallProf", quantile(dataEng$overallProf, 1)), intr = list("morphType", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='VERY HIGH PROFICIENCY', ylimit = c(570,700), bty='l');
-par(mfrow=c(1,1));
+#first, let's try to pit OSC against priming condition -- these two are typically confounded:
+temp <- unique(masterFile[masterFile$lexicality=='word' & masterFile$language=='eng',c('target','prime','morphType','relatedness','freqTarget','freqPrime','lengthTarget','lengthPrime','nTarget','nPrime','oscTarget')]);
+summary(temp);
+aggregate(oscTarget ~ morphType, FUN=fivenum, data=temp);
+boxplot(oscTarget ~ morphType, data=temp, bty='l');
+summary(aov(oscTarget~morphType, data=subset(temp, relatedness=='rel')));
 
-#controllo dell'assunto classico: 'Stems taken from the transparent sets have >OSC than OP or OR sets.'
-tapply(dataEng$oscTarget, dataEng$morphType, FUN = fivenum)
+osc1 <- lmer(-1000/rt ~ relatedness * oscTarget * phonemicFluency + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=T);
+osc1b <- lmer(-1000/rt ~ relatedness * oscTarget * phonemicFluency + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(osc1)))<2.5), REML=T);
+anova(osc1b);
+summary(osc1b); #very solid 3-way interaction
 
-proficiencylmer9 <- lmer(-1000/rt ~ oscTarget * relatedness * overallProf + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng);
-anova(proficiencylmer9)
-proficiencylmer9b <- lmer(-1000/rt ~ oscTarget * relatedness * overallProf + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer9)))<2));
-anova(proficiencylmer9b)
-summary(proficiencylmer9b)
+#let's explore the effect
+temp <- data.frame(effect('relatedness:oscTarget:phonemicFluency', osc1b, se=list(level=.95), xlevels=list(oscTarget=c(.20,.80), phonemicFluency=c(10,25,40))));
+temp[,c('fit','lower','upper')] <- inv(temp[,c('fit','lower','upper')]);
 
-#rt ~ morphtype * overallProf SENZA relatedness e OSC. 
-proficiencylmer9 <- lmer(-1000/rt ~ morphType * overallProf + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng);
-anova(proficiencylmer9)
-proficiencylmer9b <- lmer(-1000/rt ~ morphType * overallProf + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer9)))<2));
-anova(proficiencylmer9b)
+jpeg(filename = paste(localGitDir,'/oscModel.jpg', sep = ''), res=300, height=2200, width=4400);
+ggplot(data = temp, aes(x=relatedness, y=fit)) +
+  #geom_line() +
+  geom_point() +
+  geom_errorbar(aes(ymin=lower, ymax=upper), width=.2) +
+  facet_grid(oscTarget ~ phonemicFluency);
+dev.off(); #this essentially confirms the picture that we see in the proficiency analysis: at high levels of OSC (that is, in parts of the lexical space where the correspondence between form and meaning is strong; that is again, with transparent items), priming is independent of fluency/proficiency; whereas in parts of the lexical space where the correspondence between form and meaning is loose, the higher the proficiency, the smaller the effect. 
 
-#rt ~ OSC_Primes * overallProf SENZA relatedness e morphtype 
-proficiencylmer10 <- lmer(-1000/rt ~ overallProf * oscTarget + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng);
-anova(proficiencylmer10)
-proficiencylmer10b <- lmer(-1000/rt ~ overallProf * oscTarget + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer10)))<2));
-anova(proficiencylmer10b)
-#morphtype e OSC correlano molto con proficiency
-#goodness of fit
-round(cor(fitted(proficiencylmer10), -1000/dataEng$rt[!is.na(dataEng$oscTargetarget)])^2, digits=3)
-round(cor(fitted(proficiencylmer9), -1000/dataEng$rt)^2, digits=3)
-
-par(mfrow=c(1,3));
-plotLMER.fnc(proficiencylmer9b, fun = inv, pred = "relatedness", intr = list("oscTarget", quantile(dataEng$oscTarget, c(.15,.50,.85), na.rm=T), "end"), addlines = T, ylab='RT(ms)', bty='l', control=list('overallProf', quantile(dataEng$overallProf, probs=.15, na.rm=T))); 
-plotLMER.fnc(proficiencylmer9b, fun = inv, pred = "relatedness", intr = list("oscTarget", quantile(dataEng$oscTarget, c(.15,.50,.85), na.rm=T), "end"), addlines = T, ylab='RT(ms)', bty='l', control=list('overallProf', quantile(dataEng$overallProf, probs=.5, na.rm=T))); 
-plotLMER.fnc(proficiencylmer9b, fun = inv, pred = "relatedness", intr = list("oscTarget", quantile(dataEng$oscTarget, c(.15,.50,.85), na.rm=T), "end"), addlines = T, ylab='RT(ms)', bty='l', control=list('overallProf', quantile(dataEng$overallProf, probs=.85, na.rm=T))); 
-
-par(mfrow=c(1,1));
-plotLMER.fnc(proficiencylmer9b, fun = inv, pred = "oscTarget", intr = list("overallProf", quantile(dataEng$overallProf, c(.15,.50,.85), na.rm=T), "end"), addlines = T, ylab='RT(ms)', bty='l'); 
-#-----------------------------------------------------------------------------#
-#                         GAM GRAPHs                                          #
-#-----------------------------------------------------------------------------#
-#from 648 to 653, I changed some feature of gam to get the gray scale of color, nothing important
-# first get the definition of vis.gam
-dataEng$overallProf2 <- apply(dataEng[29:35],1,FUN = sum); 
-
-source(paste(localGitDir,'/analysis/mod.vis.gam.R', sep = ''))
-newDef <- deparse(vis.gam)
-# change the line defining the direction of the grey gradient
-newDef[grep("gray\\(seq\\(",newDef)] <- "            pal <- gray(seq(0.9, 0.1, length = nCol))"
-# then define a new function with this new definition
-visGam <- eval(parse(text=newDef))
-source(paste(localGitDir, '/tools/mod.vis.gam.R', sep = ''))
-
-#plot con rt normali
-gam1 <- gam(-1000/rt ~ te(oscTarget, overallProf2, by=relatedness) + s(trialCount) + s(freqTarget) + s(subject, bs = 're') + s(target, bs = 're'), data = dataEng)
-gam2 <- gam(-1000/rt ~ te(oscTarget, overallProf2) + s(trialCount) + s(freqTarget) + s(subject, bs = 're') + s(target, bs = 're'), data = dataEng)
-anova(gam1, gam2, test='F');
-summary(gam2);
-mod.vis.gam(gam2, view=c("oscTarget","overallProf2"), type="response", plot.type="contour", too.far=.1)
-visGam(gam1, view=c("oscTarget","overallProf"), type="response", plot.type="contour", color="gray", main="", too.far=.1, xlab='OSC', ylab='Proficiency scores');
-
-#plot con -1000/rt
-gam2 <- gam(-1000/rt ~ s(oscTarget, by = overallProf2) + s(trialCount) + s(freqTarget) + s(subject, bs = 're') + s(target, bs = 're'), data = dataEng);
-summary(gam2);
-vis.gam(gam2, view=c("oscTarget","overallProf2"), type="response", plot.type="contour", color="gray", main="", too.far=.1, xlab='OSC', ylab='Proficiency scores');
-
-
-#For poster presentation
-jpeg(filename = "C:/Users/eva_v/Documents/GitHub/M2-maskedprimingBilinguals - Copia di Eva/GAMplot_NEW.jpg", res=300, height=1654, width=3339)
-mod.vis.gam(gam2, view=c("oscTarget","overallProf2"), type="response", plot.type="contour", color="gaypride", main="", 
-            too.far=.1, xlab='OSC', ylab='PROFICIENCY', lwd = 2, font = 2, font.lab = 2, font.axis = 2, cex.axis =1.5,
-            cex.lab=1.5);
-dev.off()
-
-
-#tables for papers
-library(tables)
-#frequency
-tabular( freqTarget+freqPrime ~ morphType * (mean+sd), data=masterFile[masterFile$language=='ita' & masterFile$relatedness=='ctrl' & masterFile$lexicality=='word',] );
-tabular( nT+nP ~ morphType * (mean+sd), data=masterFile[masterFile$language=='ita' & masterFile$relatedness=='ctrl',] );
-
-aggregate(rt ~ morphType + relatedness, data = masterFile[masterFile$language=='eng',], FUN = 'mean' )
+#bonus track: we check whether OSC explains data better than morphological condition
+extractAIC(osc1);
+extractAIC(proficiencylmer1);
