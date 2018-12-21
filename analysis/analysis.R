@@ -634,16 +634,25 @@ anova(aoalmer5b);
 #-----------#
 #### osc ####
 #-----------#
-#this is currently the best model for English:
-proficiencylmer1 <- lmer(-1000/rt ~ relatedness * morphType * phonemicFluency + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
+#the best model for English is now proficiencylmer1b
 
 #first, let's try to pit OSC against priming condition -- these two are typically confounded:
 temp <- unique(masterFile[masterFile$lexicality=='word' & masterFile$language=='eng',c('target','prime','morphType','relatedness','freqTarget','freqPrime','lengthTarget','lengthPrime','nTarget','nPrime','oscTarget')]);
 summary(temp);
-aggregate(oscTarget ~ morphType, FUN=fivenum, data=temp);
-boxplot(oscTarget ~ morphType, data=temp, bty='l');
+aggregate(oscTarget ~ morphType, FUN=fivenum, data=temp); #indeed they are
+
+#this represents this graphically
+jpeg(filename = paste(localGitDir,'/oscMorph.jpg', sep = ''), res=300, height=2200, width=4400);
+temp$morphType <- factor(temp$morphType, levels=c('or','op','tr')); #this controls the order in which the boxes will appear
+boxplot(oscTarget ~ morphType, data=subset(temp, oscTarget>0), bty='l', boxwex=.5, col=grey(.80), ylab='OSC', frame=F, axes=F, ylim=c(0,1));
+axis(2, at=seq(0,1,.2));
+axis(1, at=1:3, labels=c('Orthographic','Opaque','Transparent'), tick=F);
+dev.off();
+
+#and this tests it via NHST
 summary(aov(oscTarget~morphType, data=subset(temp, relatedness=='rel')));
 
+#modelling
 osc1 <- lmer(-1000/rt ~ relatedness * oscTarget * phonemicFluency + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=T);
 osc1b <- lmer(-1000/rt ~ relatedness * oscTarget * phonemicFluency + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(osc1)))<2.5), REML=T);
 anova(osc1b);
@@ -663,4 +672,4 @@ dev.off(); #this essentially confirms the picture that we see in the proficiency
 
 #bonus track: we check whether OSC explains data better than morphological condition
 extractAIC(osc1);
-extractAIC(proficiencylmer1);
+extractAIC(proficiencylmer1); #and indeed it does
