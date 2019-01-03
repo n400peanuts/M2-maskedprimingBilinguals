@@ -27,7 +27,6 @@ summary(masterFile);
 #------------------------------------------#
 #### load packages and create functions ####
 #------------------------------------------#
-library(languageR);
 library(ggplot2);
 library(rms);
 library(doBy);
@@ -297,7 +296,7 @@ temp <- as.vector(round(cor(pptFeatures[,c(6:12)], use='pairwise.complete.obs'),
 fivenum(temp[temp!=1]);
 
 #check score distributions
-jpeg(filename = paste(localGitDir,'/proficiencyDistribution.jpg', sep = ''), res=300, height=2200, width=4400);
+jpeg(filename = paste(localGitDir,'/fig_proficiencyScores.jpg', sep = ''), res=300, height=2200, width=4400);
      
 par(mfrow=c(2,4));
 par(mar=c(5,5,4,.5)+.1);
@@ -333,15 +332,11 @@ hist(oralComprehension, breaks = seq(0,6,1), main = '(g) Oral comprehension', ce
 axis(1, cex.axis=2);
 axis(2, at=c(0,50), cex.axis=2, las=1);
 
-#hist(overallProf, breaks = seq(-2.5,2,.5), main = '(h) Overall Proficiency', cex.main=2, xlab = 'Scores', ylab = 'N of participants', ylim=c(0,50), cex.lab=2, axes=F, col=grey(.80), border=grey(0));
-#axis(1, cex.axis=2);
-#axis(2, at=c(0,50), cex.axis=2, las=1);
-
+dev.off();
 detach(pptFeatures);
 
 par(mfrow=c(1,1));
 
-dev.off();
 #-----------------------------#
 #### proficiency modelling ####
 #-----------------------------#
@@ -386,177 +381,51 @@ anova(proficiencylmer6b);
 proficiencylmer7b <- lmer(-1000/rt ~ relatedness * morphType * oralComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer7)))<2.5), REML=F);
 anova(proficiencylmer7b);
 
-#what sort of effect this is? [THIS IS WHERE YOUR NEW PLOTS SHOULD COME IN, EVA]
+#what sort of effect this is? [here comes the new plot]
 temp <- data.frame(effect('relatedness:morphType:phonemicFluency', proficiencylmer1b, se=list(level=.95), xlevels=4));
 temp[,c('fit','lower','upper')] <- inv(temp[,c('fit','lower','upper')]);
+revalue(temp$relatedness, c("rel"="related"))-> temp$relatedness
+revalue(temp$relatedness, c("ctrl"="unrelated"))-> temp$relatedness
 
-jpeg(filename = paste(localGitDir,'/proficiencyModel.jpg', sep = ''), res=300, height=2200, width=4400);
+jpeg(filename = paste(localGitDir,'/proficiencyModel.jpg', sep = ''), res=300, height=1000, width=2500);
 
-ggplot(data = temp, aes(x=relatedness, y=fit)) +
-  #geom_line() +
-  geom_point() +
-  geom_errorbar(aes(ymin=lower, ymax=upper), width=.2) +
-  facet_grid(morphType ~ phonemicFluency);
+ggplot(data = temp, aes(x=relatedness, y=fit, group=morphType)) + 
+  geom_point()+geom_line() +
+  theme_bw() + theme(panel.grid.major = element_blank()) +
+  ylab('RTs (ms)') + xlab('') + 
+  theme(axis.text.y = element_text(angle = 00, hjust = 1, size=8, colour = 'black'))+
+  theme(axis.text.x = element_text(size=13, colour = 'black'))+
+  geom_pointrange(aes(ymin = temp$lower, ymax = temp$upper)) +
+  facet_grid(morphType ~ phonemicFluency) +
+  theme(strip.text = element_text(size=12));
 
 dev.off();
+
 #it seems the case that transparent priming stay strong and solid across different levels of proficiency, while opaque and orthographic priming tend to shrink with growing phonemic fluency. This suggests we should use transparent primes as our reference level for morphological condition: 
 dataEng$morphType <- relevel(dataEng$morphType, "tr");
-proficiencylmer1b <- lmer(-1000/rt ~ relatedness * morphType * phonemicFluency + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer1)))<2.5), REML=T);
+proficiencylmer1b <- lmer(-1000/rt ~ relatedness * morphType * phonemicFluency + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer1)))<2.5), REML=F);
 summary(proficiencylmer1b);
 
 #although only phonemic fluency is frankly significant, we want to check whether the two variables coming close behind shows the same effect, at least qualitatively:
 temp <- data.frame(effect('relatedness:morphType:morphComprehension', proficiencylmer3b, se=list(level=.95), xlevels=4));
 temp[,c('fit','lower','upper')] <- inv(temp[,c('fit','lower','upper')]);
-ggplot(data = temp, aes(x=relatedness, y=fit)) +
-  #geom_line() +
+revalue(temp$relatedness, c("rel"="related"))-> temp$relatedness
+revalue(temp$relatedness, c("ctrl"="unrelated"))-> temp$relatedness
+ggplot(data = temp, aes(x=relatedness, y=fit, group=morphType)) + theme_bw()+
+  geom_line() +
   geom_point() +
-  geom_errorbar(aes(ymin=lower, ymax=upper), width=.2) +
+  geom_pointrange(aes(ymin = temp$lower, ymax = temp$upper)) +
   facet_grid(morphType ~ morphComprehension);
 
 temp <- data.frame(effect('relatedness:morphType:spelling', proficiencylmer4b, se=list(level=.95), xlevels=4));
 temp[,c('fit','lower','upper')] <- inv(temp[,c('fit','lower','upper')]);
-ggplot(data = temp, aes(x=relatedness, y=fit)) +
-  #geom_line() +
+revalue(temp$relatedness, c("rel"="related"))-> temp$relatedness
+revalue(temp$relatedness, c("ctrl"="unrelated"))-> temp$relatedness
+ggplot(data = temp, aes(x=relatedness, y=fit, aes=morphType)) + theme_bw()+
+  geom_line() +
   geom_point() +
-  geom_errorbar(aes(ymin=lower, ymax=upper), width=.2) +
+  geom_pointrange(aes(ymin = temp$lower, ymax = temp$upper)) +
   facet_grid(morphType ~ spelling);
-
-#--------------------------------#
-#### THIS WILL LIKELY GO AWAY ####
-#--------------------------------#
-#plot of the priming modulation by proficiency
-jpeg(filename = "C:/Users/Eva Viviani/Documents/GitHub/M2-maskedprimingBilinguals/Rplot.jpg", res=300, height=1654, width=3339)
-par(mfrow=c(1,4));
-a<- plotLMER.fnc(proficiencylmer8b, withList = TRUE, fun = inv, pred = "relatedness",control = list("overallProf", quantile(dataEng$overallProf, .1)), intr = list("morphType", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='VERY LOW PROFICIENCY', ylimit = c(570,700), bty='l'); 
-b<- plotLMER.fnc(proficiencylmer8b, withList = TRUE, fun = inv, pred = "relatedness",control = list("overallProf", quantile(dataEng$overallProf, .5)), intr = list("morphType", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='LOW PROFICIENCY', ylimit = c(570,700), bty='l');
-c<- plotLMER.fnc(proficiencylmer8b, withList = TRUE, fun = inv, pred = "relatedness",control = list("overallProf", quantile(dataEng$overallProf, .6)), intr = list("morphType", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='HIGH PROFICIENCY', ylimit = c(570,700), bty='l');
-d<- plotLMER.fnc(proficiencylmer8b, withList = TRUE, fun = inv, pred = "relatedness",control = list("overallProf", quantile(dataEng$overallProf, .9)), intr = list("morphType", c("OR", "OP", "TR"), "end"), addlines = T, ylab='RT(ms)', xlabel = "Unrelated         Related", main='VERY HIGH PROFICIENCY', ylimit = c(570,700), bty='l');
-par(mfrow=c(1,1));
-dev.off()
-#heavily modulated
-
-#New plot of proficiency - check it out
-library(effects);
-df <- effect("relatedness:morphType:overallProf", proficiencylmer8b); #effect extract the data from the model
-df <- as.data.frame(df);
-df$fit <- inv(df$fit) #inversion of the rt
-df$lower <- inv(df$lower)
-df$upper <- inv(df$upper)
-rel <- c(2,4,6,8,10,12,14,16,18,20,22,24,26,28,30) #here I manually select the rows of the related condition (which are all even)
-ctrl <- c(1,3,5,7,9,11,13,15,17,19,21,23,25,27,29) #selction of the unrelated
-deltaRT  <- NULL #now I compute the difference (deltaRT) between related and unrelated
-deltasd <- NULL #and the confidence intervals
-for (i in 1:nrow(df)){
-  deltaRT[i]<-df$fit[rel[i]] - df$fit[ctrl[i]] #take from the dataset only the corresponding rows and compute the difference
-  deltasd[i]<- sqrt((df$se[rel[i]]^2) + (df$se[ctrl[i]]^2))  #this computes the stand err of the mean (to revise, not sure of the formula)
-}
-proficiency <- df$overallProf[rel] #take the proficiency column (note that we have only 5 breaks: -2 -1 -0.4 0.5 1)
-deltaRT<- deltaRT[!is.na(deltaRT)] #remove NA (we have only 15 values)
-deltasd<- deltasd[!is.na(deltasd)]
-deltaRT1 <- data.frame(deltaRT, deltasd, proficiency) #create a dataframe
-names(deltaRT1) <- c('deltart','deltase','proficiency')
-deltaRT1$morphtype <- c('or', 'op', 'tr', 'or', 'op', 'tr', 'or', 'op', 'tr', 'or', 'op', 'tr', 'or', 'op', 'tr') #restore the morphtype column
-deltaRT <- deltaRT1
-rm(deltaRT1)
-
-dodge <- position_dodge(width = 0.1) #parametric value for positioning points
-a <-ggplot(data = deltaRT, aes(x = proficiency, y = deltart, col = morphtype ,group = morphtype)) + scale_colour_manual(breaks = c("or", "op", "tr"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
-a <- a + scale_y_continuous("priming (ms)")
-a
-ggsave("proficiencyplot.jpg")
-
-#Primo quartile
-subset(df, df$overallProf<=-2)-> verylowProf
-# plot using ggplot
-dodge <- position_dodge(width = 0.1)
-a <-ggplot(data = verylowProf, aes(x = relatedness, y = fit, col = morphType ,group = morphType)) + scale_colour_manual(breaks = c("or", "op", "tr"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
-a <- a + geom_errorbar(aes(ymin = verylowProf$lower, ymax =verylowProf$upper), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
-a <- a + scale_y_continuous("RT(ms)",limits=c(525,710))
-a <- a + theme(axis.title.y = element_text(size = rel(1.5), angle = 90)) + ggtitle('Very low proficiency \n1st quartile') + theme(plot.title = element_text(hjust = 0.5))
-a <- a + theme(axis.text.y = element_text(angle = 00, hjust = 1, size=13, face = 'bold', colour = 'black'))
-a <- a + labs(x = "UNRELATED       RELATED ") + theme(axis.text.x=element_blank(), axis.ticks.x=element_blank())
-a <- a + theme(axis.title.x = element_text(size = rel(1), face = 'bold')) +  theme(legend.position="none")
-a
-ggsave("firsquartileProficiency.jpg", height=6, width=6, dpi = 2000)
-
-#Secondo quartile
-subset(df, df$overallProf> -2.0 & df$overallProf<=-0.4)-> lowProf
-
-dodge <- position_dodge(width = 0.1)
-b <-ggplot(data = lowProf, aes(x = relatedness, y = fit, col = morphType ,group = morphType)) + scale_colour_manual(breaks = c("or", "op", "tr"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
-b <- b + geom_errorbar(aes(ymin = lowProf$lower, ymax = lowProf$upper), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
-b <- b + scale_y_continuous(limits=c(525,710)) + ylab(NULL) + theme(axis.title.y=element_blank(), axis.text.y=element_blank())
-b <- b + theme(axis.title.y = element_text(size = rel(1.5), angle = 90)) + ggtitle('Low proficiency \n2nd quartile') + theme(plot.title = element_text(hjust = 0.5))
-b <- b + theme(axis.text.y = element_text(angle = 00, hjust = 1, size=13, face = 'bold', colour = 'black'))
-b <- b + labs(x = "UNRELATED       RELATED ") + theme(axis.text.x=element_blank(), axis.ticks.x=element_blank())
-b <- b + theme(axis.title.x = element_text(size = rel(1), face = 'bold')) +  theme(legend.position="none")
-b
-ggsave("secondquartileProficiency.jpg", height=6, width=6, dpi = 2000)
-
-#Terzo quartile
-subset(df, df$overallProf>=-0.4 & df$overallProf<=0.5)-> highProf
-
-dodge <- position_dodge(width = 0.1)
-c <-ggplot(data = highProf, aes(x = relatedness, y = fit, col = morphType ,group = morphType)) + scale_colour_manual(breaks = c("OR", "OP", "TR"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
-c <- c + geom_errorbar(aes(ymin = highProf$lower, ymax = highProf$upper), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
-c <- c + scale_y_continuous(limits=c(525,710)) + ylab(NULL) + theme(axis.title.y=element_blank(), axis.text.y=element_blank())
-c <- c + theme(axis.title.y = element_text(size = rel(1.5), angle = 90))  + ggtitle('High proficiency \n3rd quartile') + theme(plot.title = element_text(hjust = 0.5))
-c <- c + theme(axis.text.y = element_text(angle = 00, hjust = 1, size=13, face = 'bold', colour = 'black'))
-c <- c + labs(x = "UNRELATED       RELATED ") + theme(axis.text.x=element_blank(), axis.ticks.x=element_blank())
-c <- c + theme(axis.title.x = element_text(size = rel(1), face = 'bold')) +  theme(legend.position="none")
-c
-ggsave("thirdquartileProficiency.jpg", height=6, width=6, dpi = 2000)
-
-#quarto quartile
-subset(df, df$overallProf>=1.0)-> veryhighProf
-
-dodge <- position_dodge(width = 0.1)
-d <-ggplot(data = veryhighProf, aes(x = relatedness, y = fit, col = morphType ,group = morphType)) + scale_colour_manual(breaks = c("or", "op", "tr"), values = c("#0000e8", "#000000", "#ff0030")) + geom_point(position = dodge, size = 4.5, shape=21, fill="white") + geom_line(position = dodge)+ theme_classic()
-d <- d + geom_errorbar(aes(ymin = veryhighProf$lower, ymax = veryhighProf$upper), width=0.1, size=1, linetype=1, position = dodge) #FUCK YEAH
-d <- d + scale_y_continuous(limits=c(525,710)) + ylab(NULL) + theme(axis.title.y=element_blank(), axis.text.y=element_blank())
-d <- d + theme(axis.title.y = element_text(size = rel(1.5), angle = 90)) + ggtitle('Very high proficiency \n4th quartile') + theme(plot.title = element_text(hjust = 0.5))
-d <- d + theme(axis.text.y = element_text(angle = 00, hjust = 1, size=13, face = 'bold', colour = 'black'))
-d <- d + labs(x = "UNRELATED       RELATED ") + theme(axis.text.x=element_blank(), axis.ticks.x=element_blank())
-d <- d + theme(axis.title.x = element_text(size = rel(1), face = 'bold')) +  theme(legend.position="none")
-d
-ggsave("fourthquartileProficiency.jpg", height=6, width=6, dpi = 2000)
-
-#plot all together
-a<-ggarrange(a, b, c , d + rremove("x.text"),
-          ncol = 4, nrow = 1, common.legend = TRUE, legend = "bottom")
-ggplot() + aes(proficiency) + geom_histogram(binwidth= 4.5,bins = 17, colour="black", fill="white") + xlim(30,120) + ylim(0,14)
-
-
-ggsave("overallProf.jpg", height=8, width=15)
-
-#Let's see how many subjects were contained in these proficiency quantiles + post-hoc analysis
-dataEng$morphType <- relevel(dataEng$morphType, "OR")
-subset(dataEng, dataEng$overallProf<=quantile(dataEng$overallProf, .25))-> firstQ
-unique(firstQ$subject) #10 subjects
-lmerFirstq <- lmer(-1000/rt ~ relatedness * morphType + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = firstQ);
-lmerFirstq1 <- lmer(-1000/rt ~ relatedness * morphType + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(firstQ, abs(scale(resid(lmerFirstq)))<2));
-summary(lmerFirstq1)
-
-subset(dataEng, dataEng$overallProf>quantile(dataEng$overallProf, .25) & dataEng$overallProf<=quantile(dataEng$overallProf, .50))-> secondQ
-unique(secondQ$subject) #10 subjects
-lmersecondQ <- lmer(-1000/rt ~ relatedness * morphType + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = secondQ);
-lmersecondQ1 <- lmer(-1000/rt ~ relatedness * morphType  + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(secondQ, abs(scale(resid(lmersecondQ)))<2));
-summary(lmersecondQ1)
-
-subset(dataEng, dataEng$overallProf>quantile(dataEng$overallProf, .50) & dataEng$overallProf<=quantile(dataEng$overallProf, .75))-> thirdQ
-unique(thirdQ$subject) #9 subjects
-lmerthirdQ <- lmer(-1000/rt ~ relatedness * morphType * overallProf + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = thirdQ);
-lmerthirdQ1 <- lmer(-1000/rt ~ relatedness * morphType * overallProf + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(thirdQ, abs(scale(resid(lmerthirdQ)))<2));
-summary(lmerthirdQ1)
-
-subset(dataEng, dataEng$overallProf>quantile(dataEng$overallProf, .75))-> fourthQ
-unique(fourthQ$subject) #8 subjects
-lmerfourthQ <- lmer(-1000/rt ~ relatedness * morphType * overallProf + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = fourthQ);
-lmerfourthQ1 <- lmer(-1000/rt ~ relatedness * morphType * overallProf + rcs(trialCount) + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(thirdQ, abs(scale(resid(lmerfourthQ)))<2));
-summary(lmerfourthQ1)
-
-rm(dodge, aa, df)
-rm(firstQ, lmerFirstq1, lmerFirstq, secondQ, lmersecondQ, lmersecondQ1, thirdQ, lmerthirdQ, lmerthirdQ1, fourthQ, lmerfourthQ, lmerfourthQ1)
 
 #------------------------------------------------#
 #### aoa scores, correlation and distribution ####
