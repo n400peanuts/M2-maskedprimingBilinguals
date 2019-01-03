@@ -14,8 +14,8 @@
 rm(list = ls());
 
 #set your local working directory. This should be (and is assumed to be in the rest of the code) the highest point in your local gitHub folder:
-#localGitDir <- 'C:/Users/eva_v/Documents/GitHub/M2-maskedprimingBilinguals';
-localGitDir <- '~/Google Drive File Stream/My Drive/research/misc/m2-maskedMorphPrimingBilinguals/git/M2-maskedprimingBilinguals/';
+localGitDir <- 'C:/Users/eva_v/Documents/GitHub/M2-maskedprimingBilinguals';
+#localGitDir <- '~/Google Drive File Stream/My Drive/research/misc/m2-maskedMorphPrimingBilinguals/git/M2-maskedprimingBilinguals/';
 setwd(localGitDir);
 
 # This script works on the outcome of preProcessing.R, which you can upload here:
@@ -28,7 +28,6 @@ summary(masterFile);
 #### load packages and create functions ####
 #------------------------------------------#
 library(languageR);
-library(lmerTest);
 library(ggplot2);
 library(rms);
 library(doBy);
@@ -36,8 +35,6 @@ library(mgcv);
 library(effects);
 library(plyr);
 library(corrplot);
-library(ggpubr);
-library(ez)
 
 inv <- function(x) {-1000/x};
 
@@ -54,17 +51,24 @@ rm(temp);
 #---------------#
 temp <- unique(masterFile[,c('target','prime','lexicality','morphType','relatedness','freqTarget','freqPrime','lengthTarget','lengthPrime','nTarget','nPrime','language')]); #WE NEED TO ADD ORTHOGRAPHIC OVERLAP HERE
 summary(temp);
-rm(temp);
 
 #target features, ita
 aggregate(freqTarget ~ morphType, FUN=mean, data=subset(temp, lexicality=='word' & language=='ita'));
 aggregate(freqTarget ~ morphType, FUN=sd, data=subset(temp, lexicality=='word' & language=='ita'));
-#[...] COMPLETE WITH THE CODE FOR THE OTHER VARIABLES, EVA
+aggregate(lengthTarget ~ morphType, FUN=mean, data=subset(temp, lexicality=='word' & language=='ita'));
+aggregate(lengthTarget ~ morphType, FUN=sd, data=subset(temp, lexicality=='word' & language=='ita'));
+aggregate(nTarget ~ morphType, FUN=mean, data=subset(temp, lexicality=='word' & language=='ita'));
+aggregate(nTarget ~ morphType, FUN=sd, data=subset(temp, lexicality=='word' & language=='ita'));
+
 #prime features, ita
 aggregate(freqPrime ~ relatedness+morphType, FUN=mean, data=subset(temp, lexicality=='word' & language=='ita'));
 aggregate(freqPrime ~ relatedness+morphType, FUN=sd, data=subset(temp, lexicality=='word' & language=='ita'));
-#[...] complete with the code for the other variables, Eva
+aggregate(lengthPrime ~ relatedness+morphType, FUN=mean, data=subset(temp, lexicality=='word' & language=='ita'));
+aggregate(lengthPrime ~ relatedness+morphType, FUN=sd, data=subset(temp, lexicality=='word' & language=='ita'));
+aggregate(nPrime ~ relatedness+morphType, FUN=mean, data=subset(temp, lexicality=='word' & language=='ita'));
+aggregate(nPrime ~ relatedness+morphType, FUN=sd, data=subset(temp, lexicality=='word' & language=='ita'));
 
+rm(temp);
 #------------------------------#
 #### outliers trimming, ita ####
 #------------------------------#
@@ -115,7 +119,7 @@ diagnostics.f(rt = rt, acc = acc, sbj.id = sbj.id, target = target, lexicality =
 rm(outlierGraphStore, rt, target, lexicality, acc, sbj.id);
 
 # sbj 26 likely confused YES/NO buttons. Let's check the frequency effect, just to confirm:
-cor(masterFileEng[masterFileEng$subject==26 & masterFileEng$lexicality=='WORD', c('rt','freqTarget')], use = 'pairwise.complete.obs'); #unlikely s/he responded randomly. So, let's fix this:
+cor(masterFileEng[masterFileEng$subject==26 & masterFileEng$lexicality=='word', c('rt','freqTarget')], use = 'pairwise.complete.obs'); #unlikely s/he responded randomly. So, let's fix this:
 library(car);
 masterFileEng$accuracy[masterFileEng$subject==26] <- recode(masterFileEng$accuracy[masterFileEng$subject==26], "1=0;0=1");
 
@@ -177,7 +181,7 @@ anova(italmer1); #to which only freq seems to contribute
 #we introduce the varibles of interest now
 italmer2 <- lmer(-1000/rt ~ relatedness * morphType + freqTarget + (1|subject) + (1|target), data= dataIta, REML = T);
 summary(italmer2); #residuals are rather symmetrical -- clean bill of health
-#outliers trimming, à la Baayen (2008)
+#outliers trimming, a la Baayen (2008)
 italmer2b <- lmer(-1000/rt ~ relatedness * morphType + freqTarget + (1|subject) + (1|target), data=subset(dataIta, abs(scale(resid(italmer2)))<2.5), REML = T);
 anova(italmer2b); #here we get the overall significance of the interaction btw prime type and relatedness
 summary(italmer2b);#here we get the parameters for contrasts across individual conditions
@@ -206,7 +210,7 @@ anova(englmer1); #frequency and length contribute
 
 englmer2 <- lmer(-1000/rt ~ relatedness * morphType + freqTarget + lengthTarget + (1|subject) + (1|target), data= dataEng, REML = T);
 summary(englmer2); #residuals are quite symmetrical
-#outliers trimming, à la Baayen (2008)
+#outliers trimming, a la Baayen (2008)
 englmer2b <- lmer(-1000/rt ~ relatedness * morphType + freqTarget + lengthTarget + (1|subject) + (1|target), data=subset(dataEng, abs(scale(resid(englmer2)))<2.5), REML = T);
 anova(englmer2b); #here we get the overall significance of the interaction btw prime type and relatedness
 summary(englmer2b); #here we get the parameters for contrasts across individual conditions
@@ -284,7 +288,7 @@ anova(crosslmerb);
 #### proficiency scores, correlation and distribution ####
 #--------------------------------------------------------#
 #create a database with one line per ppt
-pptFeatures <- unique(dataEng[,c('subject','age','gender','handedness','rotation','phonemicFluency', 'phonemicComprehension','morphComprehension','spelling','readingComprehension','vocabulary','oralComprehension','aoa1.Aoa', 'aoa2.usage', 'aoa3.context','aoa4.contextMultiling','aoa5.selfRatedProf','aoa6.otherLang')]);
+pptFeatures <- unique(dataEng[,c('subject','age','gender','handedness','rotation','phonemicFluency', 'phonemicComprehension','morphComprehension','spelling','readingComprehension','vocabulary','oralComprehension','aoa1.Aoa', 'aoa2.usage', 'aoa3.context','aoa4.multLang','aoa5.selfRatedProf','aoa6.multiLing')]);
 summary(pptFeatures);
 
 #correlation between the individual scores
