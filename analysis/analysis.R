@@ -29,8 +29,6 @@ summary(masterFile);
 #------------------------------------------#
 library(ggplot2);
 library(rms);
-library(doBy);
-library(mgcv);
 library(effects);
 library(plyr);
 library(corrplot);
@@ -282,7 +280,6 @@ summary(crossExp);
 crosslmer <- lmer(-1000/rt ~ relatedness * morphType * language + freqTarget + lengthTarget + (1|subject) + (1|target), data = crossExp, REML = T);
 crosslmerb <- lmer(-1000/rt ~ relatedness * morphType * language + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(crossExp, abs(scale(resid(crosslmer)))<2.5), REML = T);
 anova(crosslmerb);
-
 #--------------------------------------------------------#
 #### proficiency scores, correlation and distribution ####
 #--------------------------------------------------------#
@@ -515,7 +512,7 @@ summary(temp);
 aggregate(oscTarget ~ morphType, FUN=fivenum, data=temp); #indeed they are
 
 #this represents this graphically
-jpeg(filename = paste(localGitDir,'/oscMorph.jpg', sep = ''), res=300, height=2200, width=4400);
+jpeg(filename = paste(localGitDir,'/oscMorph.jpg', sep = ''), res=300, height=1500, width=1500);
 temp$morphType <- factor(temp$morphType, levels=c('or','op','tr')); #this controls the order in which the boxes will appear
 boxplot(oscTarget ~ morphType, data=subset(temp, oscTarget>0), bty='l', boxwex=.5, col=grey(.80), ylab='OSC', frame=F, axes=F, ylim=c(0,1));
 axis(2, at=seq(0,1,.2));
@@ -531,16 +528,24 @@ osc1b <- lmer(-1000/rt ~ relatedness * oscTarget * phonemicFluency + freqTarget 
 anova(osc1b);
 summary(osc1b); #very solid 3-way interaction
 
+
+
 #let's explore the effect
 temp <- data.frame(effect('relatedness:oscTarget:phonemicFluency', osc1b, se=list(level=.95), xlevels=list(oscTarget=c(.20,.80), phonemicFluency=c(10,25,40))));
 temp[,c('fit','lower','upper')] <- inv(temp[,c('fit','lower','upper')]);
 
-jpeg(filename = paste(localGitDir,'/oscModel.jpg', sep = ''), res=300, height=2200, width=4400);
-ggplot(data = temp, aes(x=relatedness, y=fit)) +
-  #geom_line() +
+jpeg(filename = paste(localGitDir,'/oscModel.jpg', sep = ''), res=300, height=1000, width=2500);
+ggplot(data = temp, aes(x=relatedness, y=fit, group=phonemicFluency)) +
+  geom_line() +
   geom_point() +
-  geom_errorbar(aes(ymin=lower, ymax=upper), width=.2) +
-  facet_grid(oscTarget ~ phonemicFluency);
+  theme_bw() + 
+  ylab('RTs (ms)') + xlab('') +
+  theme(axis.text.y = element_text(angle = 00, hjust = 1, size=8, colour = 'black'))+
+  theme(axis.text.x = element_text(size=13, colour = 'black')) +
+  theme(panel.grid.major = element_blank()) +
+  geom_pointrange(aes(ymin = temp$lower, ymax = temp$upper)) +
+  facet_grid(oscTarget ~ phonemicFluency) +
+  theme(strip.text = element_text(size=12));
 dev.off(); #this essentially confirms the picture that we see in the proficiency analysis: at high levels of OSC (that is, in parts of the lexical space where the correspondence between form and meaning is strong; that is again, with transparent items), priming is independent of fluency/proficiency; whereas in parts of the lexical space where the correspondence between form and meaning is loose, the higher the proficiency, the smaller the effect. 
 
 #bonus track: we check whether OSC explains data better than morphological condition
