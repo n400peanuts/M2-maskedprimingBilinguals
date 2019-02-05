@@ -1,3 +1,9 @@
+# Overview
+This repo contains data and analysis scripts of the paper submitted to JML by Eva Viviani and Davide Crepaldi
+
+# Projects description
+#### L2 form priming turns into morphological facilitation with growing proficiency ####
+
 This experiment is a masked morphological priming on L1-Italian, L2-English bilinguals. 
 Data were collected between November 2016 and September 2017, and consists of 81 participants.
 Each of them completed in addition to the masked priming: 
