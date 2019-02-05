@@ -11,7 +11,7 @@ Each of them completed in addition to the masked priming:
 (2) a Survey about the general linguistic knowledge of L2 (AoA survey).
 
 This repo contains: 
-In /raw data, all the participants' data files, separately for ITA and ENG, as they came out from the acquisition procedure.
+In **[/rawData](https://github.com/n400peanuts/M2-maskedprimingBilinguals/tree/master/rawData)**, all the participants' data files, separately for ITA and ENG, as they came out from the acquisition procedure.
 In /analysis: the pre-processing and the analysis scripts.
 In /stimuli: the stimuli used for the masked priming experiment, complete with all covariates (e.g., word frequency, word length).
 
@@ -20,4 +20,3 @@ To replicate the analysis reported in the paper, you simply have to go through t
 
 Eva Viviani and Davide Crepaldi
 SISSA, Trieste, Italy
-September 2018    
