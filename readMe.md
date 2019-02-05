@@ -12,8 +12,8 @@ Each of them completed in addition to the masked priming:
 
 This repo contains: 
 In **[/rawData](https://github.com/n400peanuts/M2-maskedprimingBilinguals/tree/master/rawData)**, all the participants' data files, separately for ITA and ENG, as they came out from the acquisition procedure.
-In /analysis: the pre-processing and the analysis scripts.
-In /stimuli: the stimuli used for the masked priming experiment, complete with all covariates (e.g., word frequency, word length).
+In **[/analysis](https://github.com/n400peanuts/M2-maskedprimingBilinguals/tree/master/analysis)**: the pre-processing and the analysis scripts.
+In **[/stimuli](https://github.com/n400peanuts/M2-maskedprimingBilinguals/tree/master/stimuli)**: the stimuli used for the masked priming experiment, complete with all covariates (e.g., word frequency, word length).
 
 To replicate the analysis reported in the paper, you simply have to go through this code:
 **[Navigate to the analysis.R script](https://github.com/n400peanuts/M2-maskedprimingBilinguals/blob/master/analysis/analysis.R)**
