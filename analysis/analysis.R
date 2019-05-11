@@ -14,8 +14,8 @@
 rm(list = ls());
 
 #set your local working directory. This should be (and is assumed to be in the rest of the code) the highest point in your local gitHub folder:
-localGitDir <- 'C:/Users/eva_v/Documents/GitHub/M2-maskedprimingBilinguals';
-#localGitDir <- '~/Google Drive File Stream/My Drive/research/misc/m2-maskedMorphPrimingBilinguals/git/M2-maskedprimingBilinguals/';
+#localGitDir <- 'C:/Users/eva_v/Documents/GitHub/M2-maskedprimingBilinguals';
+localGitDir <- '~/Google Drive File Stream/My Drive/research/misc/m2-maskedMorphPrimingBilinguals/git/M2-maskedprimingBilinguals/';
 setwd(localGitDir);
 
 # This script works on the outcome of preProcessing.R, which you can upload here:
@@ -284,7 +284,7 @@ anova(crosslmerb);
 #### proficiency scores, correlation and distribution ####
 #--------------------------------------------------------#
 #create a database with one line per ppt
-pptFeatures <- unique(dataEng[,c('subject','age','gender','handedness','rotation','phonemicFluency', 'phonemicComprehension','morphComprehension','spelling','readingComprehension','vocabulary','oralComprehension','aoa1.Aoa', 'aoa2.usage', 'aoa3.context','aoa4.multLang','aoa5.selfRatedProf','aoa6.multiLing')]);
+pptFeatures <- unique(dataEng[,c('subject','age','gender','handedness','rotation','phonemicFluency', 'phonemicComprehension','morphComprehension','spelling','readingComprehension','vocabulary','oralComprehension','aoa1.Aoa', 'aoa2.usage', 'aoa3.context','aoa4.contextMultling','aoa5.selfRatedProf','aoa6.otherLang')]);
 summary(pptFeatures);
 
 #correlation between the individual scores
@@ -360,26 +360,26 @@ anova(proficiencylmer0,proficiencylmer7);
 proficiencylmer1b <- lmer(-1000/rt ~ relatedness * morphType * phonemicFluency + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer1)))<2.5), REML=T);
 anova(proficiencylmer1b);
 
-proficiencylmer2b <- lmer(-1000/rt ~ relatedness *  morphType * phonemicComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer2)))<2.5), REML=F);
+proficiencylmer2b <- lmer(-1000/rt ~ relatedness *  morphType * phonemicComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer2)))<2.5), REML=T);
 anova(proficiencylmer2b);
 
-proficiencylmer3b <- lmer(-1000/rt ~ relatedness *  morphType * morphComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer3)))<2.5), REML=F);
+proficiencylmer3b <- lmer(-1000/rt ~ relatedness *  morphType * morphComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer3)))<2.5), REML=T);
 anova(proficiencylmer3b);
 
-proficiencylmer4b <- lmer(-1000/rt ~ relatedness * morphType * spelling + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer4)))<2.5), REML=F);
+proficiencylmer4b <- lmer(-1000/rt ~ relatedness * morphType * spelling + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer4)))<2.5), REML=T);
 anova(proficiencylmer4b);
 
-proficiencylmer5b <- lmer(-1000/rt ~ relatedness * morphType * readingComprehension + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer5)))<2.5), REML=F);
+proficiencylmer5b <- lmer(-1000/rt ~ relatedness * morphType * readingComprehension + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer5)))<2.5), REML=T);
 anova(proficiencylmer5b);
 
-proficiencylmer6b <- lmer(-1000/rt ~ relatedness * morphType * vocabulary + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer6)))<2.5), REML=F);
+proficiencylmer6b <- lmer(-1000/rt ~ relatedness * morphType * vocabulary + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer6)))<2.5), REML=T);
 anova(proficiencylmer6b);
 
-proficiencylmer7b <- lmer(-1000/rt ~ relatedness * morphType * oralComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer7)))<2.5), REML=F);
+proficiencylmer7b <- lmer(-1000/rt ~ relatedness * morphType * oralComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer7)))<2.5), REML=T);
 anova(proficiencylmer7b);
 
 #what sort of effect this is? [here comes the new plot]
-temp <- data.frame(effect('relatedness:morphType:phonemicFluency', proficiencylmer1b, se=list(level=.95), xlevels=4));
+temp <- data.frame(effect('relatedness:morphType:phonemicFluency', proficiencylmer1b, se=list(level=.95), xlevels=list(phonemicFluency=quantile(dataEng$phonemicFluency, probs=c(.05,.50,.95)))));
 temp[,c('fit','lower','upper')] <- inv(temp[,c('fit','lower','upper')]);
 revalue(temp$relatedness, c("rel"="related"))-> temp$relatedness
 revalue(temp$relatedness, c("ctrl"="unrelated"))-> temp$relatedness
@@ -400,11 +400,11 @@ dev.off();
 
 #it seems the case that transparent priming stay strong and solid across different levels of proficiency, while opaque and orthographic priming tend to shrink with growing phonemic fluency. This suggests we should use transparent primes as our reference level for morphological condition: 
 dataEng$morphType <- relevel(dataEng$morphType, "tr");
-proficiencylmer1b <- lmer(-1000/rt ~ relatedness * morphType * phonemicFluency + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer1)))<2.5), REML=F);
+proficiencylmer1b <- lmer(-1000/rt ~ relatedness * morphType * phonemicFluency + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer1)))<2.5), REML=T);
 summary(proficiencylmer1b);
 
-#although only phonemic fluency is frankly significant, we want to check whether the two variables coming close behind shows the same effect, at least qualitatively:
-temp <- data.frame(effect('relatedness:morphType:morphComprehension', proficiencylmer3b, se=list(level=.95), xlevels=4));
+#although only phonemic fluency is frankly significant, we want to check whether the other variable around the significance threshold, morphological awareness, shows the same effect, at least qualitatively:
+temp <- data.frame(effect('relatedness:morphType:morphComprehension', proficiencylmer3b, se=list(level=.95), xlevels=list(morphComprehension=quantile(dataEng$morphComprehension, probs=c(.05,.50,.95)))));
 temp[,c('fit','lower','upper')] <- inv(temp[,c('fit','lower','upper')]);
 revalue(temp$relatedness, c("rel"="related"))-> temp$relatedness
 revalue(temp$relatedness, c("ctrl"="unrelated"))-> temp$relatedness
@@ -414,15 +414,9 @@ ggplot(data = temp, aes(x=relatedness, y=fit, group=morphType)) + theme_bw()+
   geom_pointrange(aes(ymin = temp$lower, ymax = temp$upper)) +
   facet_grid(morphType ~ morphComprehension);
 
-temp <- data.frame(effect('relatedness:morphType:spelling', proficiencylmer4b, se=list(level=.95), xlevels=4));
-temp[,c('fit','lower','upper')] <- inv(temp[,c('fit','lower','upper')]);
-revalue(temp$relatedness, c("rel"="related"))-> temp$relatedness
-revalue(temp$relatedness, c("ctrl"="unrelated"))-> temp$relatedness
-ggplot(data = temp, aes(x=relatedness, y=fit, aes=morphType)) + theme_bw()+
-  geom_line() +
-  geom_point() +
-  geom_pointrange(aes(ymin = temp$lower, ymax = temp$upper)) +
-  facet_grid(morphType ~ spelling);
+dataEng$morphType <- relevel(dataEng$morphType, "tr");
+proficiencylmer1b <- lmer(-1000/rt ~ relatedness * morphType * morphComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer1)))<2.5), REML=T);
+summary(proficiencylmer1b);
 
 #------------------------------------------------#
 #### aoa scores, correlation and distribution ####
@@ -528,10 +522,8 @@ osc1b <- lmer(-1000/rt ~ relatedness * oscTarget * phonemicFluency + freqTarget 
 anova(osc1b);
 summary(osc1b); #very solid 3-way interaction
 
-
-
 #let's explore the effect
-temp <- data.frame(effect('relatedness:oscTarget:phonemicFluency', osc1b, se=list(level=.95), xlevels=list(oscTarget=c(.20,.80), phonemicFluency=c(10,25,40))));
+temp <- data.frame(effect('relatedness:oscTarget:phonemicFluency', osc1b, se=list(level=.95), xlevels=list(oscTarget=c(.20,.80), phonemicFluency=quantile(dataEng$phonemicFluency, probs=c(.05,.50,.95)))));
 temp[,c('fit','lower','upper')] <- inv(temp[,c('fit','lower','upper')]);
 
 jpeg(filename = paste(localGitDir,'/oscModel.jpg', sep = ''), res=300, height=1000, width=2500);
