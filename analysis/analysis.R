@@ -14,7 +14,8 @@
 rm(list = ls());
 
 #set your local working directory. This should be (and is assumed to be in the rest of the code) the highest point in your local gitHub folder:
-localGitDir <- 'C:/Users/eva_v/Documents/GitHub/M2-maskedprimingBilinguals';
+localGitDir <- ' '
+#localGitDir <- 'C:/Users/eva_v/Documents/GitHub/M2-maskedprimingBilinguals';
 #localGitDir <- '~/Google Drive File Stream/My Drive/research/misc/m2-maskedMorphPrimingBilinguals/git/M2-maskedprimingBilinguals/';
 setwd(localGitDir);
 
@@ -78,8 +79,8 @@ lexicality <- tolower(masterFileIta$lexicality);
 target <- masterFileIta$target;
 rt <- masterFileIta$rt;
 
-source(paste(localGitDir, "tools/diagnostics.R", sep='')); 
-outlierGraphStore <- '~/Desktop/';
+source(paste(localGitDir, "/tools/diagnostics.R", sep='')); 
+outlierGraphStore <- 'Desktop';
 diagnostics.f(rt = rt, acc = acc, sbj.id = sbj.id, target = target, lexicality = lexicality, paste(outlierGraphStore, "ita", sep=""));
 rm(outlierGraphStore, rt, target, lexicality, acc, sbj.id);
 
@@ -95,7 +96,7 @@ dataItaTemp <- subset(dataItaAcc, accuracy==1);
 dataIta <- subset(dataItaTemp, rt>280 & rt<2500 & subject!=15 & subject!=2 & subject!=31 & target!= "guano" & target!= "uggia" & target!= "vello");
 nrow(dataItaTemp)-nrow(dataIta);
 (nrow(dataItaTemp)-nrow(dataIta)) / nrow(dataItaTemp);
-nrow(dataIta)
+nrow(dataIta);
 
 summary(dataIta);
 
@@ -105,6 +106,7 @@ summary(dataIta);
 subset(masterFile, language=="eng") -> masterFileEng;
 
 # the following code generates target and sbj means and SDs, and the outlier graphs in the file 'ita.jpg'
+outlierGraphStore <- 'Desktop';
 sbj.id <- masterFileEng$subject;
 acc <- masterFileEng$accuracy;
 lexicality <- masterFileEng$lexicality;
@@ -157,6 +159,7 @@ mean(dataEngAcc$accuracy); mean(dataEng$rt);
 
 aggregate(rt ~ relatedness + morphType, FUN=mean, data=dataIta);
 aggregate(rt ~ relatedness + morphType, FUN=mean, data=dataEng);
+aggregate(rt ~ relatedness + morphType, FUN=sd, data=dataEng);
 
 #-----------------------#
 #### modelling, ita #####
@@ -166,12 +169,12 @@ dataIta$morphType <- relevel(dataIta$morphType, "or");
 contrasts(dataIta$relatedness);
 contrasts(dataIta$morphType);
 
-italmer0 <- lmer(-1000/rt ~ 1 + (1|subject) + (1|target), data= dataIta, REML = F);
+italmer0 <- lmer(-1000/rt ~ 1 + (1|subject) + (1|target), data= dataIta, REML = T);
 
-italmer1 <- lmer(-1000/rt ~ trialCount + rotation + (1|subject) + (1|target), data= dataIta, REML = F);
+italmer1 <- lmer(-1000/rt ~ trialCount + rotation + (1|subject) + (1|target), data= dataIta, REML = T);
 anova(italmer0, italmer1); #no effect here
 
-italmer1 <- lmer(-1000/rt ~ freqTarget + lengthTarget + nTarget + (1|subject) + (1|target), data= dataIta, REML = F);
+italmer1 <- lmer(-1000/rt ~ freqTarget + lengthTarget + nTarget + (1|subject) + (1|target), data= dataIta, REML = T);
 anova(italmer0, italmer1); #strong improvement in GoF
 anova(italmer1); #to which only freq seems to contribute
 
@@ -196,12 +199,12 @@ dataEng$morphType <- relevel(dataEng$morphType, "or");
 contrasts(dataEng$relatedness);
 contrasts(dataEng$morphType);
 
-englmer0 <- lmer(-1000/rt ~ 1 + (1|subject) + (1|target), data= dataEng, REML = F);
+englmer0 <- lmer(-1000/rt ~ 1 + (1|subject) + (1|target), data= dataEng, REML = T);
 
-englmer1 <- lmer(-1000/rt ~ trialCount + rotation + (1|subject) + (1|target), data= dataEng, REML = F);
+englmer1 <- lmer(-1000/rt ~ trialCount + rotation + (1|subject) + (1|target), data= dataEng, REML = T);
 anova(englmer0, englmer1); #no effect here
 
-englmer1 <- lmer(-1000/rt ~ freqTarget + lengthTarget + nTarget + (1|subject) + (1|target), data= dataEng, REML = F);
+englmer1 <- lmer(-1000/rt ~ freqTarget + lengthTarget + nTarget + (1|subject) + (1|target), data= dataEng, REML = T);
 anova(englmer0, englmer1); #strong improvement in GoF
 anova(englmer1); #frequency and length contribute
 
@@ -221,55 +224,61 @@ summary(englmer2d); #here we get the contrast between transparent and opaque pai
 #------------------------------#
 #### plots of estimated RTs ####
 #------------------------------#
-
-# figure for the paper
+# figure 1 of the paper
 require(cowplot); #for plotting on multiple pages
 
-df <- effect("relatedness:morphType",italmer2b) ;
+df <- effect("relatedness:morphType",italmer2b);
 df <- as.data.frame(df);
 df$fit <- inv(df$fit);
 df$lower <- inv(df$lower);
 df$upper <- inv(df$upper);
-revalue(df$relatedness, c("ctrl"="unrelated"))-> df$relatedness
-revalue(df$relatedness, c("rel"="related"))-> df$relatedness
+revalue(df$relatedness, c("ctrl"="unrelated"))-> df$relatedness;
+revalue(df$relatedness, c("rel"="related"))-> df$relatedness;
 
 
-dodge <- position_dodge(width = 0.1)
-bb  <-ggplot(data = df, aes(x = relatedness, y = fit,group = morphType)) + geom_point(size = 2, position = dodge) + geom_line(aes(linetype=morphType), position = dodge)+ scale_linetype_manual(values=c("solid", "dotted", "dashed")) + theme_classic();
-bb  <- bb + geom_pointrange(aes(ymin = df$lower, ymax = df$upper), position = dodge) 
-bb  <- bb + scale_y_continuous("RT(ms)", limits = c(515,650)) 
-bb  <- bb + theme(axis.title.y = element_text(size = rel(1), angle = 90))
-bb  <- bb + theme(axis.text.y = element_text(angle = 00, hjust = 1, size=10, colour = 'black'))
-bb  <- bb + theme(axis.title.x = element_blank())
-bb <- bb + labs(title='L1 - Italian')
-bb <- bb + theme(plot.title= element_text(angle = 00, hjust=0.5, size=15, face = 'bold', colour = 'black'))
-bb <- bb + theme(legend.position="none")
-bb
-ggsave("itaplot.jpg")
+dodge1 <- position_dodge(width = 0.1);
+bb  <-ggplot(data = df, aes(x = relatedness, y = fit,group = morphType)) +
+  geom_point(size = 2, position = dodge1) +
+  geom_line(aes(linetype=morphType), position = dodge1) + 
+  scale_linetype_manual(values=c("solid", "dotted", "dashed")) +
+  theme_classic();
+bb  <- bb + geom_pointrange(aes(ymin = df$lower, ymax = df$upper), position = dodge1) ;
+bb  <- bb + scale_y_continuous("RT(ms)", limits = c(515,610)) ;
+bb  <- bb + theme(axis.title.y = element_text(size = rel(1), angle = 90));
+bb  <- bb + theme(axis.text.y = element_text(angle = 00, hjust = 1, size=10, colour = 'black'));
+bb  <- bb + theme(axis.title.x = element_blank());
+bb <- bb + labs(title='L1 - Italian');
+bb <- bb + theme(plot.title= element_text(angle = 00, hjust=0.5, size=15, face = 'bold', colour = 'black'));
+bb <- bb + theme(legend.position="none");
+bb;
+ggsave("itaplot.jpg");
 
 
-df <- effect("relatedness:morphType",englmer2b) 
-df <- as.data.frame(df)
-df$fit <- inv(df$fit)
-df$lower <- inv(df$lower)
-df$upper <- inv(df$upper)
-revalue(df$relatedness, c("ctrl"="unrelated"))-> df$relatedness
-revalue(df$relatedness, c("rel"="related"))-> df$relatedness
+df <- effect("relatedness:morphType",englmer2b); 
+df <- as.data.frame(df);
+df$fit <- inv(df$fit);
+df$lower <- inv(df$lower);
+df$upper <- inv(df$upper);
+revalue(df$relatedness, c("ctrl"="unrelated"))-> df$relatedness;
+revalue(df$relatedness, c("rel"="related"))-> df$relatedness;
 
-dodge <- position_dodge(width = 0.1)
-gg  <-ggplot(data = df, aes(x = relatedness, y = fit,group = morphType)) + geom_point(size = 2, position = dodge) + geom_line(aes(linetype=morphType), position = dodge)+ scale_linetype_manual(values=c("solid", "dotted", "dashed")) + theme_classic();
-gg  <- gg + geom_pointrange(aes(ymin = df$lower, ymax = df$upper), position = dodge)
-gg  <- gg + scale_y_continuous("") 
-gg  <- gg + theme(axis.text.y = element_text(angle = 00, hjust = 1, size=10, colour = 'black'))
-gg  <- gg + theme(axis.title.x = element_blank())
-gg <- gg + labs(title='L2 - English')
-gg <- gg + theme(plot.title= element_text(angle = 00, hjust=0.5, size=15, face = 'bold', colour = 'black'))
-gg <- gg + theme(legend.position="none")
-#gg <- gg + theme(legend.title = element_text(size = 8))
-#gg <- gg + theme(legend.text = element_text(size = 8))
+dodge <- position_dodge(width = 0.1);
+gg  <-ggplot(data = df, aes(x = relatedness, y = fit,group = morphType)) + 
+      geom_point(size = 2, position = dodge) + 
+      geom_line(aes(linetype=morphType), position = dodge) + 
+      scale_linetype_manual(values=c("solid", "dotted", "dashed")) + 
+      theme_classic();
+gg  <- gg + geom_pointrange(aes(ymin = df$lower, ymax = df$upper), position = dodge);
+gg  <- gg + scale_y_continuous("") ;
+gg  <- gg + theme(axis.text.y = element_text(angle = 00, hjust = 1, size=10, colour = 'black'));
+gg  <- gg + theme(axis.title.x = element_blank());
+gg <- gg + labs(title='L2 - English');
+gg <- gg + theme(plot.title= element_text(angle = 00, hjust=0.5, size=15, face = 'bold', colour = 'black'));
 gg
-ggsave("engplot.jpg")
-rm(gg, bb, aa, dodge)
+
+plot_grid(bb,gg);
+ggsave("engplot.jpg");
+rm(gg, bb, aa, dodge);
 
 #----------------------------------#
 #### cross language interaction ####
@@ -292,7 +301,7 @@ round(cor(pptFeatures[,c(6:12)], use='pairwise.complete.obs'), digits=2);
 temp <- as.vector(round(cor(pptFeatures[,c(6:12)], use='pairwise.complete.obs'), digits=2));
 fivenum(temp[temp!=1]);
 
-#check score distributions
+#check score distributions, figure 2 in the paper
 jpeg(filename = paste(localGitDir,'/fig_proficiencyScores.jpg', sep = ''), res=300, height=2200, width=4400);
      
 par(mfrow=c(2,4));
@@ -337,92 +346,111 @@ par(mfrow=c(1,1));
 #-----------------------------#
 #### proficiency modelling ####
 #-----------------------------#
+dataEng$morphType <- relevel(dataEng$morphType, "or");
+
 #overall improvement in goodness of fit
-proficiencylmer0 <- lmer(-1000/rt ~ relatedness * morphType + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F); #this establishes the baseline model, with no proficiency score
+proficiencylmer0 <- lmer(-1000/rt ~ relatedness * morphType + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML = T); #this establishes the baseline model, with no proficiency score
 
 #here we test whether each individual proficiency score guarantees a better overall fit
-proficiencylmer1 <- lmer(-1000/rt ~ relatedness * morphType * phonemicFluency + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
+proficiencylmer1 <- lmer(-1000/rt ~ relatedness * morphType * phonemicFluency  + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML = T);
 anova(proficiencylmer0, proficiencylmer1);
-proficiencylmer2 <- lmer(-1000/rt ~ relatedness *  morphType * phonemicComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
+proficiencylmer2 <- lmer(-1000/rt ~ relatedness *  morphType * phonemicComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML = T);
 anova(proficiencylmer0, proficiencylmer2);
-proficiencylmer3 <- lmer(-1000/rt ~ relatedness *  morphType * morphComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
+proficiencylmer3 <- lmer(-1000/rt ~ relatedness *  morphType * morphComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML = T);
 anova(proficiencylmer0,proficiencylmer3);
-proficiencylmer4 <- lmer(-1000/rt ~ relatedness * morphType * spelling + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
+proficiencylmer4 <- lmer(-1000/rt ~ relatedness * morphType * spelling + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML = T);
 anova(proficiencylmer0, proficiencylmer4);
-proficiencylmer5 <- lmer(-1000/rt ~ relatedness * morphType * readingComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
+proficiencylmer5 <- lmer(-1000/rt ~ relatedness * morphType * readingComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML = T);
 anova(proficiencylmer0, proficiencylmer5); 
-proficiencylmer6 <- lmer(-1000/rt ~ relatedness * morphType * vocabulary + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
+proficiencylmer6 <- lmer(-1000/rt ~ relatedness * morphType * vocabulary + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML = T);
 anova(proficiencylmer0,proficiencylmer6);
-proficiencylmer7 <- lmer(-1000/rt ~ relatedness * morphType * oralComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=F);
+proficiencylmer7 <- lmer(-1000/rt ~ relatedness * morphType * oralComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML = T);
 anova(proficiencylmer0,proficiencylmer7);
 
 #does proficiency specifically interact with priming?
-proficiencylmer1b <- lmer(-1000/rt ~ relatedness * morphType * phonemicFluency + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer1)))<2.5), REML=T);
+proficiencylmer1b <- lmer(-1000/rt ~ relatedness * morphType * phonemicFluency + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer1)))<2.5), REML = T);
 anova(proficiencylmer1b);
 
-proficiencylmer2b <- lmer(-1000/rt ~ relatedness *  morphType * phonemicComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer2)))<2.5), REML=F);
+proficiencylmer2b <- lmer(-1000/rt ~ relatedness *  morphType * phonemicComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer2)))<2.5), REML = T);
 anova(proficiencylmer2b);
 
-proficiencylmer3b <- lmer(-1000/rt ~ relatedness *  morphType * morphComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer3)))<2.5), REML=F);
+proficiencylmer3b <- lmer(-1000/rt ~ relatedness *  morphType * morphComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer3)))<2.5), REML = T);
 anova(proficiencylmer3b);
 
-proficiencylmer4b <- lmer(-1000/rt ~ relatedness * morphType * spelling + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer4)))<2.5), REML=F);
+proficiencylmer4b <- lmer(-1000/rt ~ relatedness * morphType * spelling + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer4)))<2.5), REML = T);
 anova(proficiencylmer4b);
 
-proficiencylmer5b <- lmer(-1000/rt ~ relatedness * morphType * readingComprehension + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer5)))<2.5), REML=F);
+proficiencylmer5b <- lmer(-1000/rt ~ relatedness * morphType * readingComprehension + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer5)))<2.5), REML = T);
 anova(proficiencylmer5b);
 
-proficiencylmer6b <- lmer(-1000/rt ~ relatedness * morphType * vocabulary + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer6)))<2.5), REML=F);
+proficiencylmer6b <- lmer(-1000/rt ~ relatedness * morphType * vocabulary + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer6)))<2.5), REML = T);
 anova(proficiencylmer6b);
 
-proficiencylmer7b <- lmer(-1000/rt ~ relatedness * morphType * oralComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer7)))<2.5), REML=F);
+proficiencylmer7b <- lmer(-1000/rt ~ relatedness * morphType * oralComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer7)))<2.5), REML = T);
 anova(proficiencylmer7b);
 
-#what sort of effect this is? [here comes the new plot]
-temp <- data.frame(effect('relatedness:morphType:phonemicFluency', proficiencylmer1b, se=list(level=.95), xlevels=4));
+#what sort of effect this is? [Figure 3 in the paper]
+temp <- data.frame(effect('relatedness:morphType:phonemicFluency', proficiencylmer1b, se=list(level=.95), xlevels=3));
 temp[,c('fit','lower','upper')] <- inv(temp[,c('fit','lower','upper')]);
-revalue(temp$relatedness, c("rel"="related"))-> temp$relatedness
-revalue(temp$relatedness, c("ctrl"="unrelated"))-> temp$relatedness
+revalue(temp$relatedness, c("rel"="related"))-> temp$relatedness;
+revalue(temp$relatedness, c("ctrl"="unrelated"))-> temp$relatedness;
 
 jpeg(filename = paste(localGitDir,'/proficiencyModel.jpg', sep = ''), res=300, height=1000, width=2500);
 
+phonemicFluency_names <- c(
+  "0" = "low fluency",
+  "20" = "medium fluency",
+  "40" = "high fluency");
+
 ggplot(data = temp, aes(x=relatedness, y=fit, group=morphType)) + 
-  geom_point()+geom_line() +
-  theme_bw() + theme(panel.grid.major = element_blank()) +
+  geom_point() +
+  geom_line() + 
+  scale_linetype_manual(values=c("solid", "dotted", "dashed")) +
+  theme_bw() + 
+  theme(panel.grid.major = element_blank()) +
   ylab('RTs (ms)') + xlab('') + 
   theme(axis.text.y = element_text(angle = 00, hjust = 1, size=8, colour = 'black'))+
   theme(axis.text.x = element_text(size=13, colour = 'black'))+
   geom_pointrange(aes(ymin = temp$lower, ymax = temp$upper)) +
-  facet_grid(morphType ~ phonemicFluency) +
+  facet_grid(morphType ~ phonemicFluency, 
+             labeller = labeller(phonemicFluency = as_labeller(phonemicFluency_names))) +
   theme(strip.text = element_text(size=12));
+  
 
 dev.off();
 
 #it seems the case that transparent priming stay strong and solid across different levels of proficiency, while opaque and orthographic priming tend to shrink with growing phonemic fluency. This suggests we should use transparent primes as our reference level for morphological condition: 
 dataEng$morphType <- relevel(dataEng$morphType, "tr");
-proficiencylmer1b <- lmer(-1000/rt ~ relatedness * morphType * phonemicFluency + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer1)))<2.5), REML=F);
+proficiencylmer1b <- lmer(-1000/rt ~ relatedness * morphType * phonemicFluency + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer1)))<2.5), REML = T);
 summary(proficiencylmer1b);
 
+proficiencylmer3b <- lmer(-1000/rt ~ relatedness *  morphType * morphComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer3)))<2.5), REML = T);
+summary(proficiencylmer3b);
+
 #although only phonemic fluency is frankly significant, we want to check whether the two variables coming close behind shows the same effect, at least qualitatively:
-temp <- data.frame(effect('relatedness:morphType:morphComprehension', proficiencylmer3b, se=list(level=.95), xlevels=4));
+# [figure 7 in the paper]
+temp <- data.frame(effect('relatedness:morphType:morphComprehension', proficiencylmer3b, se=list(level=.95), xlevels=3));
 temp[,c('fit','lower','upper')] <- inv(temp[,c('fit','lower','upper')]);
-revalue(temp$relatedness, c("rel"="related"))-> temp$relatedness
-revalue(temp$relatedness, c("ctrl"="unrelated"))-> temp$relatedness
+revalue(temp$relatedness, c("rel"="related"))-> temp$relatedness;
+revalue(temp$relatedness, c("ctrl"="unrelated"))-> temp$relatedness;
+
+morphComprehension_names <- c(
+  "4" = "low Morph Awareness",
+  "7" = "medium Morph Awareness",
+  "10" = "high Morph Awareness");
+
+jpeg(filename = paste(localGitDir,'/morphAwarenessModel.jpg', sep = ''), res=300, height=1000, width=2500);
 ggplot(data = temp, aes(x=relatedness, y=fit, group=morphType)) + theme_bw()+
   geom_line() +
   geom_point() +
   geom_pointrange(aes(ymin = temp$lower, ymax = temp$upper)) +
-  facet_grid(morphType ~ morphComprehension);
-
-temp <- data.frame(effect('relatedness:morphType:spelling', proficiencylmer4b, se=list(level=.95), xlevels=4));
-temp[,c('fit','lower','upper')] <- inv(temp[,c('fit','lower','upper')]);
-revalue(temp$relatedness, c("rel"="related"))-> temp$relatedness
-revalue(temp$relatedness, c("ctrl"="unrelated"))-> temp$relatedness
-ggplot(data = temp, aes(x=relatedness, y=fit, aes=morphType)) + theme_bw()+
-  geom_line() +
-  geom_point() +
-  geom_pointrange(aes(ymin = temp$lower, ymax = temp$upper)) +
-  facet_grid(morphType ~ spelling);
+  facet_grid(morphType ~ morphComprehension, labeller = labeller(morphComprehension = as_labeller(morphComprehension_names))) +
+  theme(strip.text = element_text(size=12))+ 
+  theme(panel.grid.major = element_blank()) +
+  ylab('RTs (ms)') + xlab('') + 
+  theme(axis.text.y = element_text(angle = 00, hjust = 1, size=8, colour = 'black'))+
+  theme(axis.text.x = element_text(size=13, colour = 'black'));
+dev.off();
 
 #------------------------------------------------#
 #### aoa scores, correlation and distribution ####
@@ -448,14 +476,14 @@ axis(2, at=c(0,30), cex.axis=2, las=1);
 barplot(table(aoa3.context), main = '(c) Where did you learn?', cex.main=2,  ylab = 'N of participants', ylim=c(0,65), cex.lab=2, cex.names=2, axes=F, col=grey(.80), border=grey(0));
 axis(2, at=c(0,65), cex.axis=2, las=1);
 
-barplot(table(aoa4.contextMultiling), main = '(d) Multilingual context', cex.main=2, ylab = 'N of participants', ylim=c(0,65), cex.lab=2, cex.names=2, axes=F, col=grey(.80), border=grey(0));
+barplot(table(aoa4.multLang), main = '(d) Multilingual context', cex.main=2, ylab = 'N of participants', ylim=c(0,65), cex.lab=2, cex.names=2, axes=F, col=grey(.80), border=grey(0));
 axis(2, at=c(0,65), cex.axis=2, las=1);
 
 hist(aoa5.selfRatedProf, breaks = seq(.5,5.5,1), main = '(e) Self rated proficiency', cex.main=2, xlab = 'Scores', ylab = 'N of participants', ylim=c(0,30), cex.lab=2, axes=F, col=grey(.80), border=grey(0));
 axis(1, cex.axis=2);
 axis(2, at=c(0,30), cex.axis=2, las=1);
 
-barplot(table(aoa6.otherLang), main = '(f) Additional languages?', cex.main=2, ylab = 'N of participants', ylim=c(0,65), cex.lab=2, cex.names=2, axes=F, col=grey(.80), border=grey(0));
+barplot(table(aoa6.multiLing), main = '(f) Additional languages?', cex.main=2, ylab = 'N of participants', ylim=c(0,65), cex.lab=2, cex.names=2, axes=F, col=grey(.80), border=grey(0));
 axis(2, at=c(0,65), cex.axis=2, las=1);
 
 detach(pptFeatures);
@@ -485,13 +513,13 @@ anova(proficiencylmer0, aoalmer2);
 aoalmer3 <- lmer(-1000/rt ~ relatedness*morphType*aoa3.context + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng);
 anova(proficiencylmer0, aoalmer3);
 
-aoalmer4 <- lmer(-1000/rt ~ relatedness*morphType*aoa4.contextMultiling + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng);
+aoalmer4 <- lmer(-1000/rt ~ relatedness*morphType*aoa4.multLang + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng);
 anova(proficiencylmer0, aoalmer4);
 
 aoalmer5 <- lmer(-1000/rt ~ relatedness*morphType*aoa5.selfRatedProf + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng);
 anova(proficiencylmer0, aoalmer5);
 
-aoalmer6 <- lmer(-1000/rt ~ relatedness*morphType*aoa6.otherLang + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng);
+aoalmer6 <- lmer(-1000/rt ~ relatedness*morphType*aoa6.multiLing + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng);
 anova(proficiencylmer0, aoalmer6);
 
 #priming modulation?
@@ -511,41 +539,58 @@ temp <- unique(masterFile[masterFile$lexicality=='word' & masterFile$language=='
 summary(temp);
 aggregate(oscTarget ~ morphType, FUN=fivenum, data=temp); #indeed they are
 
-#this represents this graphically
-jpeg(filename = paste(localGitDir,'/oscMorph.jpg', sep = ''), res=300, height=1500, width=1500);
-temp$morphType <- factor(temp$morphType, levels=c('or','op','tr')); #this controls the order in which the boxes will appear
-boxplot(oscTarget ~ morphType, data=subset(temp, oscTarget>0), bty='l', boxwex=.5, col=grey(.80), ylab='OSC', frame=F, axes=F, ylim=c(0,1));
-axis(2, at=seq(0,1,.2));
-axis(1, at=1:3, labels=c('Orthographic','Opaque','Transparent'), tick=F);
+#this represents this graphically [figure 4 in the paper]
+revalue(temp$morphType, c("or"="Orthographic", 'op'='Opaque', 'tr'='Transparent'))-> temp$morphType;
+library(ggpubr);
+jpeg(filename = paste(localGitDir,'/oscMorph.jpg', sep = ''), res=150, height=400, width=550);
+ggboxplot(subset(temp, oscTarget>0), "morphType", "oscTarget",
+          color = "black", fill = grey(.80),
+          width = 0.5, ylab = 'OSC', xlab = ''); 
 dev.off();
 
 #and this tests it via NHST
 summary(aov(oscTarget~morphType, data=subset(temp, relatedness=='rel')));
 
 #modelling
-osc1 <- lmer(-1000/rt ~ relatedness * oscTarget * phonemicFluency + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML=T);
-osc1b <- lmer(-1000/rt ~ relatedness * oscTarget * phonemicFluency + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(osc1)))<2.5), REML=T);
+osc1 <- lmer(-1000/rt ~ relatedness *  oscTarget * phonemicFluency + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML = T);
+anova(osc1);
+osc1b <- lmer(-1000/rt ~  relatedness * oscTarget * phonemicFluency + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(osc1)))<2), REML = T);
 anova(osc1b);
 summary(osc1b); #very solid 3-way interaction
 
-
-
-#let's explore the effect
+#[figure 6 in the paper]
 temp <- data.frame(effect('relatedness:oscTarget:phonemicFluency', osc1b, se=list(level=.95), xlevels=list(oscTarget=c(.20,.80), phonemicFluency=c(10,25,40))));
 temp[,c('fit','lower','upper')] <- inv(temp[,c('fit','lower','upper')]);
+revalue(temp$relatedness, c("rel"="related"))-> temp$relatedness;
+revalue(temp$relatedness, c("ctrl"="unrelated"))-> temp$relatedness;
+
+phonemicFluency_names <- c(
+  "10" = "low fluency",
+  "25" = "medium fluency",
+  "40" = "high fluency"
+);
+
+oscTarget_names <- c(
+  "0.2" = "low OSC",
+  "0.8" = "high OSC"
+);
 
 jpeg(filename = paste(localGitDir,'/oscModel.jpg', sep = ''), res=300, height=1000, width=2500);
 ggplot(data = temp, aes(x=relatedness, y=fit, group=phonemicFluency)) +
   geom_line() +
   geom_point() +
   theme_bw() + 
-  ylab('RTs (ms)') + xlab('') +
+  ylab('RTs (ms)') + 
+  xlab('') +
   theme(axis.text.y = element_text(angle = 00, hjust = 1, size=8, colour = 'black'))+
   theme(axis.text.x = element_text(size=13, colour = 'black')) +
   theme(panel.grid.major = element_blank()) +
   geom_pointrange(aes(ymin = temp$lower, ymax = temp$upper)) +
-  facet_grid(oscTarget ~ phonemicFluency) +
+  facet_grid(oscTarget ~ phonemicFluency,
+             labeller = labeller(phonemicFluency = as_labeller(phonemicFluency_names),
+                                 oscTarget = as_labeller(oscTarget_names))) +
   theme(strip.text = element_text(size=12));
+
 dev.off(); #this essentially confirms the picture that we see in the proficiency analysis: at high levels of OSC (that is, in parts of the lexical space where the correspondence between form and meaning is strong; that is again, with transparent items), priming is independent of fluency/proficiency; whereas in parts of the lexical space where the correspondence between form and meaning is loose, the higher the proficiency, the smaller the effect. 
 
 #bonus track: we check whether OSC explains data better than morphological condition
