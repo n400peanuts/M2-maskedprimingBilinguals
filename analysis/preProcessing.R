@@ -12,8 +12,7 @@
 rm(list = ls());
 
 #Set your own working directory. This should be (and is assumed to be in the rest of the code) the highest point in your local gitHub folder:
-localGitDir <- 'C:/Users/eva_v/Documents/GitHub/M2-maskedprimingBilinguals';
-#localGitDir <- '~/Google Drive File Stream/My Drive/research/misc/m2-maskedMorphPrimingBilinguals/git/M2-maskedprimingBilinguals/';
+localGitDir <- '';
 setwd(localGitDir);
 
 #------------------------------------------------------------------#

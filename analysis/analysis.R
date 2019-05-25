@@ -15,8 +15,6 @@ rm(list = ls());
 
 #set your local working directory. This should be (and is assumed to be in the rest of the code) the highest point in your local gitHub folder:
 localGitDir <- ' '
-#localGitDir <- 'C:/Users/eva_v/Documents/GitHub/M2-maskedprimingBilinguals';
-#localGitDir <- '~/Google Drive File Stream/My Drive/research/misc/m2-maskedMorphPrimingBilinguals/git/M2-maskedprimingBilinguals/';
 setwd(localGitDir);
 
 # This script works on the outcome of preProcessing.R, which you can upload here:
@@ -225,33 +223,31 @@ summary(englmer2d); #here we get the contrast between transparent and opaque pai
 #### plots of estimated RTs ####
 #------------------------------#
 # figure 1 of the paper
-require(cowplot); #for plotting on multiple pages
-
 df <- effect("relatedness:morphType",italmer2b);
 df <- as.data.frame(df);
 df$fit <- inv(df$fit);
 df$lower <- inv(df$lower);
 df$upper <- inv(df$upper);
-revalue(df$relatedness, c("ctrl"="unrelated"))-> df$relatedness;
-revalue(df$relatedness, c("rel"="related"))-> df$relatedness;
+revalue(df$relatedness, c("ctrl"="Unrelated"))-> df$relatedness;
+revalue(df$relatedness, c("rel"="Related"))-> df$relatedness;
 
 
-dodge1 <- position_dodge(width = 0.1);
+dodge1 <- position_dodge(width = 0.25);
 bb  <-ggplot(data = df, aes(x = relatedness, y = fit,group = morphType)) +
   geom_point(size = 2, position = dodge1) +
   geom_line(aes(linetype=morphType), position = dodge1) + 
-  scale_linetype_manual(values=c("solid", "dotted", "dashed")) +
+  scale_linetype_manual(values=c("dashed", "dotted", "solid")) +
   theme_classic();
 bb  <- bb + geom_pointrange(aes(ymin = df$lower, ymax = df$upper), position = dodge1) ;
-bb  <- bb + scale_y_continuous("RT(ms)", limits = c(515,610)) ;
+bb  <- bb + scale_y_continuous("RT(ms)") ;
 bb  <- bb + theme(axis.title.y = element_text(size = rel(1), angle = 90));
 bb  <- bb + theme(axis.text.y = element_text(angle = 00, hjust = 1, size=10, colour = 'black'));
-bb  <- bb + theme(axis.title.x = element_blank());
+bb  <- bb + theme(axis.title.x = element_blank()) + theme(axis.text.x = element_text(size=13, colour = 'black'));
 bb <- bb + labs(title='L1 - Italian');
 bb <- bb + theme(plot.title= element_text(angle = 00, hjust=0.5, size=15, face = 'bold', colour = 'black'));
 bb <- bb + theme(legend.position="none");
 bb;
-ggsave("itaplot.jpg");
+ggsave("itaplot.jpg", width = 4, height = 3, dpi = 300);
 
 
 df <- effect("relatedness:morphType",englmer2b); 
@@ -259,26 +255,25 @@ df <- as.data.frame(df);
 df$fit <- inv(df$fit);
 df$lower <- inv(df$lower);
 df$upper <- inv(df$upper);
-revalue(df$relatedness, c("ctrl"="unrelated"))-> df$relatedness;
-revalue(df$relatedness, c("rel"="related"))-> df$relatedness;
+revalue(df$relatedness, c("ctrl"="Unrelated"))-> df$relatedness;
+revalue(df$relatedness, c("rel"="Related"))-> df$relatedness;
 
-dodge <- position_dodge(width = 0.1);
+dodge <- position_dodge(width = 0.25);
 gg  <-ggplot(data = df, aes(x = relatedness, y = fit,group = morphType)) + 
       geom_point(size = 2, position = dodge) + 
       geom_line(aes(linetype=morphType), position = dodge) + 
-      scale_linetype_manual(values=c("solid", "dotted", "dashed")) + 
+      scale_linetype_manual(values=c("dashed", "dotted", "solid")) + 
       theme_classic();
 gg  <- gg + geom_pointrange(aes(ymin = df$lower, ymax = df$upper), position = dodge);
-gg  <- gg + scale_y_continuous("") ;
+gg  <- gg + scale_y_continuous("RT (ms)") ;
 gg  <- gg + theme(axis.text.y = element_text(angle = 00, hjust = 1, size=10, colour = 'black'));
-gg  <- gg + theme(axis.title.x = element_blank());
+gg  <- gg + theme(axis.title.x = element_blank()) + theme(axis.text.x = element_text(size=13, colour = 'black'));
 gg <- gg + labs(title='L2 - English');
 gg <- gg + theme(plot.title= element_text(angle = 00, hjust=0.5, size=15, face = 'bold', colour = 'black'));
-gg
+gg + theme(legend.position="none");
 
-plot_grid(bb,gg);
-ggsave("engplot.jpg");
-rm(gg, bb, aa, dodge);
+ggsave("engplot.jpg", width = 4, height = 3, dpi = 300);
+rm(gg, bb, aa);
 
 #----------------------------------#
 #### cross language interaction ####
@@ -371,7 +366,6 @@ anova(proficiencylmer0,proficiencylmer7);
 proficiencylmer1b <- lmer(-1000/rt ~ relatedness * morphType * phonemicFluency + trialCount + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer1)))<2.5), REML = T);
 anova(proficiencylmer1b);
 
-<<<<<<< HEAD
 proficiencylmer2b <- lmer(-1000/rt ~ relatedness *  morphType * phonemicComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer2)))<2.5), REML = T);
 anova(proficiencylmer2b);
 
@@ -393,36 +387,33 @@ anova(proficiencylmer7b);
 #what sort of effect this is? [Figure 3 in the paper]
 temp <- data.frame(effect('relatedness:morphType:phonemicFluency', proficiencylmer1b, se=list(level=.95), xlevels=list(phonemicFluency=quantile(dataEng$phonemicFluency, probs=c(.05,.50,.95)))));
 temp[,c('fit','lower','upper')] <- inv(temp[,c('fit','lower','upper')]);
-revalue(temp$relatedness, c("rel"="related"))-> temp$relatedness;
-revalue(temp$relatedness, c("ctrl"="unrelated"))-> temp$relatedness;
-
-jpeg(filename = paste(localGitDir,'/proficiencyModel.jpg', sep = ''), res=300, height=1000, width=2500);
+revalue(temp$relatedness, c("rel"="Related"))-> temp$relatedness;
+revalue(temp$relatedness, c("ctrl"="Unrelated"))-> temp$relatedness;
 
 phonemicFluency_names <- c(
-  "0" = "low fluency",
-  "20" = "medium fluency",
-  "40" = "high fluency");
+  "10" = "Low Fluency",
+  "23" = "Medium Fluency",
+  "39" = "High Fluency");
 
 ggplot(data = temp, aes(x=relatedness, y=fit, group=morphType)) + 
-  geom_point() +
-  geom_line() + 
-  scale_linetype_manual(values=c("solid", "dotted", "dashed")) +
+  geom_point(size = 2, position = dodge) +
+  geom_line(aes(linetype=morphType), position = dodge) + 
+  scale_linetype_manual(values=c("dashed", "dotted", "solid")) +
   theme_bw() + 
   theme(panel.grid.major = element_blank()) +
   ylab('RTs (ms)') + xlab('') + 
   theme(axis.text.y = element_text(angle = 00, hjust = 1, size=8, colour = 'black'))+
   theme(axis.text.x = element_text(size=13, colour = 'black'))+
-  geom_pointrange(aes(ymin = temp$lower, ymax = temp$upper)) +
-  facet_grid(morphType ~ phonemicFluency, 
+  geom_pointrange(aes(ymin = temp$lower, ymax = temp$upper), position = dodge) +
+  facet_grid(~ phonemicFluency, 
              labeller = labeller(phonemicFluency = as_labeller(phonemicFluency_names))) +
-  theme(strip.text = element_text(size=12));
-  
+  theme(strip.text = element_text(size=12)) + 
+  theme(legend.position="none");
 
-dev.off();
+ggsave("proficiencyModel.jpg", width = 7, height = 3, dpi = 300)
 
 #it seems the case that transparent priming stay strong and solid across different levels of proficiency, while opaque and orthographic priming tend to shrink with growing phonemic fluency. This suggests we should use transparent primes as our reference level for morphological condition: 
 dataEng$morphType <- relevel(dataEng$morphType, "tr");
-<<<<<<< HEAD
 proficiencylmer1b <- lmer(-1000/rt ~ relatedness * morphType * phonemicFluency + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer1)))<2.5), REML = T);
 summary(proficiencylmer1b);
 
@@ -433,27 +424,28 @@ summary(proficiencylmer3b);
 # [figure 7 in the paper]
 temp <- data.frame(effect('relatedness:morphType:morphComprehension', proficiencylmer3b, se=list(level=.95), xlevels=list(morphComprehension=quantile(dataEng$morphComprehension, probs=c(.05,.50,.95)))));
 temp[,c('fit','lower','upper')] <- inv(temp[,c('fit','lower','upper')]);
-revalue(temp$relatedness, c("rel"="related"))-> temp$relatedness;
-revalue(temp$relatedness, c("ctrl"="unrelated"))-> temp$relatedness;
+revalue(temp$relatedness, c("rel"="Related"))-> temp$relatedness;
+revalue(temp$relatedness, c("ctrl"="Unrelated"))-> temp$relatedness;
 
 morphComprehension_names <- c(
-  "4" = "low Morph Awareness",
-  "7" = "medium Morph Awareness",
-  "10" = "high Morph Awareness");
+  "6" = "Low Morph Awareness",
+  "9" = "Medium Morph Awareness",
+  "10" = "High Morph Awareness");
 
-jpeg(filename = paste(localGitDir,'/morphAwarenessModel.jpg', sep = ''), res=300, height=1000, width=2500);
 ggplot(data = temp, aes(x=relatedness, y=fit, group=morphType)) + theme_bw()+
-  geom_line() +
-  geom_point() +
-  geom_pointrange(aes(ymin = temp$lower, ymax = temp$upper)) +
-  facet_grid(morphType ~ morphComprehension, labeller = labeller(morphComprehension = as_labeller(morphComprehension_names))) +
+  geom_line(aes(linetype=morphType), position = dodge) +
+  scale_linetype_manual(values=c("dashed", "dotted", "solid")) +
+  geom_point(size = 2, position = dodge) +
+  geom_pointrange(aes(ymin = temp$lower, ymax = temp$upper), position = dodge) +
+  facet_grid( ~ morphComprehension, labeller = labeller(morphComprehension = as_labeller(morphComprehension_names))) +
   theme(strip.text = element_text(size=12))+ 
   theme(panel.grid.major = element_blank()) +
   ylab('RTs (ms)') + xlab('') + 
   theme(axis.text.y = element_text(angle = 00, hjust = 1, size=8, colour = 'black'))+
-  theme(axis.text.x = element_text(size=13, colour = 'black'));
-dev.off();
+  theme(axis.text.x = element_text(size=13, colour = 'black')) +
+  theme(legend.position="none");
 
+ggsave("morphAwarenessModel.jpg", width = 7, height = 3, dpi = 300);
 #------------------------------------------------#
 #### aoa scores, correlation and distribution ####
 #------------------------------------------------#
@@ -544,11 +536,11 @@ aggregate(oscTarget ~ morphType, FUN=fivenum, data=temp); #indeed they are
 #this represents this graphically [figure 4 in the paper]
 revalue(temp$morphType, c("or"="Orthographic", 'op'='Opaque', 'tr'='Transparent'))-> temp$morphType;
 library(ggpubr);
-jpeg(filename = paste(localGitDir,'/oscMorph.jpg', sep = ''), res=150, height=400, width=550);
 ggboxplot(subset(temp, oscTarget>0), "morphType", "oscTarget",
           color = "black", fill = grey(.80),
           width = 0.5, ylab = 'OSC', xlab = ''); 
-dev.off();
+
+ggsave("oscMorph.jpg", width = 4, height = 3, dpi = 300);
 
 #and this tests it via NHST
 summary(aov(oscTarget~morphType, data=subset(temp, relatedness=='rel')));
@@ -563,37 +555,32 @@ summary(osc1b); #very solid 3-way interaction
 #[figure 6 in the paper]
 temp <- data.frame(effect('relatedness:oscTarget:phonemicFluency', osc1b, se=list(level=.95), xlevels=list(oscTarget=c(.20,.80), phonemicFluency=quantile(dataEng$phonemicFluency, probs=c(.05,.50,.95)))));
 temp[,c('fit','lower','upper')] <- inv(temp[,c('fit','lower','upper')]);
-revalue(temp$relatedness, c("rel"="related"))-> temp$relatedness;
-revalue(temp$relatedness, c("ctrl"="unrelated"))-> temp$relatedness;
+revalue(temp$relatedness, c("rel"="Related"))-> temp$relatedness;
+revalue(temp$relatedness, c("ctrl"="Unrelated"))-> temp$relatedness;
 
 phonemicFluency_names <- c(
-  "10" = "low fluency",
-  "25" = "medium fluency",
-  "40" = "high fluency"
+  "10" = "Low Fluency",
+  "23" = "Medium Fluency",
+  "39" = "High Fluency"
 );
 
-oscTarget_names <- c(
-  "0.2" = "low OSC",
-  "0.8" = "high OSC"
-);
-
-jpeg(filename = paste(localGitDir,'/oscModel.jpg', sep = ''), res=300, height=1000, width=2500);
-ggplot(data = temp, aes(x=relatedness, y=fit, group=phonemicFluency)) +
-  geom_line() +
-  geom_point() +
+temp$oscTarget <- as.factor(temp$oscTarget);
+ggplot(data = temp, aes(x=relatedness, y=fit, group=oscTarget)) + 
+  geom_point(position = dodge) +
+  geom_line(aes(linetype = oscTarget), position = dodge) + 
+  scale_linetype_manual(values=c("dashed", "solid")) +
   theme_bw() + 
-  ylab('RTs (ms)') + 
-  xlab('') +
-  theme(axis.text.y = element_text(angle = 00, hjust = 1, size=8, colour = 'black'))+
-  theme(axis.text.x = element_text(size=13, colour = 'black')) +
   theme(panel.grid.major = element_blank()) +
-  geom_pointrange(aes(ymin = temp$lower, ymax = temp$upper)) +
-  facet_grid(oscTarget ~ phonemicFluency,
-             labeller = labeller(phonemicFluency = as_labeller(phonemicFluency_names),
-                                 oscTarget = as_labeller(oscTarget_names))) +
-  theme(strip.text = element_text(size=12));
+  ylab('RTs (ms)') + xlab('') + 
+  theme(axis.text.y = element_text(angle = 00, hjust = 1, size=8, colour = 'black'))+
+  theme(axis.text.x = element_text(size=13, colour = 'black'))+
+  geom_pointrange(aes(ymin = temp$lower, ymax = temp$upper), position = dodge) +
+  facet_grid(~ phonemicFluency, 
+             labeller = labeller(phonemicFluency = as_labeller(phonemicFluency_names))) +
+  theme(strip.text = element_text(size=12))+
+  theme(legend.position="none");
 
-dev.off(); #this essentially confirms the picture that we see in the proficiency analysis: at high levels of OSC (that is, in parts of the lexical space where the correspondence between form and meaning is strong; that is again, with transparent items), priming is independent of fluency/proficiency; whereas in parts of the lexical space where the correspondence between form and meaning is loose, the higher the proficiency, the smaller the effect. 
+ggsave("oscModel.jpg", width = 7, height = 3, dpi = 300);
 
 #bonus track: we check whether OSC explains data better than morphological condition
 extractAIC(osc1);
