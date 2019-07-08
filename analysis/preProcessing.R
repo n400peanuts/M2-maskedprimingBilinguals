@@ -1,17 +1,17 @@
-#-----------------------------------------------------------------------------------------------#
-# Data preprocessing                                                                            #
-# Morphological masked priming experiment on L1-ITA, L2-ENG bilingual speakers/readers          #
-# Paper titled 'L2 form priming turns into morphological facilitation with growing proficiency' #
-# Submitted to JML, September 2018                                                              #  
-# Eva Viviani and Davide Crepaldi, SISSA                                                        #
-#-----------------------------------------------------------------------------------------------#
+#-----------------------------------------------------------------------------------------------------------#
+# Data preprocessing                                                                                        #
+# Morphological masked priming experiment on L1-ITA, L2-ENG bilingual speakers/readers                      #
+# Paper titled 'Masked morphological priming tracks the development of a fully mature lexical system in L2' #
+# Submitted to JML   June 2019                                                                              #  
+# Eva Viviani and Davide Crepaldi, SISSA                                                                    #
+#-----------------------------------------------------------------------------------------------------------#
 
 #This script merges the individual data files from each individual participant; fix variables names and nature, when necessary; import and merge stimuli features; and import and merge proficiency and AoA data for each participant. It generates a dataset ready for the analysis, which is called 'preprocessedData.txt'.
 
 #Clean the workspace
 rm(list = ls());
 
-#Set your own working directory. This should be (and is assumed to be in the rest of the code) the highest point in your local gitHub folder:
+#Set your own working directory. This should be (and is assumed to be in the rest of the code) the highest point in your local folder:
 localGitDir <- '';
 setwd(localGitDir);
 
