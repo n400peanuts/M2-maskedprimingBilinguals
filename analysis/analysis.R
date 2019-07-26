@@ -14,7 +14,7 @@
 rm(list = ls());
 
 #set your local working directory. This should be (and is assumed to be in the rest of the code) the highest point in your local folder:
-localGitDir <- ''
+localGitDir <- 'C:/Users/eva_v/Documents/GitHub/M2-maskedprimingBilinguals'
 setwd(localGitDir);
 
 # This script works on the outcome of preProcessing.R, which you can upload here:
@@ -91,7 +91,7 @@ hist(masterFileIta$rt[masterFileIta$rt>1500], breaks=seq(1500,3000,50));
 
 dataItaAcc <- subset(masterFileIta, lexicality=="word");
 dataItaTemp <- subset(dataItaAcc, accuracy==1);
-dataIta <- subset(dataItaTemp, rt>280 & rt<2500 & subject!=15 & subject!=2 & subject!=31 & target!= "guano" & target!= "uggia" & target!= "vello");
+dataIta <- subset(dataItaTemp, rt>280 & rt<2000 & subject!=15 & subject!=2 & subject!=31 & target!= "guano" & target!= "uggia" & target!= "vello");
 nrow(dataItaTemp)-nrow(dataIta);
 (nrow(dataItaTemp)-nrow(dataIta)) / nrow(dataItaTemp);
 nrow(dataIta);
@@ -117,8 +117,8 @@ rm(outlierGraphStore, rt, target, lexicality, acc, sbj.id);
 
 # sbj 26 likely confused YES/NO buttons. Let's check the frequency effect, just to confirm:
 cor(masterFileEng[masterFileEng$subject==26 & masterFileEng$lexicality=='word', c('rt','freqTarget')], use = 'pairwise.complete.obs'); #unlikely s/he responded randomly. So, let's fix this:
-library(car);
-masterFileEng$accuracy[masterFileEng$subject==26] <- recode(masterFileEng$accuracy[masterFileEng$subject==26], "1=0;0=1");
+masterFileEng$accuracy[masterFileEng$subject==26] <- car::recode(masterFileEng$accuracy[masterFileEng$subject==26], "1=0;0=1");
+
 
 # ok, we can now rerun diagnostics:
 sbj.id <- masterFileEng$subject;
@@ -197,19 +197,28 @@ dataEng$morphType <- relevel(dataEng$morphType, "or");
 contrasts(dataEng$relatedness);
 contrasts(dataEng$morphType);
 
-englmer0 <- lmer(-1000/rt ~ 1 + (1|subject) + (1|target), data= dataEng, REML = F);
+qqnorm(dataEng$rt)
+MASS::boxcox(dataEng$rt~ 1)
 
-englmer1 <- lmer(-1000/rt ~ trialCount + rotation + (1|subject) + (1|target), data= dataEng, REML = F);
+englmer0 <- lmer(-1000/rt ~ 1 + (1|subject) + (1|target), data= dataEng, REML = F);
+summary(englmer0)
+hist(resid(englmer0))
+
+dataEngClean <- dataEng[abs(scale(resid(englmer0)))<2.5,]
+(nrow(dataEng) - nrow(dataEngClean)) / nrow(dataEng)
+lattice::dotplot(ranef(englmer0, condVar = T))
+
+englmer1 <- lmer(-1000/rt ~ trialCount + rotation + (1|subject) + (1|target), data= dataEngClean, REML = F);
 anova(englmer0, englmer1); #no effect here
 
-englmer1 <- lmer(-1000/rt ~ freqTarget + lengthTarget + nTarget + (1|subject) + (1|target), data= dataEng, REML = F);
+englmer1 <- lmer(-1000/rt ~ freqTarget + lengthTarget + nTarget + (1|subject) + (1|target), data= dataEngClean, REML = F);
 anova(englmer0, englmer1); #strong improvement in GoF
 anova(englmer1); #frequency and length contribute
 
 englmer2 <- lmer(-1000/rt ~ relatedness * morphType + freqTarget + lengthTarget + (1|subject) + (1|target), data= dataEng, REML = T);
 summary(englmer2); #residuals are quite symmetrical
 #outliers trimming, a la Baayen (2008)
-englmer2b <- lmer(-1000/rt ~ relatedness * morphType + freqTarget + lengthTarget + (1|subject) + (1|target), data=subset(dataEng, abs(scale(resid(englmer2)))<2.5), REML = T);
+englmer2b <- lmer(-1000/rt ~ relatedness * morphType + freqTarget + lengthTarget + (1|subject) + (1|target), data=subset(dataEng, abs(scale(resid(englmer2)))<2.5), REML = T, na.action = 'na.exclude');
 anova(englmer2b); #here we get the overall significance of the interaction btw prime type and relatedness
 summary(englmer2b); #here we get the parameters for contrasts across individual conditions
 
@@ -585,3 +594,400 @@ ggsave("oscModel.jpg", width = 7, height = 3, dpi = 300);
 #bonus track: we check whether OSC explains data better than morphological condition
 extractAIC(osc1);
 extractAIC(proficiencylmer1); #and indeed it does
+
+
+#### Analysis of Errors ####
+summary(dataEngAcc);
+dataEngAcc2 <- subset(dataEngAcc, rt>300 & rt<2000 & subject!=15 & subject!=22 & subject!=43);
+
+#The overall accuracy is 76.7%
+mean(dataEngAcc2$accuracy); 
+
+#Q1: how these errors are distributed across the three prime conditions?#
+nrow(dataEngAcc2[dataEngAcc2$morphType=='tr' & dataEngAcc2$accuracy==1,]);
+nrow(dataEngAcc2[dataEngAcc2$morphType=='op' & dataEngAcc2$accuracy==1,]);
+nrow(dataEngAcc2[dataEngAcc2$morphType=='or' & dataEngAcc2$accuracy==1,]);
+#more correct datapoints in the transparent condition
+
+aggregate(accuracy ~ morphType, data = dataEngAcc2, mean);
+aggregate(accuracy ~ relatedness * morphType, data = dataEngAcc2, mean);
+#related datapoints always more accurate than unrelated
+#tr more correct, than op and or
+
+dataEngAcc2$morphType <- relevel(dataEngAcc2$morphType, "or");
+lmacc <- lmer(accuracy ~ relatedness * morphType + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEngAcc2)
+anova(lmacc); # no significant main effect of morphtype, but marginal significance with relatedness
+summary(lmacc); #driven by a significant difference between or and op in the related condition, with opaque being more accurate than or 
+#no difference between or and tr
+dataEngAcc2$morphType <- relevel(dataEngAcc2$morphType, "op");
+lmacc2 <- lmer(accuracy ~ relatedness * morphType + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEngAcc2)
+summary(lmacc2); 
+#no difference between op and tr
+
+#transparent pairs are more correct than opaque, which conversely are more correct than orthographic
+#let's modulate it with proficiency metrics
+
+#Q2: inspection of the accuracy might reveal that less proficient L2 speakers make more errors than more proficient#
+accproficiencylmer1 <- lmer(accuracy ~ relatedness * morphType * phonemicFluency + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEngAcc2)
+anova(accproficiencylmer1); #main effect of phonemic fluency
+summary(accproficiencylmer1); #less error overall at higher phonemic fluency but nothing more
+
+accproficiencylmer2 <- lmer(accuracy ~ relatedness * morphType * phonemicComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEngAcc2)
+anova(accproficiencylmer2); #morphtype * phonemic comprehension significant, but not three way
+summary(accproficiencylmer2);
+
+accproficiencylmer3 <- lmer(accuracy ~ relatedness * morphType * morphComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEngAcc2)
+anova(accproficiencylmer3); #morphtype * morphComprehension, but not three way
+summary(accproficiencylmer3);
+
+accproficiencylmer4 <- lmer(accuracy ~ relatedness * morphType * spelling + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEngAcc2)
+anova(accproficiencylmer4); #nope
+summary(accproficiencylmer4);
+
+accproficiencylmer5 <- lmer(accuracy ~ relatedness * morphType * readingComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEngAcc2)
+anova(accproficiencylmer5); #nope
+summary(accproficiencylmer5);
+
+accproficiencylmer6 <- lmer(accuracy ~ relatedness * morphType * vocabulary + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEngAcc2)
+anova(accproficiencylmer6); #nope
+summary(accproficiencylmer6);
+
+accproficiencylmer7 <- lmer(accuracy ~ relatedness * morphType * oralComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEngAcc2)
+anova(accproficiencylmer7); #nope
+summary(accproficiencylmer7);
+
+#so, less proficient speakers make more errors, but it's not interacting with morphType and relatedness
+
+#visualization for the reviewers
+library(dplyr);
+ss_prop <- dataEngAcc2 %>% 
+  group_by(subject, relatedness, morphType, target) %>% 
+  summarise(mean_correct = mean(accuracy))
+
+ss_prop <- dataEngAcc2 %>% 
+  group_by(subject, relatedness, morphType, target) %>%
+  summarise(mean_rt = mean(rt)) %>% 
+  left_join(ss_prop)
+
+#plot
+#devtools::install_github("langcog/langcog")
+library(langcog);
+
+ms <- ss_prop %>%
+  group_by(relatedness, morphType) %>% 
+  multi_boot_standard(col = "mean_correct") 
+
+p1<-ggplot(aes(x = morphType, y = mean, fill = relatedness), data = ms) +
+  geom_bar(stat = "identity", color='white', position=position_dodge(), size=1.2) +
+  geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width=.15, size=1.5,  
+                position = position_dodge(width = 0.9)) +
+  geom_hline(yintercept = 0.5, lty = "dashed") +
+  xlab(NULL) +
+  ylab(" ") +
+  ggpubr::theme_pubclean() + 
+  scale_fill_grey() +
+  theme(legend.position="bottom", legend.title = element_blank()) +
+  theme(text = element_text(size=30)) +
+  ggtitle("Accuracy");
+
+p1;
+ggpubr::ggexport(p1, filename = 'Accuracy.jpg', res = 300, width = 2000, height = 1200);
+
+#Q3: careful considerate how the error data may or may not affect the interpretation of the RT results
+#Calculating median reaction times for each condition in the related condition only
+
+ms_rt <- ss_prop %>%
+  filter(relatedness == "rel") %>%
+  group_by(morphType, mean_correct) %>% 
+  multi_boot_standard(col = "mean_rt", na.rm = T, empirical_function = "mean")
+
+#plot
+p2<-ggplot(aes(x = as.factor(mean_correct), y = mean, fill = mean_correct), 
+           data = ms_rt) + 
+  geom_bar(stat = "identity", color='white', position=position_dodge(), size=1.2) + 
+  geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width=.15, size=1.5,
+                position = position_dodge(width = 0.9)) +
+  facet_grid(morphType~.) +
+  theme(text = element_text(size=18)) +
+  xlab("Accuracy") +
+  ggpubr::theme_pubclean() +
+  guides(fill = F) +
+  ylab("Mean RT") +
+  coord_flip();
+p2;
+ggpubr::ggexport(p2, filename = 'AccuracyRT.jpg', res = 300, width = 2000, height = 2000);
+
+#let's see whether there is a speed/accuracy trade-off
+rt_range <- 2000
+n_bins <- 20
+break_seq <- seq(0, rt_range, rt_range/n_bins)
+
+timeslice_range <- dataEngAcc2 %>%
+  filter(relatedness == "rel") %>%
+  mutate(RT_bin = cut(rt, breaks = break_seq)) %>%
+  group_by(RT_bin, morphType) %>%
+  mutate(RT_bin_avg = mean(rt, na.rm = T));
+
+summary(timeslice_range);
+
+timeslice_range <- timeslice_range %>%
+  group_by(RT_bin_avg, morphType, subject) %>% 
+  summarise(ss_acc = mean(accuracy, na.rm=T)) %>% 
+  group_by(RT_bin_avg, morphType) %>%
+  summarise(mean = mean(ss_acc),
+            n = n());
+
+p3<-ggplot(aes(x=RT_bin_avg, y=mean, 
+           color = morphType, group = morphType), 
+       data = timeslice_range) + 
+  geom_point(size = 3) +
+  geom_smooth(method = "lm", formula = y ~ poly(x,2), se = FALSE) +
+  scale_color_solarized() +
+  geom_hline(yintercept = 0.5, lty = "dashed") +
+  xlab("Average RT") +
+  ylab("Proportion Correct");
+
+p3;
+
+mean(dataEngAcc2[dataEngAcc2$morphType=='or' & 
+                   dataEngAcc2$relatedness=='rel' & 
+                   dataEngAcc2$rt>1600,]$accuracy);
+
+ggpubr::ggexport(p3, filename = 'AccuracyRTradeoff.jpg', res = 300, width = 2000, height = 2000);
+
+
+#let's see with phonemic fluency
+timeslice_range <- dataEngAcc2 %>%
+  filter(relatedness == "rel") %>%
+  mutate(RT_bin = cut(rt, breaks = break_seq)) %>%
+  mutate(prof_bin = cut(phonemicFluency, breaks = 3)) %>%
+  group_by(RT_bin, morphType) %>%
+  mutate(RT_bin_avg = mean(rt, na.rm = T));
+
+summary(timeslice_range);
+
+timeslice_range <- timeslice_range %>%
+  group_by(RT_bin_avg, prof_bin, morphType, target) %>% 
+  summarise(ss_acc = mean(accuracy, na.rm=T)) %>% 
+  group_by(RT_bin_avg, prof_bin, morphType) %>%
+  summarise(mean = mean(ss_acc),
+            n = n());
+
+summary(timeslice_range);
+
+labels <- c("(-0.045,15]" = "Low fluency", "(15,30]" = "Medium fluency", "(30,45]" = "High fluency")
+
+p4<-ggplot(aes(x=RT_bin_avg, y=mean, weigh = n,
+           color = morphType, group = morphType), 
+       data = timeslice_range) + 
+  geom_point(aes(size = n)) +
+  facet_grid(. ~ prof_bin,
+             labeller = labeller(prof_bin = as_labeller(labels))) +
+  geom_smooth(method = "lm", formula = y ~ poly(x,2), se = F) +
+  scale_color_solarized() +
+  geom_hline(yintercept = 0.5, lty = "dashed") +
+  xlab("Average RT") +
+  ylab("Proportion Correct") +
+  ylim(0,1);
+
+p4;
+mean(dataEngAcc2[dataEngAcc2$morphType=='tr' & 
+                   dataEngAcc2$relatedness=='rel' & 
+                   dataEngAcc2$rt>1600 &
+                   dataEngAcc2$phonemicFluency>0 &
+                   dataEngAcc2$phonemicFluency<15,]$accuracy)
+
+ggpubr::ggexport(p4, filename = 'AccuracyRTradeoff_phonemicFluency.jpg', res = 300, width = 3000, height = 2000);
+
+RTspeedlmer <-lmer(accuracy ~ rt * morphType * phonemicFluency + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEngAcc2[dataEngAcc2$relatedness=='rel',]);
+anova(RTspeedlmer);
+summary(RTspeedlmer);
+
+
+#### Reliability analysis ####
+#internal consistency of the proficiency measures
+pptFeatures <- unique(dataEng[,c('subject','age','gender','handedness','rotation','phonemicFluency', 'phonemicComprehension','morphComprehension','spelling','readingComprehension','vocabulary','oralComprehension','aoa1.Aoa', 'aoa2.usage', 'aoa3.context','aoa4.contextMultling','aoa5.selfRatedProf','aoa6.otherLang')]);
+
+psych::alpha(pptFeatures, check.keys=TRUE)
+psych::alpha(pptFeatures, check.keys = TRUE)$total$std.alpha #great value
+
+psych::splitHalf(pptFeatures[,6:12]) #split-half reliability
+
+#split half reliability of the priming
+library(data.table);
+#in order to run the split half test, we need:
+#1. to split in two halves the ENG datasets
+subset(dataEng, abs(scale(resid(englmer2)))<2.5) -> temp #eng dataset
+subset(dataIta, abs(scale(resid(italmer2)))<2.5) -> temp #ita dataset
+dataEngClean -> temp
+
+firsthalfdataEng <- NULL;
+secondhalfdataEng <- NULL;
+
+for (i in 1:84){
+    if (i %in% unique(temp$subject)){
+      print('okay')
+      even_indexes <- seq(2, nrow(temp[temp$subject==i ,]), 2)
+      odd_indexes <- seq(1, nrow(temp[temp$subject==i ,]), 2)
+      temp[temp$subject==i ,] ->s1 
+      firsthalfdataEng <- rbind(firsthalfdataEng, s1[even_indexes,])
+      secondhalfdataEng <- rbind(secondhalfdataEng, s1[odd_indexes,])
+    } 
+  else {
+      print('skip it')
+      next
+  }
+  print(i)
+}
+rm(s1)
+
+nrow(temp);
+nrow(firsthalfdataEng) + nrow(secondhalfdataEng);
+
+#2. trasform RTs in zRTs
+firsthalfdataEng$zrt <- scale(firsthalfdataEng$rt, center = TRUE, scale = FALSE);
+secondhalfdataEng$zrt <- scale(secondhalfdataEng$rt, center = TRUE, scale = FALSE);
+
+#3. compute for each subject the priming effect in the two halves separately
+#first half, even trials
+library(dplyr); library(data.table);
+dataEngeven <- NULL;
+for (i in 1:84){
+  if (i %in% unique(firsthalfdataEng$subject)){
+    print(paste0("Subject number: ", i))
+    print(paste0('orthographic: ',nrow(firsthalfdataEng[firsthalfdataEng$subject==i & firsthalfdataEng$relatedness=='rel' & firsthalfdataEng$morphType=='or',])))
+    print(paste0('opaque: ',nrow(firsthalfdataEng[firsthalfdataEng$subject==i & firsthalfdataEng$relatedness=='rel' & firsthalfdataEng$morphType=='op',])))
+    print(paste0('transparent: ',nrow(firsthalfdataEng[firsthalfdataEng$subject==i & firsthalfdataEng$relatedness=='rel' & firsthalfdataEng$morphType=='tr',])))
+    s1<-dcast(firsthalfdataEng[firsthalfdataEng$subject==i,],  morphType ~ relatedness , value.var = "rt", mean) %>% 
+        mutate(primingeven = rel - ctrl) %>% 
+        select(morphType, primingeven);
+    s1$subject <- i
+    dataEngeven <- rbind(dataEngeven, s1);
+    
+  } else 
+    print('skip')
+  {
+    next
+  }
+}
+
+#second half, odd trials
+dataEngodd <- NULL;
+for (i in 1:84){
+  if (i %in% unique(secondhalfdataEng$subject)){
+    print(paste0("Subject number: ", i))
+    print(paste0('orthographic: ',nrow(firsthalfdataEng[firsthalfdataEng$subject==i & firsthalfdataEng$relatedness=='rel' & firsthalfdataEng$morphType=='or',])))
+    print(paste0('opaque: ',nrow(firsthalfdataEng[firsthalfdataEng$subject==i & firsthalfdataEng$relatedness=='rel' & firsthalfdataEng$morphType=='op',])))
+    print(paste0('transparent: ',nrow(firsthalfdataEng[firsthalfdataEng$subject==i & firsthalfdataEng$relatedness=='rel' & firsthalfdataEng$morphType=='tr',])))
+    s1<-dcast(secondhalfdataEng[secondhalfdataEng$subject==i,],  morphType ~ relatedness , value.var = "rt", mean) %>% 
+      mutate(primingodd = rel - ctrl) %>% 
+      select(morphType, primingodd);
+    s1$subject <- i
+    dataEngodd <- rbind(dataEngodd, s1);
+    
+  } else 
+    print('skip')
+  {
+    next
+    }
+}
+summary(dataEngeven);
+summary(dataEngodd);
+#good, we have one datapoint per condition per participant.
+
+#3. correlate the two halves
+
+dataEnghalf <- cbind(dataEngodd, dataEngeven)
+dataEnghalf$subject <- NULL;
+dataEnghalf$morphType <- NULL;
+require(ggpubr);
+p5<-ggscatter(dataEnghalf, x = "primingodd", y = "primingeven",
+          add = "reg.line",                                 # Add regression line
+          conf.int = T,                                  # Add confidence interval
+          add.params = list(color = "#0892d0", fill = "lightgray", size = 2),
+          size = 5,
+          shape = 19)+  
+  stat_cor(method = "pearson", label.x = -300, label.y = 300) +# Add correlation coefficient
+  xlab('Masked morph priming Odd (zRT) ')+
+  ylab('Masked morph priming Even (zRT)');
+p5;
+
+ggpubr::ggexport(p5, filename = 'splithalfRelITA.jpg', res = 300, width = 3000, height = 2000);
+
+
+p6<-ggscatter(dataEnghalf, x = "primingodd", y = "primingeven",
+          add = "reg.line",                                 # Add regression line
+          conf.int = T,                                  # Add confidence interval
+          facet.by = "morphType",
+          size = 3,
+          add.params = list(color = "#0892d0", fill = "lightgray"))+  
+  stat_cor(method = "pearson", label.x = -300, label.y = 250) +# Add correlation coefficient
+  xlab('Masked morph priming Odd (zRT) ')+
+  ylab('Masked morph priming Even (zRT)');
+p6;
+ggpubr::ggexport(p6, filename = 'splithalfRelbyMorphTypeITA.jpg', res = 300, width = 3000, height = 2000);
+
+psych::splitHalf(dataEnghalf[,c('primingodd', 'primingeven')], 
+                 n.sample = 10000, use = 'pairwise');
+
+
+#### GLMER models ####
+#dataEng
+glmer(rt ~ relatedness  * morphType + lengthTarget + freqTarget + (1|subject) + (1|target), data = dataEng, family=Gamma(link="identity"))-> mod0a
+ss <- getME(mod0a,c("theta","fixef"))
+mod0a<-update(mod0a,start=ss,control=glmerControl(optimizer="bobyqa",
+                                                optCtrl=list(maxfun=2e5)))
+
+car::Anova(mod0a);
+summary(mod0a);
+
+glmer(rt ~ 1+ (1|subject) + (1|target), data = dataEng, family=Gamma(link="identity"))-> mod0 
+summary(mod0)
+hist(resid(mod0))
+
+dataEngClean <- dataEng[abs(scale(resid(mod0)))<2.5,];
+(nrow(dataEng) - nrow(dataEngClean)) / nrow(dataEng);
+lattice::dotplot(ranef(mod0, condVar = T));
+
+glmer(rt ~ relatedness  * morphType + lengthTarget + freqTarget + (1|subject) + (1|target), 
+      data = dataEngClean, family=Gamma(link="identity"))-> mod1 
+car::Anova(mod1);
+summary(mod1);
+
+library(actuar);
+fitdistrplus::fitdist(dataEng$rt, "gamma")-> gammafit
+fitdistrplus::fitdist(dataEng$rt, "lnorm")-> lognormalfit
+fitdistrplus::fitdist(dataEng$rt, "invgauss", start = list(mean = 5, shape = 1)) -> invgausfit
+
+fitdistrplus::qqcomp(list(gammafit, lognormalfit, invgausfit),
+       legendtext=c("gamma","lnorm", "inverse gaussian"))
+
+#we have convergence issues
+#following Ben Bolker's blog
+#We try restarting from previous fit . restart didn't converge in 10000 evals, so bumped up max number of iterations.
+ss <- getME(mod1,c("theta","fixef"))
+mod1<-update(mod1,start=ss,control=glmerControl(optimizer="bobyqa",
+                                           optCtrl=list(maxfun=2e5)))
+anova(mod1)
+summary(mod1)
+
+car::Anova(mod1)
+
+#dataEng with proficiency
+glmer(rt ~ relatedness  * morphType * phonemicFluency + lengthTarget + freqTarget + (1|subject) + (1|target), data = dataEng, family=Gamma(link="identity"))-> mod1a 
+
+ss <- getME(mod1a,c("theta","fixef"))
+mod1a<-update(mod1a,start=ss,control=glmerControl(optimizer="bobyqa",
+                                                optCtrl=list(maxfun=2e5)))
+car::Anova(mod1a);
+summary(mod1a);
+
+#cleaned data
+glmer(rt ~ relatedness  * morphType * phonemicFluency + lengthTarget + freqTarget + (1|subject) + (1|target), data = dataEngClean, family=Gamma(link="identity"))-> mod2 
+
+ss <- getME(mod2,c("theta","fixef"))
+mod2<-update(mod2,start=ss,control=glmerControl(optimizer="bobyqa",
+                                                optCtrl=list(maxfun=2e5)))
+car::Anova(mod2);
+summary(mod2);
+
