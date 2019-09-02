@@ -195,10 +195,7 @@ italmer2 <- lmer(-1000/rt ~ relatedness * morphType + freqTarget + (1|subject) +
 summary(italmer2); #residuals are rather symmetrical -- clean bill of health
 
 
-italmer2a <- lmer(rt ~ relatedness * morphType + freqTarget + (1|subject) + (1|target), data= dataIta, REML = T);
-summary(italmer2a); #residuals are rather symmetrical -- clean bill of health
-
-anova(italmer2, italmer2a, itaglmer2);
+anova(italmer2, itaglmer2);
 
 car::Anova(itaglmer2); 
 summary(itaglmer2);
@@ -208,6 +205,13 @@ anova(italmer2);
 italmer2b <- lmer(-1000/rt ~ relatedness * morphType + freqTarget + (1|subject) + (1|target), data=subset(dataIta, abs(scale(resid(italmer2)))<2.5), REML = T);
 anova(italmer2b); #here we get the overall significance of the interaction btw prime type and relatedness
 summary(italmer2b);#here we get the parameters for contrasts across individual conditions
+
+itaglmer2b<- glmer(rt ~ relatedness * morphType + freqTarget + (1|subject) + (1|target), data= subset(dataIta, abs(scale(resid(itaglmer2)))<2.5), family=Gamma(link="identity"));
+ss <- getME(itaglmer2b,c("theta","fixef"));
+itaglmer2b<-update(itaglmer2b,start=ss,control=glmerControl(optimizer="bobyqa",
+                                                          optCtrl=list(maxfun=2e5)));
+
+
 
 #bonus track for Laurie Feldman - proficiency in ITA
 italmer2a <- lmer(rt ~ relatedness * morphType * phonemicFluency + freqTarget + (1|subject) + (1|target), data= dataIta, REML = T);
@@ -264,16 +268,30 @@ ggsave('residualPlot.png',z, dpi = 300, width = 9, height = 5);
 
 #transparent versus opaque condition:
 dataIta$morphType <- relevel(dataIta$morphType, "op");
+
+italmer2c <- lmer(-1000/rt ~ relatedness * morphType + freqTarget + (1|subject) + (1|target), data= dataIta, REML = T);
+summary(italmer2c); #residuals are rather symmetrical -- clean bill of health
+
 itaglmer2c<- glmer(rt ~ relatedness * morphType + freqTarget + (1|subject) + (1|target), data= dataIta, family=Gamma(link="identity"));
 ss <- getME(itaglmer2c,c("theta","fixef"))
-itaglmer2c<-update(itaglmer2,start=ss,control=glmerControl(optimizer="bobyqa",
+itaglmer2c<-update(itaglmer2c,start=ss,control=glmerControl(optimizer="bobyqa",
                                                           optCtrl=list(maxfun=2e5)));
 car::Anova(itaglmer2c);  
 summary(itaglmer2c);
 rm(itaglmer2c, itaglmer1, itaglmer0);
 
+italmer2d <- lmer(-1000/rt ~ relatedness * morphType + freqTarget + (1|subject) + (1|target), data= subset(dataIta, abs(scale(resid(italmer2c)))<2.5), REML = T);
+summary(italmer2d); #residuals are rather symmetrical -- clean bill of health
+
+itaglmer2d<- glmer(rt ~ relatedness * morphType + freqTarget + (1|subject) + (1|target), data= subset(dataIta, abs(scale(resid(itaglmer2c)))<2.5), family=Gamma(link="identity"));
+ss <- getME(itaglmer2d,c("theta","fixef"))
+itaglmer2d<-update(itaglmer2d,start=ss,control=glmerControl(optimizer="bobyqa",
+                                                           optCtrl=list(maxfun=2e5)));
+
+
+
 #----------------------#
-#### modelling, eng ####
+#### modelling, eng LMMs and GLMMs ####
 #----------------------#
 dataEng$morphType <- relevel(dataEng$morphType, "or");
 contrasts(dataEng$relatedness);
@@ -294,6 +312,9 @@ engglmer1 <- glmer(rt ~ trialCount + rotation+ (1|subject) + (1|target), data = 
 anova(engglmer0, engglmer1); #no effect here
 
 engglmer1 <- glmer(rt ~ freqTarget + lengthTarget + nTarget + (1|subject) + (1|target), data = dataEng, family=Gamma(link="identity")); 
+ss <- getME(engglmer1,c("theta","fixef"))
+engglmer1<-update(engglmer1,start=ss,control=glmerControl(optimizer="bobyqa",
+                                                          optCtrl=list(maxfun=2e5)))
 anova(engglmer0, engglmer1); #strong improvement in GoF
 car::Anova(engglmer1); #frequency and length contribute
 
@@ -303,22 +324,48 @@ engglmer2<-update(engglmer2,start=ss,control=glmerControl(optimizer="bobyqa",
                                                  optCtrl=list(maxfun=2e5)))
 
 car::Anova(engglmer2);
-summary(engglmer2); #residuals are quite symmetrical
-
-englmer2a <- lmer(rt ~ relatedness * morphType + freqTarget + lengthTarget + (1|subject) + (1|target), data= dataEng, REML = T);
+summary(engglmer2); 
 
 englmer2 <- lmer(-1000/rt ~ relatedness * morphType + freqTarget + lengthTarget + (1|subject) + (1|target), data= dataEng, REML = T);
 summary(englmer2); #residuals are quite symmetrical
+
 #outliers trimming, a la Baayen (2008)
 englmer2b <- lmer(-1000/rt ~ relatedness * morphType + freqTarget + lengthTarget + (1|subject) + (1|target), data=subset(dataEng, abs(scale(resid(englmer2)))<2.5), REML = T);
-anova(englmer2b); #here we get the overall significance of the interaction btw prime type and relatedness
-summary(englmer2b); #here we get the parameters for contrasts across individual conditions
 
-car::Anova(engglmer2);
-summary(engglmer2); #residuals are quite symmetrical
-rm(engglmer0, engglmer1, engglmer2c);
+engglmer2b <- glmer(rt ~ relatedness * morphType + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(engglmer2)))<2.5), family=Gamma(link="identity")); 
+ss <- getME(engglmer2b,c("theta","fixef"))
+engglmer2b<-update(engglmer2b,start=ss,control=glmerControl(optimizer="bobyqa",
+                                                          optCtrl=list(maxfun=2e5)))
+
+car::Anova(englmer2) #lmer dataEng
+car::Anova(englmer2b); #lmer with subset(dataEng, abs(scale(resid(englmer2)))<2.5)
+summary(englmer2); 
+summary(englmer2b); 
+
+car::Anova(engglmer2) #GLMM dataEng
+car::Anova(engglmer2b); #GLMM with subset(dataEng, abs(scale(resid(engglmer2)))<2.5)
+summary(engglmer2); 
+summary(engglmer2b); 
+
+#transparent versus opaque condition:
+dataEng$morphType <- relevel(dataEng$morphType, "op");
+englmer2c <- lmer(-1000/rt ~ relatedness * morphType + freqTarget + lengthTarget + (1|subject) + (1|target), data=dataEng, REML = T);
+englmer2d <- lmer(-1000/rt ~ relatedness * morphType + freqTarget + lengthTarget + (1|subject) + (1|target), data=subset(dataEng, abs(scale(resid(englmer2c)))<2.5), REML = T);
+summary(englmer2d); #here we get the contrast between transparent and opaque pairs
+
+engglmer2c <- glmer(rt ~ relatedness * morphType + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, family=Gamma(link="identity")); 
+ss <- getME(engglmer2c,c("theta","fixef"))
+engglmer2c<-update(engglmer2c,start=ss,control=glmerControl(optimizer="bobyqa",
+                                                           optCtrl=list(maxfun=2e5)))
+
+engglmer2d <- glmer(rt ~ relatedness * morphType + freqTarget + lengthTarget + (1|subject) + (1|target), 
+                    data = subset(dataEng, abs(scale(resid(engglmer2c)))<2.5), family=Gamma(link="identity")); 
+ss <- getME(engglmer2d,c("theta","fixef"))
+engglmer2d<-update(engglmer2d,start=ss,control=glmerControl(optimizer="bobyqa",
+                                                           optCtrl=list(maxfun=2e5)))
 
 
+#plot residuals
 a<-plot(engglmer2, ylab = 'ENG Residuals', xlab = 'Predicted RT', 
         main = 'ENG GLMM Gamma Distribution identity link');
 b<-plot(englmer2,  ylab = 'ENG Residuals', xlab = 'Predicted RT', 
@@ -327,10 +374,14 @@ c<-plot(englmer2a,  ylab = 'ENG Residuals', xlab = 'Predicted RT',
         main = 'ENG LMM raw RT');
 d<-plot(englmer2b,  ylab = 'ENG Residuals', xlab = 'Predicted RT', 
         main = 'ENG LMM -1000/RT with model trimming');
+e<-plot(engglmer2b,  ylab = 'ENG Residuals', xlab = 'Predicted RT', 
+        main = 'ENG GLMM with model trimming');
 
-z<- ggarrange(c, b, a);
+
+z<- ggpubr::ggarrange(c, b, a, d, e, ncol = 3, nrow = 2);
+z
 ggsave('residualPlotENG.png',z, dpi = 300, width = 9, height = 5);
-
+rm(a,b,c,d,e);
 
 
 #------------------------------#
@@ -404,7 +455,7 @@ crossglmer <- glmer(rt ~ relatedness * morphType * language + freqTarget + lengt
 ss <- getME(crossglmer,c("theta","fixef"));
 crossglmer<-update(crossglmer,start=ss,control=glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)));
 
-car::Anova(crossglmer, type = 3);
+car::Anova(crossglmer);
 summary(crossglmer); #residuals are quite symmetrical
 
 anova(crossglmer);
@@ -463,7 +514,7 @@ detach(pptFeatures);
 par(mfrow=c(1,1));
 
 #-----------------------------#
-#### proficiency modelling ####
+#### proficiency modelling LMMs and GLMMs ####
 #-----------------------------#
 dataEng$morphType <- relevel(dataEng$morphType, "or");
 
@@ -490,12 +541,22 @@ proficiencyglmer1<-update(proficiencyglmer1,start=ss,control=glmerControl(optimi
                                                                          optCtrl=list(maxfun=2e5)));
 anova(proficiencyglmer0, proficiencyglmer1); #Probably not working with glmer models
 
-car::Anova(proficiencylmer1);
-anova(proficiencylmer1)
-car::Anova(proficiencyglmer1);
-summary(proficiencyglmer1); 
+#trim a la bayeen
+proficiencylmer1b <- lmer(-1000/rt ~ relatedness *  morphType * phonemicFluency + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer1)))<2.5), REML = F);
 
-rm(proficiencylmer1, proficiencylmer0, proficiencyglmer0, ss);
+proficiencyglmer1b<- glmer(rt ~ relatedness  * morphType * phonemicFluency + lengthTarget + freqTarget + (1|subject) 
+                          + (1|target), data = subset(dataEng, abs(scale(resid(proficiencyglmer1)))<2.5), family=Gamma(link="identity"));
+ss <- getME(proficiencyglmer1b,c("theta","fixef"));
+proficiencyglmer1b<-update(proficiencyglmer1b,start=ss,control=glmerControl(optimizer="bobyqa",
+                                                                          optCtrl=list(maxfun=2e5)));
+
+car::Anova(proficiencylmer1);
+car::Anova(proficiencylmer1b);
+summary(proficiencylmer1b); 
+car::Anova(proficiencyglmer1);
+car::Anova(proficiencyglmer1b);
+summary(proficiencyglmer1b); 
+
 proficiencylmer2 <- lmer(-1000/rt ~ relatedness *  morphType * phonemicComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML = F);
 anova(proficiencylmer0, proficiencylmer2);
 
@@ -504,6 +565,7 @@ proficiencyglmer2<- glmer(rt ~ relatedness  * morphType * phonemicComprehension 
 ss <- getME(proficiencyglmer2,c("theta","fixef"));
 proficiencyglmer2<-update(proficiencyglmer2,start=ss,control=glmerControl(optimizer="bobyqa",
                                                                           optCtrl=list(maxfun=2e5)));
+
 car::Anova(proficiencylmer2);
 anova(proficiencylmer2);
 summary(proficiencylmer2);
@@ -511,20 +573,44 @@ anova(proficiencyglmer2);
 car::Anova(proficiencyglmer2);
 summary(proficiencyglmer2); 
 
+#trimming method a la bayeen
+proficiencylmer2b <- lmer(-1000/rt ~ relatedness *  morphType * phonemicComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer2)))<2.5), REML = F);
+
+proficiencyglmer2b<- glmer(rt ~ relatedness  * morphType * phonemicComprehension + lengthTarget + freqTarget + (1|subject) 
+                          + (1|target), data = subset(dataEng, abs(scale(resid(proficiencyglmer2)))<2.5), family=Gamma(link="identity"));
+ss <- getME(proficiencyglmer2b,c("theta","fixef"));
+proficiencyglmer2b<-update(proficiencyglmer2b,start=ss,control=glmerControl(optimizer="bobyqa",
+                                                                          optCtrl=list(maxfun=2e5)));
+car::Anova(proficiencylmer2);
+car::Anova(proficiencylmer2b);
+summary(proficiencylmer2b);
+car::Anova(proficiencyglmer2);
+car::Anova(proficiencyglmer2b); #interesting here is less significant
+summary(proficiencyglmer2b); 
+
+
 proficiencylmer3 <- lmer(-1000/rt ~ relatedness *  morphType * morphComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML = F);
 anova(proficiencylmer0,proficiencylmer3);
 
 proficiencyglmer3<- glmer(rt ~ relatedness  * morphType * morphComprehension + lengthTarget + freqTarget + (1|subject) 
-                          + (1|target), data = dataEng, family=Gamma(link="identity"));
+                          + (1|target), data = dataEng, family=Gamma(link="identity")); 
 ss <- getME(proficiencyglmer3,c("theta","fixef"));
 proficiencyglmer3<-update(proficiencyglmer3,start=ss,control=glmerControl(optimizer="bobyqa",
-                                                                          optCtrl=list(maxfun=2e5)));
-car::Anova(proficiencylmer3);
-anova(proficiencylmer3);
-summary(proficiencylmer3);
-anova(proficiencyglmer3);
+                                                                            optCtrl=list(maxfun=2e5)));
+
 car::Anova(proficiencyglmer3);
-summary(proficiencyglmer3); 
+car::Anova(proficiencylmer3);
+
+#trim a la bayeen
+proficiencylmer3b <- lmer(-1000/rt ~ relatedness *  morphType * morphComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer3)))<2.5), REML = F);
+
+proficiencyglmer3b<- glmer(rt ~ relatedness  * morphType * morphComprehension + lengthTarget + freqTarget + (1|subject) 
+                          + (1|target), data = subset(dataEng, abs(scale(resid(proficiencyglmer3)))<2.5), family=Gamma(link="identity")); 
+ss <- getME(proficiencyglmer3b,c("theta","fixef"));
+proficiencyglmer3b<-update(proficiencyglmer3b,start=ss,control=glmerControl(optimizer="bobyqa",
+                                                                          optCtrl=list(maxfun=2e5)));
+
+
 
 proficiencylmer4 <- lmer(-1000/rt ~ relatedness * morphType * spelling + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML = F);
 anova(proficiencylmer0, proficiencylmer4);
@@ -541,6 +627,17 @@ anova(proficiencyglmer4);
 car::Anova(proficiencyglmer4);
 summary(proficiencyglmer4);
 
+#trim a la bayeen
+proficiencylmer4b <- lmer(-1000/rt ~ relatedness * morphType * spelling + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer4)))<2.5), REML = F);
+
+proficiencyglmer4b<- glmer(rt ~ relatedness  * morphType * spelling + lengthTarget + freqTarget + (1|subject) 
+                          + (1|target), data = subset(dataEng, abs(scale(resid(proficiencyglmer4)))<2.5), family=Gamma(link="identity"));
+ss <- getME(proficiencyglmer4b,c("theta","fixef"));
+proficiencyglmer4b<-update(proficiencyglmer4b,start=ss,control=glmerControl(optimizer="bobyqa",
+                                                                          optCtrl=list(maxfun=2e5)));
+
+
+
 proficiencylmer5 <- lmer(-1000/rt ~ relatedness * morphType * readingComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML = F);
 anova(proficiencylmer0, proficiencylmer5); 
 
@@ -549,41 +646,54 @@ proficiencyglmer5<- glmer(rt ~ relatedness  * morphType * readingComprehension +
 ss <- getME(proficiencyglmer5,c("theta","fixef"));
 proficiencyglmer5<-update(proficiencyglmer5,start=ss,control=glmerControl(optimizer="bobyqa",
                                                                           optCtrl=list(maxfun=2e5)));
-anova(proficiencylmer5, proficiencyglmer5);
-car::Anova(proficiencylmer5);
-anova(proficiencylmer5);
-summary(proficiencylmer5);
-anova(proficiencyglmer5);
-car::Anova(proficiencyglmer5);
-summary(proficiencyglmer5);
+
+#trim a la bayeen
+proficiencylmer5b <- lmer(-1000/rt ~ relatedness * morphType * readingComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = subset(dataEng, abs(scale(resid(proficiencylmer5)))<2.5), REML = F);
+anova(proficiencylmer0, proficiencylmer5); 
+
+proficiencyglmer5b<- glmer(rt ~ relatedness  * morphType * readingComprehension + lengthTarget + freqTarget + (1|subject) + (1|target), 
+                           data = subset(dataEng, abs(scale(resid(proficiencyglmer5)))<2.5), nAGQ=0, family=Gamma(link="identity"));
+ss <- getME(proficiencyglmer5b,c("theta","fixef"));
+proficiencyglmer5b<-update(proficiencyglmer5b,start=ss,control=glmerControl(optimizer="bobyqa",
+                                                                          optCtrl=list(maxfun=2e5)), , REML =T);
 
 proficiencylmer6 <- lmer(-1000/rt ~ relatedness * morphType * vocabulary + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML = F);
 anova(proficiencylmer0,proficiencylmer6);
 
-proficiencyglmer6<- glmer(rt ~ relatedness  * morphType * vocabulary + lengthTarget + freqTarget + (1|subject) 
-                          + (1|target), data = dataEng, family=Gamma(link="identity"));
+proficiencyglmer6<- glmer(rt ~ relatedness  * morphType * vocabulary + lengthTarget + freqTarget + (1|subject) + (1|target), 
+                          data = dataEng, family=Gamma(link="identity"));
 ss <- getME(proficiencyglmer6,c("theta","fixef"));
 proficiencyglmer6<-update(proficiencyglmer6,start=ss,control=glmerControl(optimizer="bobyqa",
                                                                           optCtrl=list(maxfun=2e5)));
-anova(proficiencylmer6, proficiencyglmer6);
-car::Anova(proficiencylmer6);
-anova(proficiencylmer6);
-summary(proficiencylmer6);
-anova(proficiencyglmer6);
-car::Anova(proficiencyglmer6);
-summary(proficiencyglmer6);
+#trim a la bayeen
+
+proficiencylmer6b <- lmer(-1000/rt ~ relatedness * morphType * vocabulary + freqTarget + lengthTarget + (1|subject) + (1|target), 
+                         data = subset(dataEng, abs(scale(resid(proficiencylmer6)))<2.5), REML = F);
+
+proficiencyglmer6b<- glmer(rt ~ relatedness  * morphType * vocabulary + lengthTarget + freqTarget + (1|subject) 
+                          + (1|target), data = subset(dataEng, abs(scale(resid(proficiencyglmer6)))<2.5), family=Gamma(link="identity"));
+ss <- getME(proficiencyglmer6b,c("theta","fixef"));
+proficiencyglmer6b<-update(proficiencyglmer6b,start=ss,control=glmerControl(optimizer="bobyqa",
+                                                                          optCtrl=list(maxfun=2e5)));
+
+
 
 proficiencylmer7 <- lmer(-1000/rt ~ relatedness * morphType * oralComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML = F);
 anova(proficiencylmer0,proficiencylmer7);
-
-proficiencylmer7a <- lmer(rt ~ relatedness * morphType * oralComprehension + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, REML = F);
-anova(proficiencylmer7a,proficiencylmer7);
 
 proficiencyglmer7<- glmer(rt ~ relatedness  * morphType * oralComprehension + lengthTarget + freqTarget + (1|subject) 
                           + (1|target), data = dataEng, family=Gamma(link="identity"));
 ss <- getME(proficiencyglmer7,c("theta","fixef"));
 proficiencyglmer7<-update(proficiencyglmer7,start=ss,control=glmerControl(optimizer="bobyqa",
                                                                           optCtrl=list(maxfun=2e5)));
+#trim a la bayeen
+proficiencyglmer7b<- glmer(rt ~ relatedness  * morphType * oralComprehension + lengthTarget + freqTarget + (1|subject) 
+                          + (1|target), data = subset(dataEng, abs(scale(resid(proficiencyglmer7)))<2.5), family=Gamma(link="identity"));
+ss <- getME(proficiencyglmer7b,c("theta","fixef"));
+proficiencyglmer7b<-update(proficiencyglmer7b,start=ss,control=glmerControl(optimizer="bobyqa",
+                                                                          optCtrl=list(maxfun=2e5)));
+
+
 anova(proficiencylmer7, proficiencyglmer7);
 car::Anova(proficiencylmer7);
 anova(proficiencylmer7);
@@ -641,6 +751,110 @@ ggplot(data = temp, aes(x=relatedness, y=fit, group=morphType)) +
   theme(legend.position="none");
 
 ggsave("proficiencyModel.jpg", width = 7, height = 3, dpi = 300)
+
+
+#GLMM phon fluency
+#what sort of effect this is? [Figure 3 in the paper]
+temp <- data.frame(effect('relatedness:morphType:phonemicFluency', proficiencyglmer1, se=list(level=.95), xlevels=list(phonemicFluency=quantile(dataEng$phonemicFluency, probs=c(.05,.50,.95)))));
+revalue(temp$relatedness, c("rel"="Related"))-> temp$relatedness;
+revalue(temp$relatedness, c("ctrl"="Unrelated"))-> temp$relatedness;
+
+phonemicFluency_names <- c(
+  "10" = "Low Fluency",
+  "23" = "Medium Fluency",
+  "39" = "High Fluency");
+
+ggplot(data = temp, aes(x=relatedness, y=fit, group=morphType)) + 
+  geom_point(size = 2, position = dodge) +
+  geom_line(aes(linetype=morphType), position = dodge) + 
+  scale_linetype_manual(values=c("dashed", "dotted", "solid")) +
+  theme_bw() + 
+  theme(panel.grid.major = element_blank()) +
+  ylab('RTs (ms)') + xlab('') + 
+  theme(axis.text.y = element_text(angle = 00, hjust = 1, size=8, colour = 'black'))+
+  theme(axis.text.x = element_text(size=13, colour = 'black'))+
+  geom_pointrange(aes(ymin = temp$lower, ymax = temp$upper), position = dodge) +
+  facet_grid(~ phonemicFluency, 
+             labeller = labeller(phonemicFluency = as_labeller(phonemicFluency_names))) +
+  theme(strip.text = element_text(size=12)) + 
+  theme(legend.position="none");
+
+
+#GLMM phon comprehension
+temp <- data.frame(effect('relatedness:morphType:phonemicComprehension', proficiencyglmer2, se=list(level=.95), xlevels=list(phonemicComprehension=quantile(dataEng$phonemicComprehension, probs=c(.05,.50,.95)))));
+revalue(temp$relatedness, c("rel"="Related"))-> temp$relatedness;
+revalue(temp$relatedness, c("ctrl"="Unrelated"))-> temp$relatedness;
+
+phonemicComprehension_names <- c(
+  "5" = "Low Fluency",
+  "9" = "Medium Fluency",
+  "12" = "High Fluency");
+
+ggplot(data = temp, aes(x=relatedness, y=fit, group=morphType)) + 
+  geom_point(size = 2, position = dodge) +
+  geom_line(aes(linetype=morphType), position = dodge) + 
+  scale_linetype_manual(values=c("dashed", "dotted", "solid")) +
+  theme_bw() + 
+  theme(panel.grid.major = element_blank()) +
+  ylab('RTs (ms)') + xlab('') + 
+  theme(axis.text.y = element_text(angle = 00, hjust = 1, size=8, colour = 'black'))+
+  theme(axis.text.x = element_text(size=13, colour = 'black'))+
+  geom_pointrange(aes(ymin = temp$lower, ymax = temp$upper), position = dodge) +
+  facet_grid(~ phonemicComprehension, 
+             labeller = labeller(phonemicComprehension = as_labeller(phonemicComprehension_names))) +
+  theme(strip.text = element_text(size=12)) + 
+  theme(legend.position="none");
+
+#GLMM w/ reading compr
+temp <- data.frame(effect('relatedness:morphType:readingComprehension', proficiencyglmer5, se=list(level=.95), xlevels=list(readingComprehension=quantile(dataEng$readingComprehension, probs=c(.05,.50,.95)))));
+revalue(temp$relatedness, c("rel"="Related"))-> temp$relatedness;
+revalue(temp$relatedness, c("ctrl"="Unrelated"))-> temp$relatedness;
+
+readingComprehension_names <- c(
+  "1" = "Low ReadCompr",
+  "5" = "Medium ReadCompr",
+  "7" = "High ReadCompr");
+
+ggplot(data = temp, aes(x=relatedness, y=fit, group=morphType)) + 
+  geom_point(size = 2, position = dodge) +
+  geom_line(aes(linetype=morphType), position = dodge) + 
+  scale_linetype_manual(values=c("dashed", "dotted", "solid")) +
+  theme_bw() + 
+  theme(panel.grid.major = element_blank()) +
+  ylab('RTs (ms)') + xlab('') + 
+  theme(axis.text.y = element_text(angle = 00, hjust = 1, size=8, colour = 'black'))+
+  theme(axis.text.x = element_text(size=13, colour = 'black'))+
+  geom_pointrange(aes(ymin = temp$lower, ymax = temp$upper), position = dodge) +
+  facet_grid(~ readingComprehension, 
+             labeller = labeller(readingComprehension = as_labeller(readingComprehension_names))) +
+  theme(strip.text = element_text(size=12)) + 
+  theme(legend.position="none");
+
+#GLMMM w/ vocabulary
+temp <- data.frame(effect('relatedness:morphType:vocabulary', proficiencyglmer6, se=list(level=.95), xlevels=list(vocabulary=quantile(dataEng$vocabulary, probs=c(.05,.50,.95)))));
+revalue(temp$relatedness, c("rel"="Related"))-> temp$relatedness;
+revalue(temp$relatedness, c("ctrl"="Unrelated"))-> temp$relatedness;
+
+vocabulary_names <- c(
+  "11" = "Low vocabulary",
+  "16" = "Medium vocabulary",
+  "19" = "High vocabulary");
+
+ggplot(data = temp, aes(x=relatedness, y=fit, group=morphType)) + 
+  geom_point(size = 2, position = dodge) +
+  geom_line(aes(linetype=morphType), position = dodge) + 
+  scale_linetype_manual(values=c("dashed", "dotted", "solid")) +
+  theme_bw() + 
+  theme(panel.grid.major = element_blank()) +
+  ylab('RTs (ms)') + xlab('') + 
+  theme(axis.text.y = element_text(angle = 00, hjust = 1, size=8, colour = 'black'))+
+  theme(axis.text.x = element_text(size=13, colour = 'black'))+
+  geom_pointrange(aes(ymin = temp$lower, ymax = temp$upper), position = dodge) +
+  facet_grid(~ vocabulary, 
+             labeller = labeller(vocabulary = as_labeller(vocabulary_names))) +
+  theme(strip.text = element_text(size=12)) + 
+  theme(legend.position="none");
+
 
 #it seems the case that transparent priming stay strong and solid across different levels of proficiency, while opaque and orthographic priming tend to shrink with growing phonemic fluency. This suggests we should use transparent primes as our reference level for morphological condition: 
 dataEng$morphType <- relevel(dataEng$morphType, "tr");
@@ -1285,74 +1499,91 @@ merge(firsthalfpriming, secondhalfpriming, by = 'target')-> splitdatacorr;
 multicon::splithalf.r(splitdatacorr[,c('priming.x', 'priming.y')]);
 multicon::alpha.cov(cov(splitdatacorr[,c('priming.x', 'priming.y')], use="p"))
 
-#### critical GLMER models ####
-#dataEng
-glmer(rt ~ relatedness  * morphType + lengthTarget + freqTarget + (1|subject) 
-      + (1|target), data = dataEng, family=Gamma(link="identity"))-> mod0a
-ss <- getME(mod0a,c("theta","fixef"))
-mod0a<-update(mod0a,start=ss,control=glmerControl(optimizer="bobyqa",
-                                                  optCtrl=list(maxfun=2e5)))
+#### critical GLMER model comparisons ####
+#load all the lmer and GLMM models
+df <- list.files(paste(localGitDir, "/LMMs and GLMMs/", sep = "")); 
+length(df); #44 models
 
-car::Anova(mod0a);
-summary(mod0a);
+for (i in 1:length(df)){
+  gsub(".rds$", "", df[i]) -> id
+  assign(id, data.frame())
+  readRDS(paste(localGitDir, "/LMMs and GLMMs/", df[i],sep = "")) -> temp 
+  assign(paste0(id), temp)
+};
 
-glmer(rt ~ 1+ (1|subject) + (1|target), data = dataEng, 
-      family=Gamma(link="identity"))-> mod0 
-summary(mod0)
-hist(resid(mod0))
+rm(i, id);
 
-dataEngClean <- dataEng[abs(scale(resid(mod0)))<2.5,];
-(nrow(dataEng) - nrow(dataEngClean)) / nrow(dataEng);
-lattice::dotplot(ranef(mod0, condVar = T));
+#dataITA without trimming
+car::Anova(itaglmer2); #dataIta main model - or baseline comparison
+car::Anova(italmer2);
 
-glmer(rt ~ relatedness  * morphType + lengthTarget + freqTarget + (1|subject) + (1|target), 
-      data = dataEngClean, family=Gamma(link="identity"))-> mod1 
-ss <- getME(mod1,c("theta","fixef"))
-mod1a<-update(mod1,start=ss,control=glmerControl(optimizer="bobyqa",
-                                                 optCtrl=list(maxfun=2e5)))
+car::Anova(itaglmer2c); #dataIta main model - op baseline comparison
+car::Anova(italmer2c);
 
-car::Anova(mod1a);
-summary(mod1a);
+#dataITA with trimming
+car::Anova(itaglmer2b); #dataIta main model - or baseline comparison
+car::Anova(italmer2b);
 
-library(actuar);
-fitdistrplus::fitdist(dataEng$rt, "gamma")-> gammafit
-fitdistrplus::fitdist(dataEng$rt, "lnorm")-> lognormalfit
-fitdistrplus::fitdist(dataEng$rt, "invgauss", start = list(mean = 5, shape = 1)) -> invgausfit
+car::Anova(itaglmer2d); #dataIta main model - op baseline comparison
+car::Anova(italmer2d);
 
-fitdistrplus::qqcomp(list(gammafit, lognormalfit, invgausfit),
-                     legendtext=c("gamma","lnorm", "inverse gaussian"))
+#dataENG without trimming
+car::Anova(engglmer2); #dataEng main model - or baseline comparison
+car::Anova(englmer2);
 
-#we have convergence issues
-#following Ben Bolker's blog
-#We try restarting from previous fit . restart didn't converge in 10000 evals, so bumped up max number of iterations.
-ss <- getME(mod1,c("theta","fixef"))
-mod1<-update(mod1,start=ss,control=glmerControl(optimizer="bobyqa",
-                                                optCtrl=list(maxfun=2e5)))
-anova(mod1)
-summary(mod1)
+car::Anova(engglmer2c); #dataEng main model - op baseline comparison
+car::Anova(englmer2c);
 
-car::Anova(mod1)
+car::Anova(proficiencyglmer1); #fluency
+car::Anova(proficiencylmer1);
 
-#dataEng with proficiency
-glmer(rt ~ relatedness  * morphType * phonemicFluency 
-      + lengthTarget + freqTarget + (1|subject) + (1|target), 
-      data = dataEng, family=Gamma(link="identity"))-> mod2a; 
+car::Anova(proficiencyglmer2); #phonemicComprehension
+car::Anova(proficiencylmer2);
 
-ss <- getME(mod2a,c("theta","fixef"));
-mod2b<-update(mod2a, start=ss,control=glmerControl(optimizer="bobyqa",
-                                                   optCtrl=list(maxfun=2e5)));
-car::Anova(mod2b);
-summary(mod2b);
-sjp.glmer(mod2b);
+car::Anova(proficiencyglmer3); #morph comprehension
+car::Anova(proficiencylmer3);
+
+car::Anova(proficiencyglmer4); #spelling
+car::Anova(proficiencylmer4);
+
+car::Anova(proficiencyglmer5); #readingComprehension
+car::Anova(proficiencylmer5);
+
+car::Anova(proficiencyglmer6); #vocabulary
+car::Anova(proficiencylmer6);
+
+car::Anova(proficiencyglmer7); #oralComprehension
+car::Anova(proficiencylmer7);
+
+#dataEng with trimming
+car::Anova(proficiencyglmer1b); #fluency
+car::Anova(proficiencylmer1b);
+
+car::Anova(engglmer2b); #dataEng main model - or baseline comparison
+car::Anova(englmer2b);
+
+car::Anova(engglmer2d); #dataEng main model - op baseline comparison
+car::Anova(englmer2d);
+
+car::Anova(proficiencyglmer2b); #phonemicComprehension
+car::Anova(proficiencylmer2b);
 
 
-#cleaned data
-glmer(rt ~ relatedness  * morphType * phonemicFluency + lengthTarget + freqTarget + (1|subject) 
-      + (1|target), data = dataEngClean, family=Gamma(link="identity"))-> mod2 
+car::Anova(proficiencyglmer3b); #morph comprehension
+car::Anova(proficiencylmer3b);
 
-ss <- getME(mod2,c("theta","fixef"))
-mod2<-update(mod2,start=ss,control=glmerControl(optimizer="bobyqa",
-                                                optCtrl=list(maxfun=2e5)))
-car::Anova(mod2);
-summary(mod2);
+car::Anova(proficiencyglmer4b); #spelling
+car::Anova(proficiencylmer4b);
+
+car::Anova(proficiencyglmer5b); #readingComprehension
+car::Anova(proficiencylmer5b);
+
+car::Anova(proficiencyglmer6b); #vocabulary
+car::Anova(proficiencylmer6b);
+
+car::Anova(proficiencyglmer7b); #oralComprehension
+car::Anova(proficiencylmer7b);
+
+
+
 
