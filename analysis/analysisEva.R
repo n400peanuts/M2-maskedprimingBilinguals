@@ -1586,4 +1586,3 @@ car::Anova(proficiencylmer7b);
 
 
 
-
