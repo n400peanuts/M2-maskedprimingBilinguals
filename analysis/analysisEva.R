@@ -1511,7 +1511,7 @@ for (i in 1:length(df)){
   assign(paste0(id), temp)
 };
 
-rm(i, id);
+rm(i, id, temp);
 
 #dataITA without trimming
 car::Anova(itaglmer2); #dataIta main model - or baseline comparison
