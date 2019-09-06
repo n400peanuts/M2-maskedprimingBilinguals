@@ -1298,83 +1298,47 @@ multicon::alpha.cov(cov(pptFeatures[,6:12], use="p"));
 library(data.table);
 #in order to run the split half test, we need:
 #1. to split in two halves the ENG datasets
-subset(dataEng, abs(scale(resid(englmer2)))<2.5) -> temp #eng dataset
-subset(dataIta, abs(scale(resid(italmer2)))<2.5) -> temp #ita dataset
-dataEngClean -> temp;
-dataEng -> temp;
 
+dataEng[c(TRUE, FALSE), ]->coreven;
+dataEng[c(FALSE, TRUE), ]->corodd;
 
-firsthalfdataEng <- NULL;
-secondhalfdataEng <- NULL;
-
-for (i in 1:84){
-  if (i %in% unique(temp$subject)){
-    print('okay')
-    even_indexes <- seq(2, nrow(temp[temp$subject==i ,]), 2)
-    odd_indexes <- seq(1, nrow(temp[temp$subject==i ,]), 2)
-    temp[temp$subject==i ,] ->s1 
-    firsthalfdataEng <- rbind(firsthalfdataEng, s1[even_indexes,])
-    secondhalfdataEng <- rbind(secondhalfdataEng, s1[odd_indexes,])
-  } 
-  else {
-    print('skip it')
-    next
-  }
-  print(i)
-}
-rm(s1)
-
-nrow(temp);
-nrow(firsthalfdataEng) + nrow(secondhalfdataEng);
-table(firsthalfdataEng$subject);
-table(secondhalfdataEng$subject);
+table(coreven$subject);
+table(corodd$subject);
+table(dataEng$subject);
 
 #3. compute for each subject the priming effect in the two halves separately
-#first half, even trials
-library(dplyr); library(data.table);
+library(tidyverse);
 dataEngeven <- NULL;
-for (i in 1:84){
-  if (i %in% unique(firsthalfdataEng$subject)){
-    print(paste0("Subject number: ", i))
-    print(paste0('orthographic: ',nrow(firsthalfdataEng[firsthalfdataEng$subject==i & firsthalfdataEng$relatedness=='rel' & firsthalfdataEng$morphType=='or',])))
-    print(paste0('opaque: ',nrow(firsthalfdataEng[firsthalfdataEng$subject==i & firsthalfdataEng$relatedness=='rel' & firsthalfdataEng$morphType=='op',])))
-    print(paste0('transparent: ',nrow(firsthalfdataEng[firsthalfdataEng$subject==i & firsthalfdataEng$relatedness=='rel' & firsthalfdataEng$morphType=='tr',])))
-    s1<-dcast(firsthalfdataEng[firsthalfdataEng$subject==i,],  morphType ~ relatedness , value.var = "rt", mean) %>% 
-      mutate(primingeven = rel - ctrl) %>% 
-      select(morphType, primingeven);
-    s1$subject <- i
-    dataEngeven <- rbind(dataEngeven, s1);
-    
-  } else 
-    print('skip')
-  {
-    next
-    }
-}
 
-#second half, odd trials
-dataEngodd <- NULL;
-for (i in 1:84){
-  if (i %in% unique(secondhalfdataEng$subject)){
-    print(paste0("Subject number: ", i))
-    print(paste0('orthographic: ',nrow(firsthalfdataEng[firsthalfdataEng$subject==i & firsthalfdataEng$relatedness=='rel' & firsthalfdataEng$morphType=='or',])))
-    print(paste0('opaque: ',nrow(firsthalfdataEng[firsthalfdataEng$subject==i & firsthalfdataEng$relatedness=='rel' & firsthalfdataEng$morphType=='op',])))
-    print(paste0('transparent: ',nrow(firsthalfdataEng[firsthalfdataEng$subject==i & firsthalfdataEng$relatedness=='rel' & firsthalfdataEng$morphType=='tr',])))
-    s1<-dcast(secondhalfdataEng[secondhalfdataEng$subject==i,],  morphType ~ relatedness , value.var = "rt", mean) %>% 
-      mutate(primingodd = rel - ctrl) %>% 
-      select(morphType, primingodd);
+for (i in 1:length(unique(coreven$subject))){
+  if (i %in% unique(coreven$subject)){
+    s1<-dcast(coreven[coreven$subject==i,],  morphType ~ relatedness , value.var = "rt", mean) %>% 
+        mutate(primingeven = rel - ctrl) %>% 
+        select(morphType, primingeven);
     s1$subject <- i
-    dataEngodd <- rbind(dataEngodd, s1);
-    
+    dataEngeven <- rbind(dataEngeven, s1)
   } else 
     print('skip')
   {
     next
     }
-}
-summary(dataEngeven);
-summary(dataEngodd);
-#good, we have one datapoint per condition per participant.
+};
+
+dataEngodd <- NULL;
+
+for (i in 1:length(unique(corodd$subject))){
+  if (i %in% unique(corodd$subject)){
+    s1<-dcast(corodd[corodd$subject==i,],  morphType ~ relatedness , value.var = "rt", mean) %>% 
+        mutate(primingodd = rel - ctrl) %>% 
+        select(morphType, primingodd);
+    s1$subject <- i
+    dataEngodd <- rbind(dataEngodd, s1)
+  } else 
+    print('skip')
+  {
+    next
+    }
+};
 
 #let's put the two halves in the same dataset
 dataEnghalf <- cbind(dataEngodd, dataEngeven);
@@ -1385,38 +1349,22 @@ summary(dataEnghalf);
 
 #3 correlate the two halves
 
-
-require(ggpubr);
-p5<-ggscatter(dataEnghalf, x = "primingodd", y = "primingeven",
-              add = "reg.line",                                 # Add regression line
-              conf.int = T,                                  # Add confidence interval
-              add.params = list(color = "#0892d0", fill = "lightgray", size = 2),
-              size = 5,
-              shape = 19)+  
-  stat_cor(method = "pearson", label.x = -300, label.y = 300) +# Add correlation coefficient
-  xlab('Masked morph priming Odd (zRT) ')+
-  ylab('Masked morph priming Even (zRT)');
-p5;
-
-ggpubr::ggexport(p5, filename = 'splithalfRelITA.jpg', res = 300, width = 3000, height = 2000);
-
-
-p6<-ggscatter(dataEnghalf, x = "primingodd", y = "primingeven",
-              add = "reg.line",                                 # Add regression line
-              conf.int = T,                                  # Add confidence interval
-              facet.by = "morphType",
-              size = 3,
-              add.params = list(color = "#0892d0", fill = "lightgray"))+  
-  stat_cor(method = "pearson", label.x = -300, label.y = 250) +# Add correlation coefficient
-  xlab('Masked morph priming Odd (zRT) ')+
-  ylab('Masked morph priming Even (zRT)');
-p6;
-ggpubr::ggexport(p6, filename = 'splithalfRelbyMorphTypeITA.jpg', res = 300, width = 3000, height = 2000);
-
 psych::splitHalf(dataEnghalf[,c('primingodd', 'primingeven')], 
                  n.sample = 5000, use = 'pairwise');
 multicon::splithalf.r(dataEnghalf[,c('primingodd', 'primingeven')], sims = 5000);
 multicon::alpha.cov(cov(dataEnghalf[,c('primingodd', 'primingeven')], use="p"));
+
+r<-cor(dataEnghalf$primingodd, dataEnghalf$primingeven) #manual method to compute the spearman-brown formula
+(2 * r) / (1 + r) #spearman brown formula
+
+r<-cor(dataEnghalf[dataEnghalf$morphType=='or',]$primingodd, dataEnghalf[dataEnghalf$morphType=='or',]$primingeven) 
+(2 * r) / (1 + r) 
+
+r<-cor(dataEnghalf[dataEnghalf$morphType=='op',]$primingodd, dataEnghalf[dataEnghalf$morphType=='op',]$primingeven) #manual method to compute the spearman-brown formula
+(2 * r) / (1 + r) #spearman brown formula
+
+r<-cor(dataEnghalf[dataEnghalf$morphType=='tr',]$primingodd, dataEnghalf[dataEnghalf$morphType=='tr',]$primingeven) #manual method to compute the spearman-brown formula
+(2 * r) / (1 + r) #spearman brown formula
 
 dataEnghalf[dataEnghalf$morphType=='or',]->Reliability;
 multicon::splithalf.r(Reliability[,c('primingodd', 'primingeven')], sims = 5000);
@@ -1430,76 +1378,7 @@ dataEnghalf[dataEnghalf$morphType=='tr',]->Reliability
 multicon::splithalf.r(Reliability[,c('primingodd', 'primingeven')], sims = 5000);
 multicon::alpha.cov(cov(Reliability[,c('primingodd', 'primingeven')], use="p"));
 
-
-#Method 2
-#I divide my participants in rotations, meaning that I already divided in odd and even participants
-listA <- temp[temp$rotation=='a',] #odd participants
-listB <- temp[temp$rotation=='b',] #even participants
-
-nrow(listA) + nrow(listB) == nrow(temp); #check the number of rows! 
-#great
-
-#split the participants in list A and list B in two random halves
-'%ni%' <- Negate('%in%')
-#listA
-ids <- sample(unique(listA$subject), length(unique(listA$subject))/2);
-ids2 <- unique(listA[listA$subject %ni% ids,]$subject);
-ids == ids2; #great, they don't contain the same values
-
-firsthalfA <- listA[listA$subject %in% ids,];
-secondhalfA <- listA[listA$subject %in% ids2,];
-
-nrow(secondhalfA) + nrow(firsthalfA) == nrow(listA); #check, okay
-
-#listB
-ids <- sample(unique(listB$subject), length(unique(listB$subject))/2);
-ids2 <- unique(listB[listB$subject %ni% ids,]$subject);
-ids == ids2; #great
-
-firsthalfB<- listB[listB$subject %in% ids,];
-secondhalfB <- listB[listB$subject %in% ids2,];
-
-nrow(secondhalfB) + nrow(firsthalfB) == nrow(listB); #check, okay
-
-#compute the splithalf for odd and even trials per ITEM 
-library(dplyr); library(data.table);
-
-#since the firsthalf of list A will contain the related pair (for example)
-#and the firsthalf of list B will contain the unrelated, In order to
-#compute the priming by item, I need to unify the first halves of A and B
-
-rbind(firsthalfA, firsthalfB)-> firsthalf;
-
-#compute the priming
-firsthalfpriming <- NULL;
-for (x in 1:length(unique(firsthalf$target))){
-  unique(firsthalf$target)[x] -> target
-  print(paste0("Target: ", target))
-  t1<-dcast(firsthalf[firsthalf$target==target,],  morphType ~ relatedness, value.var = "rt", mean) %>% 
-    mutate(priming = rel - ctrl) %>% 
-    select(morphType, priming);
-  t1$target <- target
-  firsthalfpriming <- rbind(firsthalfpriming, t1);
-} 
-
-rbind(secondhalfA, secondhalfB)-> secondhalf;
-secondhalfpriming <- NULL;
-for (i in 1:length(unique(secondhalf$target))){
-  unique(secondhalf$target)[i] -> target
-  print(paste0("Target: ", target))
-  t1<-dcast(secondhalf[secondhalf$target==target,],  morphType ~ relatedness , value.var = "rt", mean) %>% 
-    mutate(priming = rel - ctrl) %>% 
-    select(morphType, priming);
-  t1$target <- target
-  secondhalfpriming <- rbind(secondhalfpriming, t1);
-}
-
-merge(firsthalfpriming, secondhalfpriming, by = 'target')-> splitdatacorr;
-
-multicon::splithalf.r(splitdatacorr[,c('priming.x', 'priming.y')]);
-multicon::alpha.cov(cov(splitdatacorr[,c('priming.x', 'priming.y')], use="p"))
-
-#### critical GLMER model comparisons ####
+ #### critical GLMER model comparisons ####
 #load all the lmer and GLMM models
 df <- list.files(paste(localGitDir, "/LMMs and GLMMs/", sep = "")); 
 length(df); #44 models
@@ -1556,14 +1435,15 @@ car::Anova(proficiencyglmer7); #oralComprehension
 car::Anova(proficiencylmer7);
 
 #dataEng with trimming
-car::Anova(proficiencyglmer1b); #fluency
-car::Anova(proficiencylmer1b);
-
 car::Anova(engglmer2b); #dataEng main model - or baseline comparison
 car::Anova(englmer2b);
 
 car::Anova(engglmer2d); #dataEng main model - op baseline comparison
 car::Anova(englmer2d);
+
+car::Anova(proficiencyglmer1b); #fluency
+car::Anova(proficiencylmer1b);
+
 
 car::Anova(proficiencyglmer2b); #phonemicComprehension
 car::Anova(proficiencylmer2b);
