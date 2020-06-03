@@ -462,6 +462,10 @@ anova(crossglmer);
 pptFeatures <- unique(dataEng[,c('subject','age','gender','handedness','rotation','phonemicFluency', 'phonemicComprehension','morphComprehension','spelling','readingComprehension','vocabulary','oralComprehension','aoa1.Aoa', 'aoa2.usage', 'aoa3.context','aoa4.contextMultling','aoa5.selfRatedProf','aoa6.otherLang')]);
 summary(pptFeatures);
 
+car::vif(proficiencyglmer6)
+
+
+
 #correlation between the individual scores
 round(cor(pptFeatures[,c(6:12)], use='pairwise.complete.obs'), digits=2);
 temp <- as.vector(round(cor(pptFeatures[,c(6:12)], use='pairwise.complete.obs'), digits=2));
@@ -665,15 +669,10 @@ proficiencylmer7 <- lmer(-1000/rt ~ relatedness * morphType * oralComprehension 
 anova(proficiencylmer0,proficiencylmer7);
 
 proficiencyglmer7<- glmer(rt ~ relatedness  * morphType * oralComprehension + lengthTarget + freqTarget + (1|subject) + (1|target), data = dataEng, family=Gamma(link="identity"), control=glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)));
-ss <- getME(proficiencyglmer7,c("theta","fixef"));
-proficiencyglmer7<-update(proficiencyglmer7,start=ss,control=glmerControl(optimizer="bobyqa",
-                                                                          optCtrl=list(maxfun=2e5)));
-#trim a la bayeen
-proficiencyglmer7b<- glmer(rt ~ relatedness  * morphType * oralComprehension + lengthTarget + freqTarget + (1|subject) 
-                          + (1|target), data = subset(dataEng, abs(scale(resid(proficiencyglmer7)))<2.5), family=Gamma(link="identity"));
-ss <- getME(proficiencyglmer7b,c("theta","fixef"));
-proficiencyglmer7b<-update(proficiencyglmer7b,start=ss,control=glmerControl(optimizer="bobyqa",
-                                                                          optCtrl=list(maxfun=2e5)));
+
+proficiencyglmer8<- glmer(rt ~ relatedness  * morphType * vocabulary * spelling + lengthTarget + freqTarget + (1|subject) + (1|target), data = dataEng, family=Gamma(link="identity"), control=glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)));
+
+car::vif(proficiencyglmer8)
 
 
 anova(proficiencylmer7, proficiencyglmer7);
@@ -1034,7 +1033,7 @@ temp <- unique(masterFile[masterFile$lexicality=='word' & masterFile$language=='
 summary(temp);
 aggregate(oscTarget ~ morphType, FUN=fivenum, data=temp); #indeed they are
 
-#this represents this graphically [figure 4 in the paper]
+#this represents this graphically [figure 11 in the paper]
 revalue(temp$morphType, c("or"="Orthographic", 'op'='Opaque', 'tr'='Transparent'))-> temp$morphType;
 library(ggpubr);
 ggboxplot(subset(temp, oscTarget>0), "morphType", "oscTarget",
@@ -1167,21 +1166,21 @@ summary(dataEngAcc);
 dataEngAcc2 <- subset(dataEngAcc, rt>300 & rt<2000 & subject!=15 & subject!=22 & subject!=43);
 
 #The overall accuracy is 76.7%
-aggregate(accuracy ~ subject + vocabulary, data = dataEngAcc2, mean)-> distrppt;
+aggregate(accuracy ~ subject + phonemicComprehension, data = dataEngAcc2, mean)-> distrppt;
 head(distrppt, 10)-> firstppt
 tail(distrppt, 10)-> lastppt
-mean(lastppt$accuracy) - mean(firstppt$accuracy)
-nrow(dataEng[dataEng$subject %in% lastppt$subject,]) - nrow(dataEng[dataEng$subject %in% firstppt$subject,]);
+(mean(lastppt$accuracy) - mean(firstppt$accuracy))*100
+(nrow(dataEng[dataEng$subject %in% lastppt$subject,])/10) - (nrow(dataEng[dataEng$subject %in% firstppt$subject,])/10);
 
 head(distrppt, 5)-> firstppt
 tail(distrppt, 5)-> lastppt
-mean(lastppt$accuracy) - mean(firstppt$accuracy)
-nrow(dataEng[dataEng$subject %in% lastppt$subject,]) - nrow(dataEng[dataEng$subject %in% firstppt$subject,]);
+(mean(lastppt$accuracy) - mean(firstppt$accuracy))*100
+(nrow(dataEng[dataEng$subject %in% lastppt$subject,])/5) - (nrow(dataEng[dataEng$subject %in% firstppt$subject,])/5);
 
 head(distrppt, 15)-> firstppt
 tail(distrppt, 15)-> lastppt
-mean(lastppt$accuracy) - mean(firstppt$accuracy)
-nrow(dataEng[dataEng$subject %in% lastppt$subject,]) - nrow(dataEng[dataEng$subject %in% firstppt$subject,]);
+(mean(lastppt$accuracy) - mean(firstppt$accuracy))*100
+(nrow(dataEng[dataEng$subject %in% lastppt$subject,])/15) - (nrow(dataEng[dataEng$subject %in% firstppt$subject,])/15);
 
 #Q1: how these errors are distributed across the three prime conditions?#
 mean(dataEngAcc2[dataEngAcc2$morphType=='tr',]$accuracy); 
@@ -1236,45 +1235,62 @@ anova(accproficiencylmer7); #nope
 summary(accproficiencylmer7);
 
 #so, less proficient speakers make more errors, but it's not interacting with morphType and relatedness
-#visualization of the overall Accyracy for the reviewers
+#visualization of the overall Accuracy for the reviewers
 library(dplyr);
 ss_prop <- dataEngAcc2 %>% 
-  group_by(subject, relatedness, morphType, target) %>% 
-  summarise(mean_correct = mean(accuracy)) 
+  group_by(subject, relatedness, morphType) %>% 
+  dplyr::summarise(mean_correct = mean(accuracy)) 
+
 
 ss_prop <- dataEngAcc2 %>% 
-  group_by(subject, relatedness, morphType, target) %>%
-  summarise(mean_RT = mean(rt)) %>% 
-  left_join(ss_prop)
+  group_by(subject, relatedness, morphType) %>%
+  dplyr::summarise(mean_RT = mean(rt)) 
+
+df2 <- ss_prop %>%
+  group_by(morphType, relatedness) %>%
+  dplyr::summarise( 
+    n=n(),
+    mean=mean(mean_RT),
+    sd=sd(mean_RT)
+  ) %>%
+  mutate( se=sd/sqrt(n))  %>%
+  mutate( ic=se * qt((1-0.05)/2 + .5, n-1))
+
 
 
 #plot
-#devtools::install_github("langcog/langcog")
-library(langcog);
-revalue(ss_prop$relatedness, c("ctrl"="unrelated"))-> ss_prop$relatedness;
-revalue(ss_prop$relatedness, c("rel"="related"))-> ss_prop$relatedness;
+df3 <- ss_prop %>%
+  group_by(morphType, relatedness) %>%
+  summarise( 
+    n=n(),
+    mean=mean(mean_correct),
+    sd=sd(mean_correct)
+  ) %>%
+  mutate( se=sd/sqrt(n))  %>%
+  mutate( ic=se * qt((1-0.05)/2 + .5, n-1))
 
-ms <- ss_prop %>%
-  group_by(relatedness, morphType) %>% 
-  multi_boot_standard(col = "mean_correct") 
+revalue(df3$relatedness, c("ctrl"="unrelated"))-> df3$relatedness;
+revalue(df3$relatedness, c("rel"="related"))-> df3$relatedness;
+revalue(df3$morphType, c("op"="opaque"))-> df3$morphType;
+revalue(df3$morphType, c("or"="orthographic"))-> df3$morphType;
+revalue(df3$morphType, c("tr"="transparent"))-> df3$morphType;
 
-aggregate(accuracy~ relatedness + morphType, dataEngAcc2, mean)
 
-p1<-ggplot(aes(x = morphType, y = mean, fill = relatedness), data = ms) +
+p1<-ggplot(aes(x = morphType, y = mean, fill = relatedness), data = df3) +
   geom_bar(stat = "identity", color='white', position=position_dodge(), size=1.2) +
-  geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width=.15, size=1.5,  
-                position = position_dodge(width = 0.9)) +
-  #geom_hline(yintercept = 0.5, lty = "dashed") +
-  ylab(" ") +
-  coord_cartesian(ylim = c(0.65, .9))+
+  geom_errorbar(aes(ymin=mean-sd, ymax=mean+sd), width=.15, size=1,position=position_dodge(.9)) +
+  ylab("Accuracy ") +
+  xlab("Morphological type") +
+  coord_cartesian(ylim = c(0.5, 1))+
   ggpubr::theme_pubclean() + 
   #scale_fill_grey() +
   theme(legend.position="top", legend.title = element_blank()) +
-  theme(text = element_text(size=20)) +
-  ggtitle("Accuracy");
+  theme(text = element_text(size=20)) ;
 
-p1;
 ggpubr::ggexport(p1, filename = 'Accuracy.jpg', res = 300, width = 2000, height = 1200);
+
+
+aggregate(accuracy ~ subject, data = dataEngAcc2, mean)->
 
 #plot of each proficiency metric against error rate
 #### All proficiency accuracy graph####
@@ -1291,13 +1307,13 @@ ss_prop <- dataEngAcc2 %>%
   group_by(subject, target, phonemicFluency,
            phonemicComprehension, morphComprehension, spelling, readingComprehension,
            vocabulary, oralComprehension) %>% 
-  summarise(mean_correct = mean(accuracy))
+  dplyr::summarise(mean_correct = mean(accuracy))
 
 ss_prop <- dataEngAcc2 %>% 
   group_by(subject, target, phonemicFluency,
            phonemicComprehension, morphComprehension, spelling, readingComprehension,
            vocabulary, oralComprehension) %>%
-  summarise(mean_rt = mean(rt)) %>% 
+  dplyr::summarise(mean_rt = mean(rt)) %>% 
   left_join(ss_prop)
 
 
@@ -1307,7 +1323,7 @@ melt(ss_prop, id=c("subject", "target",
 
 ms <- mdata %>%
   group_by(subject, variable, value) %>% 
-  multi_boot_standard(col = "mean_correct") 
+  langcog::multi_boot_standard(col = "mean_correct") 
 
 accplot<-ggpubr::ggscatter(ms, x = "value", y = "mean",
                            legend = "bottom",
@@ -1315,8 +1331,7 @@ accplot<-ggpubr::ggscatter(ms, x = "value", y = "mean",
                            alpha = 0.8) +
   geom_point(shape = 21, fill = "white", size = 3) +
   ggpubr::theme_pubclean()+
-  labs(title="Accuracy data across proficiency tests",
-       x="Z-scores", y = "mean accuracy") +
+  labs(x=" ", y = "mean accuracy") +
   theme(legend.title=element_blank()) +
   coord_cartesian(ylim = c(0.25, 1)) + 
   facet_wrap(.~variable, ncol = 3) +
@@ -1331,10 +1346,19 @@ ggpubr::ggexport(accplot, filename = 'AccuracyallProficiency.jpg', res = 300, wi
 #Q3: careful considerate how the error data may or may not affect the interpretation of the RT results
 #Calculating median reaction times for each condition in the related condition only
 
+ss_prop <- dataEngAcc2 %>% 
+  group_by(subject, target, morphType) %>% 
+  dplyr::summarise(mean_correct = mean(accuracy))
+
+ss_prop <- dataEngAcc2 %>% 
+  group_by(subject, target, morphType) %>%
+  dplyr::summarise(mean_rt = mean(rt)) %>% 
+  left_join(ss_prop)
+
 ms_rt <- ss_prop %>%
   #filter(relatedness == "rel") %>%
   group_by(morphType, mean_correct) %>% 
-  multi_boot_standard(col = "mean_RT", na.rm = T, empirical_function = "mean")
+  langcog::multi_boot_standard(col = "mean_rt", na.rm = T, empirical_function = "mean")
 
 #plot
 p2<-ggplot(aes(x = as.factor(mean_correct), y = mean, fill = mean_correct), 
@@ -1359,15 +1383,15 @@ break_seq <- seq(0, rt_range, rt_range/n_bins)
 
 timeslice_range <- dataEngAcc2 %>%
   #filter(relatedness == "rel", is.na(rt) == F) %>%
-  mutate(RT_bin = cut(rt, breaks = break_seq)) %>%
-  group_by(RT_bin, morphType) %>%
-  mutate(RT_bin_avg = mean(rt, na.rm = T))
+  dplyr::mutate(RT_bin = cut(rt, breaks = break_seq)) %>%
+  dplyr::group_by(RT_bin, morphType) %>%
+  dplyr::mutate(RT_bin_avg = mean(rt, na.rm = T))
 
 timeslice_range <- timeslice_range %>%
-  group_by(RT_bin_avg, morphType, target) %>% 
-  summarise(ss_acc = mean(accuracy, na.rm=T)) %>% 
-  group_by(RT_bin_avg, morphType) %>%
-  summarise(mean = mean(ss_acc),
+  dplyr::group_by(RT_bin_avg, morphType, target) %>% 
+  dplyr::summarise(ss_acc = mean(accuracy, na.rm=T)) %>% 
+  dplyr::group_by(RT_bin_avg, morphType) %>%
+  dplyr::summarise(mean = mean(ss_acc),
             n = n())
 
 p3<-ggplot(aes(x=RT_bin_avg, y=mean, weight = n), 
@@ -1385,13 +1409,13 @@ p3;
 ggpubr::ggexport(p3, filename = 'AccuracyRTradeoff.jpg', res = 300, width = 2500, height = 1300);
 
 aggregate(accuracy ~ subject, dataEngAcc2, mean)-> speedacc
-aggregate(rt ~ subject, dataEngAcc2, mean)-> speedacc2
+aggregate(rt ~ subject, dataEng, mean)-> speedacc2
 merge(speedacc, speedacc2, by = "subject")-> speedacc
 
 p3<-ggplot(aes(x=rt, y=accuracy), 
            data = speedacc) + 
   geom_point( shape = 21, fill = "white", size = 3, stroke = 1.5) +
-  geom_smooth(method = "lm", formula = y ~ poly(x,2), se = TRUE, color = "#0892d0", fill = "lightgray") +
+  #geom_smooth(method = "lm", formula = y ~ poly(x,2), se = TRUE, color = "#0892d0", fill = "lightgray") +
   geom_hline(yintercept = 0.5, lty = "dashed", color = 'red') +
   coord_cartesian(ylim = c(0.4, 1))+
   ggthemes::theme_hc()+
@@ -1414,6 +1438,8 @@ multicon::splithalf.r(pptFeatures[,6:12], sims = 5000);
 multicon::alpha.cov(cov(pptFeatures[,6:12], use="p"));
 
 
+
+
 ####split half reliability of the priming####
 #Method 1
 library(data.table);
@@ -1422,6 +1448,7 @@ library(data.table);
 
 dataEng[c(TRUE, FALSE), ]->coreven;
 dataEng[c(FALSE, TRUE), ]->corodd;
+
 
 table(coreven$subject);
 table(corodd$subject);
@@ -1465,7 +1492,7 @@ for (i in 1:length(unique(corodd$subject))){
 dataEnghalf <- cbind(dataEngodd, dataEngeven);
 dataEnghalf$subject <- NULL; #double column
 dataEnghalf$morphType <- NULL; #double column
-rm(dataEngodd, dataEngeven);
+#rm(dataEngodd, dataEngeven);
 summary(dataEnghalf);
 
 #3 correlate the two halves
@@ -1474,6 +1501,27 @@ psych::splitHalf(dataEnghalf[,c('primingodd', 'primingeven')],
                  n.sample = 5000, use = 'pairwise');
 multicon::splithalf.r(dataEnghalf[,c('primingodd', 'primingeven')], sims = 5000);
 multicon::alpha.cov(cov(dataEnghalf[,c('primingodd', 'primingeven')], use="p"));
+
+
+#ICC analysis
+library(irr)
+d<- NULL
+dataEngodd[dataEngodd$morphType=='or',]$primingodd-> d$orodd
+dataEngeven[dataEngeven$morphType=='or',]$primingeven-> d$oreven
+
+dataEngodd[dataEngodd$morphType=='op',]$primingodd-> d$opodd
+dataEngeven[dataEngeven$morphType=='op',]$primingeven-> d$opeven
+
+dataEngodd[dataEngodd$morphType=='tr',]$primingodd-> d$trodd
+dataEngeven[dataEngeven$morphType=='tr',]$primingeven-> d$treven
+
+d <- as.data.frame(d)
+icc(d,model = "oneway",
+    type = "consistency",
+    unit = "average",
+    r0 = 0,
+    conf.level = 0.95)
+
 
 #raw data
 r<-cor(coreven$rt, corodd$rt) 
@@ -1522,12 +1570,12 @@ for (i in 1:length(df)){
 
 rm(i, id, temp);
 
+
+
 #dataITA without trimming
 car::Anova(itaglmer2); #dataIta main model - or baseline comparison
 
 car::Anova(italmer2);
-
-emmeans(itaglmer2, pairwise ~ relatedness ~ morphType)
 
 car::Anova(itaglmer2c); #dataIta main model - op baseline comparison
 car::Anova(italmer2c);
@@ -1545,23 +1593,42 @@ car::Anova(crossglmer);
 #dataENG without trimming
 car::Anova(engglmer2); #dataEng main model - or baseline comparison
 car::Anova(englmer2);
+summary(engglmer2);
+
+l4.emm <- emmeans(engglmer2c, ~ relatedness * morphType )
+contrast(l4.emm, "consec",  simple = "each", combine = F, adjust = "bonferroni")
+
 
 car::Anova(engglmer2c); #dataEng main model - op baseline comparison
 car::Anova(englmer2c);
 
 car::Anova(proficiencyglmer1); #fluency - or baseline
 car::Anova(proficiencyglmer1d); #fluency - op baseline
-car::Anova(proficiencylmer1);
+
+l4.emm <- emmeans(proficiencyglmer1d, ~ relatedness * morphType * phonemicFluency)
+contrast(l4.emm, "consec",  simple = "each", combine = T, adjust = "bonferroni")
+fixef(proficiencyglmer1d)[13:14]
+as.data.frame(phonFlu)->phonFlu
+mean(phonFlu$V1); mean(phonFlu$V2)
+sd(phonFlu$V1); sd(phonFlu$V2)
+
 
 car::Anova(proficiencyglmer2); #phonemicComprehension - or baseline
 car::Anova(proficiencyglmer2d); #phonemicComprehension - op baseline
+fixef(proficiencyglmer2d)[13:14]
+as.data.frame(phonAware)->phonAware
+mean(phonAware$V1); mean(phonAware$V2)
+sd(phonAware$V1); sd(phonAware$V2)
 
 car::Anova(proficiencylmer2);
 
 car::Anova(proficiencyglmer3); #morph comprehension - or baseline
 car::Anova(proficiencyglmer3d); #morph comprehension - op baseline
+fixef(proficiencyglmer3d)[13:14]
+as.data.frame(morphAware)->morphAware
+mean(morphAware$V1); mean(morphAware$V2)
+sd(morphAware$V1); sd(morphAware$V2)
 
-car::Anova(proficiencylmer3);
 
 car::Anova(proficiencyglmer4); #spelling - or baseline
 car::Anova(proficiencyglmer4d); #spelling - op baseline
@@ -1570,12 +1637,19 @@ car::Anova(proficiencylmer4);
 
 car::Anova(proficiencyglmer5); #readingComprehension - or baseline
 car::Anova(proficiencyglmer5d); #readingComprehension - op baseline
+fixef(proficiencyglmer5d)[13:14]
+as.data.frame(readComp)->readComp
+mean(readComp$V1); mean(readComp$V2)
+sd(readComp$V1); sd(readComp$V2)
 
 car::Anova(proficiencylmer5);
 
 car::Anova(proficiencyglmer6); #vocabulary - or baseline
 car::Anova(proficiencyglmer6d); #vocabulary - op baseline
-car::Anova(proficiencylmer6);
+fixef(proficiencyglmer6d)[13:14]
+as.data.frame(voc)->voc
+mean(voc$V1); mean(voc$V2)
+sd(voc$V1); sd(voc$V2)
 
 car::Anova(proficiencyglmer7); #oralComprehension - or baseline
 car::Anova(proficiencyglmer7d); #oralComprehension - op baseline
@@ -1593,15 +1667,17 @@ car::Anova(englmer2d);
 
 car::Anova(proficiencyglmer1b); #fluency
 car::Anova(proficiencylmer1b);
+fixef(proficiencylmer1b)[13:14]
 
 
 car::Anova(proficiencyglmer2b); #phonemicComprehension
 car::Anova(proficiencylmer2b);
-
+summary(proficiencylmer2b)
 
 car::Anova(proficiencyglmer3b); #morph comprehension
 car::Anova(proficiencylmer3b);
 
+fixef(proficiencylmer3b)[13:14]
 car::Anova(proficiencyglmer4b); #spelling
 car::Anova(proficiencylmer4b);
 
