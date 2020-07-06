@@ -1430,12 +1430,11 @@ ggpubr::ggexport(p3, filename = 'AccuracyRTradeoffbysubj.jpg', res = 300, width 
 #internal consistency of the proficiency measures
 pptFeatures <- unique(dataEng[,c('subject','age','gender','handedness','rotation','phonemicFluency', 'phonemicComprehension','morphComprehension','spelling','readingComprehension','vocabulary','oralComprehension','aoa1.Aoa', 'aoa2.usage', 'aoa3.context','aoa4.contextMultling','aoa5.selfRatedProf','aoa6.otherLang')]);
 
-psych::alpha(pptFeatures, check.keys=TRUE);
-psych::alpha(pptFeatures, check.keys = TRUE)$total$std.alpha #great value
+psych::alpha(pptFeatures[,6:12], check.keys = TRUE) #great value
 
-psych::splitHalf(pptFeatures[,6:12]) #split-half reliability
+psych::splitHalf(pptFeatures[,6:12], raw = T, n.sample = 5000) #split-half reliability
 multicon::splithalf.r(pptFeatures[,6:12], sims = 5000);
-multicon::alpha.cov(cov(pptFeatures[,6:12], use="p"));
+multicon::alpha.cov(cov(pptFeatures[,6:12]));
 
 
 
