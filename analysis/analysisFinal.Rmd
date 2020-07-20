@@ -940,6 +940,20 @@ proficiencyglmer5b.anova
 knitr::kable(round(proficiencyglmer5b.modelsum$coefficients, 4))
 ```
 
+We fit a model with the specific relatedness:morphType:readingComprehension:
+```{r proficiencyglmer5_estimate, eval=FALSE}
+proficiencyglmer5_estimate<- glmer(rt ~ relatedness  + morphType + readingComprehension + relatedness:morphType + morphType:readingComprehension + relatedness:morphType:readingComprehension + lengthTarget + freqTarget + (1|subject) + (1|target), 
+                                data = dataEng, family=Gamma(link="identity"), 
+                                control=glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)));
+
+```
+
+```{r table of estimates for proficiencyglmer5}
+knitr::kable(round(summary(proficiencyglmer5_estimate)$coefficients,4))
+```
+
+
+
 ### Vocabulary
 
 ```{r anova and summary proficiencyglmer6}
@@ -961,13 +975,24 @@ proficiencyglmer6b<- glmer(rt ~ relatedness  * morphType * vocabulary + lengthTa
 ```
 
 ```{r anova and summary proficiencyglmer6b}
-proficiencyglmer6b.anova <- car::Anova(proficiencyglmer6b)
 proficiencyglmer6b.modelsum <- summary(proficiencyglmer6b)
-proficiencyglmer6b.anova
 ```
 
 ```{r}
 knitr::kable(round(proficiencyglmer6b.modelsum$coefficients, 4))
+```
+
+
+We fit a model with the specific relatedness:morphType:vocabulary:
+```{r proficiencyglmer6_estimate, eval=FALSE}
+proficiencyglmer6_estimate<- glmer(rt ~ relatedness  + morphType + vocabulary + relatedness:morphType + morphType:vocabulary + relatedness:morphType:vocabulary + lengthTarget + freqTarget + (1|subject) + (1|target), 
+                                data = dataEng, family=Gamma(link="identity"), 
+                                control=glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)));
+
+```
+
+```{r table of estimates for proficiencyglmer6}
+knitr::kable(round(summary(proficiencyglmer6_estimate)$coefficients,4))
 ```
 
 ### Oral comprehension
@@ -991,14 +1016,26 @@ proficiencyglmer7b<- glmer(rt ~ relatedness  * morphType * oralComprehension + l
 ```
 
 ```{r anova and summary proficiencyglmer7b}
-proficiencyglmer7b.anova <- car::Anova(proficiencyglmer7b)
 proficiencyglmer7b.modelsum <- summary(proficiencyglmer7b)
-proficiencyglmer7b.anova
 ```
 
 ```{r}
 knitr::kable(round(proficiencyglmer7b.modelsum$coefficients, 4))
 ```
+
+
+We fit a model with the specific relatedness:morphType:oralComprehension:
+```{r proficiencyglmer7_estimate, eval=FALSE}
+proficiencyglmer7_estimate<- glmer(rt ~ relatedness  + morphType + oralComprehension + relatedness:morphType + morphType:oralComprehension + relatedness:morphType:oralComprehension + lengthTarget + freqTarget + (1|subject) + (1|target), 
+                                data = dataEng, family=Gamma(link="identity"), 
+                                control=glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)));
+
+```
+
+```{r table of estimates for proficiencyglmer7}
+knitr::kable(round(summary(proficiencyglmer7_estimate)$coefficients,4))
+```
+
 
 # Summary of the results for language proficiency and priming
 
@@ -1444,7 +1481,7 @@ par(mfrow=c(1,1));
 ```{r save ita models, echo=FALSE, eval=FALSE}
 saveRDS(aoaglmer6c, paste(localGitDir, "/LMMs and GLMMs/aoaglmer6c.rds",sep = ""))
 saveRDS(engglmer1, paste(localGitDir, "/LMMs and GLMMs/engglmer1.rds",sep = ""))
-saveRDS(engglmer1c, paste(localGitDir, "/LMMs and GLMMs/engglmer1c.rds",sep = ""))
+saveRDS(proficiencyglmer7_estimate, paste(localGitDir, "/LMMs and GLMMs/proficiencyglmer7_estimate.rds",sep = ""))
 
 ```
 

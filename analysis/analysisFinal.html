@@ -12,7 +12,7 @@
 <meta name="author" content="Eva Viviani" />
 <meta name="author" content="Davide Crepaldi" />
 
-<meta name="date" content="2020-06-25" />
+<meta name="date" content="2020-07-13" />
 
 <title>Data analysis Morphological masked priming experiment on L1-ITA, L2-ENG bilingual speakers/readers</title>
 
@@ -1515,7 +1515,7 @@ div.tocify {
 <h3 class="subtitle">Paper titled <em>Masked morphological priming tracks the development of a fully mature lexical system in L2</em> - Submitted to JML in June 2019</h3>
 <h4 class="author">Eva Viviani</h4>
 <h4 class="author">Davide Crepaldi</h4>
-<h4 class="date">25 June 2020</h4>
+<h4 class="date">13 July 2020</h4>
 
 </div>
 
@@ -1556,7 +1556,7 @@ inv &lt;- function(x) {-1000/x};</code></pre>
 <p>GLMMs takes a lot of time to run, depending on the machine and the dataset. We have saved the models that successfully converged in a folder.</p>
 <pre class="r"><code>df &lt;- list.files(paste(localGitDir, &quot;/LMMs and GLMMs/&quot;, sep = &quot;&quot;)); 
 length(df); </code></pre>
-<pre><code>## [1] 53</code></pre>
+<pre><code>## [1] 54</code></pre>
 <pre class="r"><code>for (i in 1:length(df)){
   gsub(&quot;.rds$&quot;, &quot;&quot;, df[i]) -&gt; id
   assign(id, data.frame())
@@ -4954,6 +4954,122 @@ proficiencyglmer5b.anova</code></pre>
 </tr>
 </tbody>
 </table>
+<p>We fit a model with the specific relatedness:morphType:readingComprehension:</p>
+<pre class="r"><code>proficiencyglmer5_estimate&lt;- glmer(rt ~ relatedness  + morphType + readingComprehension + relatedness:morphType + morphType:readingComprehension + relatedness:morphType:readingComprehension + lengthTarget + freqTarget + (1|subject) + (1|target), 
+                                data = dataEng, family=Gamma(link=&quot;identity&quot;), 
+                                control=glmerControl(optimizer=&quot;bobyqa&quot;, optCtrl=list(maxfun=2e5)));</code></pre>
+<pre class="r"><code>knitr::kable(round(summary(proficiencyglmer5_estimate)$coefficients,4))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">Estimate</th>
+<th align="right">Std. Error</th>
+<th align="right">t value</th>
+<th align="right">Pr(&gt;|z|)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>(Intercept)</td>
+<td align="right">1127.8327</td>
+<td align="right">6.0923</td>
+<td align="right">185.1244</td>
+<td align="right">0.0000</td>
+</tr>
+<tr class="even">
+<td>relatednessrel</td>
+<td align="right">-23.7701</td>
+<td align="right">5.2031</td>
+<td align="right">-4.5684</td>
+<td align="right">0.0000</td>
+</tr>
+<tr class="odd">
+<td>morphTypeor</td>
+<td align="right">-7.7253</td>
+<td align="right">3.0307</td>
+<td align="right">-2.5490</td>
+<td align="right">0.0108</td>
+</tr>
+<tr class="even">
+<td>morphTypetr</td>
+<td align="right">17.6285</td>
+<td align="right">4.4165</td>
+<td align="right">3.9915</td>
+<td align="right">0.0001</td>
+</tr>
+<tr class="odd">
+<td>readingComprehension</td>
+<td align="right">4.7956</td>
+<td align="right">3.3013</td>
+<td align="right">1.4526</td>
+<td align="right">0.1463</td>
+</tr>
+<tr class="even">
+<td>lengthTarget</td>
+<td align="right">-26.4531</td>
+<td align="right">3.4441</td>
+<td align="right">-7.6806</td>
+<td align="right">0.0000</td>
+</tr>
+<tr class="odd">
+<td>freqTarget</td>
+<td align="right">-72.3527</td>
+<td align="right">3.3082</td>
+<td align="right">-21.8710</td>
+<td align="right">0.0000</td>
+</tr>
+<tr class="even">
+<td>relatednessrel:morphTypeor</td>
+<td align="right">-6.5255</td>
+<td align="right">5.2468</td>
+<td align="right">-1.2437</td>
+<td align="right">0.2136</td>
+</tr>
+<tr class="odd">
+<td>relatednessrel:morphTypetr</td>
+<td align="right">-3.6413</td>
+<td align="right">4.5499</td>
+<td align="right">-0.8003</td>
+<td align="right">0.4235</td>
+</tr>
+<tr class="even">
+<td>morphTypeor:readingComprehension</td>
+<td align="right">1.7522</td>
+<td align="right">1.7157</td>
+<td align="right">1.0213</td>
+<td align="right">0.3071</td>
+</tr>
+<tr class="odd">
+<td>morphTypetr:readingComprehension</td>
+<td align="right">-4.1040</td>
+<td align="right">1.6877</td>
+<td align="right">-2.4317</td>
+<td align="right">0.0150</td>
+</tr>
+<tr class="even">
+<td>relatednessrel:morphTypeop:readingComprehension</td>
+<td align="right">-0.1810</td>
+<td align="right">1.4176</td>
+<td align="right">-0.1277</td>
+<td align="right">0.8984</td>
+</tr>
+<tr class="odd">
+<td>relatednessrel:morphTypeor:readingComprehension</td>
+<td align="right">2.5129</td>
+<td align="right">1.9075</td>
+<td align="right">1.3174</td>
+<td align="right">0.1877</td>
+</tr>
+<tr class="even">
+<td>relatednessrel:morphTypetr:readingComprehension</td>
+<td align="right">-2.0145</td>
+<td align="right">1.6099</td>
+<td align="right">-1.2513</td>
+<td align="right">0.2108</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="vocabulary-1" class="section level3">
 <h3>Vocabulary</h3>
@@ -5089,24 +5205,7 @@ proficiencyglmer6.anova</code></pre>
 </table>
 <pre class="r"><code>dataEng$morphType &lt;- relevel(dataEng$morphType, &quot;op&quot;);</code></pre>
 <pre class="r"><code>proficiencyglmer6b&lt;- glmer(rt ~ relatedness  * morphType * vocabulary + lengthTarget + freqTarget + (1|subject) + (1|target), data = dataEng, family=Gamma(link=&quot;identity&quot;), control=glmerControl(optimizer=&quot;bobyqa&quot;,optCtrl=list(maxfun=2e5))); </code></pre>
-<pre class="r"><code>proficiencyglmer6b.anova &lt;- car::Anova(proficiencyglmer6b)
-proficiencyglmer6b.modelsum &lt;- summary(proficiencyglmer6b)
-proficiencyglmer6b.anova</code></pre>
-<pre><code>## Analysis of Deviance Table (Type II Wald chisquare tests)
-## 
-## Response: rt
-##                                     Chisq Df Pr(&gt;Chisq)    
-## relatedness                      306.0907  1  &lt; 2.2e-16 ***
-## morphType                         96.1525  2  &lt; 2.2e-16 ***
-## vocabulary                         0.0783  1     0.7796    
-## lengthTarget                      48.7342  1  2.931e-12 ***
-## freqTarget                       370.9151  1  &lt; 2.2e-16 ***
-## relatedness:morphType              2.9168  2     0.2326    
-## relatedness:vocabulary            36.7855  1  1.319e-09 ***
-## morphType:vocabulary              29.5597  2  3.812e-07 ***
-## relatedness:morphType:vocabulary  34.7464  2  2.850e-08 ***
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>proficiencyglmer6b.modelsum &lt;- summary(proficiencyglmer6b)</code></pre>
 <pre class="r"><code>knitr::kable(round(proficiencyglmer6b.modelsum$coefficients, 4))</code></pre>
 <table>
 <thead>
@@ -5216,6 +5315,122 @@ proficiencyglmer6b.anova</code></pre>
 <td align="right">0.6233</td>
 <td align="right">-3.7328</td>
 <td align="right">0.0002</td>
+</tr>
+</tbody>
+</table>
+<p>We fit a model with the specific relatedness:morphType:vocabulary:</p>
+<pre class="r"><code>proficiencyglmer6_estimate&lt;- glmer(rt ~ relatedness  + morphType + vocabulary + relatedness:morphType + morphType:vocabulary + relatedness:morphType:vocabulary + lengthTarget + freqTarget + (1|subject) + (1|target), 
+                                data = dataEng, family=Gamma(link=&quot;identity&quot;), 
+                                control=glmerControl(optimizer=&quot;bobyqa&quot;, optCtrl=list(maxfun=2e5)));</code></pre>
+<pre class="r"><code>knitr::kable(round(summary(proficiencyglmer6_estimate)$coefficients,4))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">Estimate</th>
+<th align="right">Std. Error</th>
+<th align="right">t value</th>
+<th align="right">Pr(&gt;|z|)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>(Intercept)</td>
+<td align="right">1185.5376</td>
+<td align="right">4.8303</td>
+<td align="right">245.4352</td>
+<td align="right">0.0000</td>
+</tr>
+<tr class="even">
+<td>relatednessrel</td>
+<td align="right">-62.2591</td>
+<td align="right">4.8892</td>
+<td align="right">-12.7341</td>
+<td align="right">0.0000</td>
+</tr>
+<tr class="odd">
+<td>morphTypeor</td>
+<td align="right">2.8682</td>
+<td align="right">3.7764</td>
+<td align="right">0.7595</td>
+<td align="right">0.4476</td>
+</tr>
+<tr class="even">
+<td>morphTypetr</td>
+<td align="right">38.6580</td>
+<td align="right">3.3470</td>
+<td align="right">11.5499</td>
+<td align="right">0.0000</td>
+</tr>
+<tr class="odd">
+<td>vocabulary</td>
+<td align="right">-2.3893</td>
+<td align="right">1.8358</td>
+<td align="right">-1.3015</td>
+<td align="right">0.1931</td>
+</tr>
+<tr class="even">
+<td>lengthTarget</td>
+<td align="right">-26.6301</td>
+<td align="right">3.2221</td>
+<td align="right">-8.2649</td>
+<td align="right">0.0000</td>
+</tr>
+<tr class="odd">
+<td>freqTarget</td>
+<td align="right">-72.2041</td>
+<td align="right">4.4155</td>
+<td align="right">-16.3524</td>
+<td align="right">0.0000</td>
+</tr>
+<tr class="even">
+<td>relatednessrel:morphTypeor</td>
+<td align="right">-21.4716</td>
+<td align="right">4.3941</td>
+<td align="right">-4.8864</td>
+<td align="right">0.0000</td>
+</tr>
+<tr class="odd">
+<td>relatednessrel:morphTypetr</td>
+<td align="right">11.6345</td>
+<td align="right">5.1225</td>
+<td align="right">2.2713</td>
+<td align="right">0.0231</td>
+</tr>
+<tr class="even">
+<td>morphTypeor:vocabulary</td>
+<td align="right">-0.1926</td>
+<td align="right">0.8302</td>
+<td align="right">-0.2319</td>
+<td align="right">0.8166</td>
+</tr>
+<tr class="odd">
+<td>morphTypetr:vocabulary</td>
+<td align="right">-2.5411</td>
+<td align="right">0.8059</td>
+<td align="right">-3.1530</td>
+<td align="right">0.0016</td>
+</tr>
+<tr class="even">
+<td>relatednessrel:morphTypeop:vocabulary</td>
+<td align="right">2.4655</td>
+<td align="right">0.4517</td>
+<td align="right">5.4588</td>
+<td align="right">0.0000</td>
+</tr>
+<tr class="odd">
+<td>relatednessrel:morphTypeor:vocabulary</td>
+<td align="right">4.2209</td>
+<td align="right">0.5349</td>
+<td align="right">7.8907</td>
+<td align="right">0.0000</td>
+</tr>
+<tr class="even">
+<td>relatednessrel:morphTypetr:vocabulary</td>
+<td align="right">0.9346</td>
+<td align="right">0.5741</td>
+<td align="right">1.6280</td>
+<td align="right">0.1035</td>
 </tr>
 </tbody>
 </table>
@@ -5354,24 +5569,7 @@ proficiencyglmer7.anova</code></pre>
 </table>
 <pre class="r"><code>dataEng$morphType &lt;- relevel(dataEng$morphType, &quot;op&quot;);</code></pre>
 <pre class="r"><code>proficiencyglmer7b&lt;- glmer(rt ~ relatedness  * morphType * oralComprehension + lengthTarget + freqTarget + (1|subject) + (1|target), data = dataEng, family=Gamma(link=&quot;identity&quot;), control=glmerControl(optimizer=&quot;bobyqa&quot;,optCtrl=list(maxfun=2e5))); </code></pre>
-<pre class="r"><code>proficiencyglmer7b.anova &lt;- car::Anova(proficiencyglmer7b)
-proficiencyglmer7b.modelsum &lt;- summary(proficiencyglmer7b)
-proficiencyglmer7b.anova</code></pre>
-<pre><code>## Analysis of Deviance Table (Type II Wald chisquare tests)
-## 
-## Response: rt
-##                                            Chisq Df Pr(&gt;Chisq)    
-## relatedness                             242.9122  1  &lt; 2.2e-16 ***
-## morphType                                12.6312  2   0.001808 ** 
-## oralComprehension                         1.2854  1   0.256893    
-## lengthTarget                             67.0173  1  2.691e-16 ***
-## freqTarget                              330.2657  1  &lt; 2.2e-16 ***
-## relatedness:morphType                    35.5801  2  1.879e-08 ***
-## relatedness:oralComprehension             2.8583  1   0.090904 .  
-## morphType:oralComprehension              19.5765  2  5.611e-05 ***
-## relatedness:morphType:oralComprehension   7.1928  2   0.027422 *  
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>proficiencyglmer7b.modelsum &lt;- summary(proficiencyglmer7b)</code></pre>
 <pre class="r"><code>knitr::kable(round(proficiencyglmer7b.modelsum$coefficients, 4))</code></pre>
 <table>
 <thead>
@@ -5481,6 +5679,122 @@ proficiencyglmer7b.anova</code></pre>
 <td align="right">1.2412</td>
 <td align="right">-2.3886</td>
 <td align="right">0.0169</td>
+</tr>
+</tbody>
+</table>
+<p>We fit a model with the specific relatedness:morphType:oralComprehension:</p>
+<pre class="r"><code>proficiencyglmer7_estimate&lt;- glmer(rt ~ relatedness  + morphType + oralComprehension + relatedness:morphType + morphType:oralComprehension + relatedness:morphType:oralComprehension + lengthTarget + freqTarget + (1|subject) + (1|target), 
+                                data = dataEng, family=Gamma(link=&quot;identity&quot;), 
+                                control=glmerControl(optimizer=&quot;bobyqa&quot;, optCtrl=list(maxfun=2e5)));</code></pre>
+<pre class="r"><code>knitr::kable(round(summary(proficiencyglmer7_estimate)$coefficients,4))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">Estimate</th>
+<th align="right">Std. Error</th>
+<th align="right">t value</th>
+<th align="right">Pr(&gt;|z|)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>(Intercept)</td>
+<td align="right">1170.8125</td>
+<td align="right">5.2595</td>
+<td align="right">222.6081</td>
+<td align="right">0.0000</td>
+</tr>
+<tr class="even">
+<td>relatednessrel</td>
+<td align="right">-36.8030</td>
+<td align="right">4.6800</td>
+<td align="right">-7.8638</td>
+<td align="right">0.0000</td>
+</tr>
+<tr class="odd">
+<td>morphTypeor</td>
+<td align="right">-19.2740</td>
+<td align="right">5.3707</td>
+<td align="right">-3.5887</td>
+<td align="right">0.0003</td>
+</tr>
+<tr class="even">
+<td>morphTypetr</td>
+<td align="right">16.1516</td>
+<td align="right">5.2942</td>
+<td align="right">3.0508</td>
+<td align="right">0.0023</td>
+</tr>
+<tr class="odd">
+<td>oralComprehension</td>
+<td align="right">-5.0864</td>
+<td align="right">3.8860</td>
+<td align="right">-1.3089</td>
+<td align="right">0.1906</td>
+</tr>
+<tr class="even">
+<td>lengthTarget</td>
+<td align="right">-26.3002</td>
+<td align="right">4.0370</td>
+<td align="right">-6.5148</td>
+<td align="right">0.0000</td>
+</tr>
+<tr class="odd">
+<td>freqTarget</td>
+<td align="right">-72.3176</td>
+<td align="right">3.4206</td>
+<td align="right">-21.1420</td>
+<td align="right">0.0000</td>
+</tr>
+<tr class="even">
+<td>relatednessrel:morphTypeor</td>
+<td align="right">12.8668</td>
+<td align="right">5.2967</td>
+<td align="right">2.4292</td>
+<td align="right">0.0151</td>
+</tr>
+<tr class="odd">
+<td>relatednessrel:morphTypetr</td>
+<td align="right">-6.7144</td>
+<td align="right">4.8450</td>
+<td align="right">-1.3858</td>
+<td align="right">0.1658</td>
+</tr>
+<tr class="even">
+<td>morphTypeor:oralComprehension</td>
+<td align="right">4.1488</td>
+<td align="right">1.9426</td>
+<td align="right">2.1357</td>
+<td align="right">0.0327</td>
+</tr>
+<tr class="odd">
+<td>morphTypetr:oralComprehension</td>
+<td align="right">-3.6004</td>
+<td align="right">1.9702</td>
+<td align="right">-1.8274</td>
+<td align="right">0.0676</td>
+</tr>
+<tr class="even">
+<td>relatednessrel:morphTypeop:oralComprehension</td>
+<td align="right">2.6742</td>
+<td align="right">1.2959</td>
+<td align="right">2.0637</td>
+<td align="right">0.0390</td>
+</tr>
+<tr class="odd">
+<td>relatednessrel:morphTypeor:oralComprehension</td>
+<td align="right">1.1381</td>
+<td align="right">1.7825</td>
+<td align="right">0.6385</td>
+<td align="right">0.5231</td>
+</tr>
+<tr class="even">
+<td>relatednessrel:morphTypetr:oralComprehension</td>
+<td align="right">1.5549</td>
+<td align="right">1.5212</td>
+<td align="right">1.0221</td>
+<td align="right">0.3067</td>
 </tr>
 </tbody>
 </table>
