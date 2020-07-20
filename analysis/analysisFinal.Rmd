@@ -738,7 +738,7 @@ Increase in GoF
 
 All tests seem to increase the goodness of fit of the base model proficiencyglmer0.
 
-## Does proficiency specifically interact with priming?
+# Does proficiency specifically interact with priming?
 
 We're going to inspect the anova and summary of each model first with the base contrast set to orthographic, and then with base contrast set to opaque.
 
@@ -889,9 +889,7 @@ proficiencyglmer4b<- glmer(rt ~ relatedness  * morphType * spelling + lengthTarg
 ```
 
 ```{r anova and summary proficiencyglmer4b}
-proficiencyglmer4b.anova <- car::Anova(proficiencyglmer4b)
 proficiencyglmer4b.modelsum <- summary(proficiencyglmer4b)
-proficiencyglmer4b.anova
 ```
 
 ```{r}
@@ -931,9 +929,7 @@ proficiencyglmer5b<- glmer(rt ~ relatedness  * morphType * readingComprehension 
 ```
 
 ```{r anova and summary proficiencyglmer5b}
-proficiencyglmer5b.anova <- car::Anova(proficiencyglmer5b)
 proficiencyglmer5b.modelsum <- summary(proficiencyglmer5b)
-proficiencyglmer5b.anova
 ```
 
 ```{r}
@@ -1047,11 +1043,19 @@ We assessed each proficiency score separately and we report the results one by o
 
 - **Phonemic fluency:** the model proficiencyglmer1.anova shows a non significant 3-way interaction between relatedness:morphType:phonemicFluency [$\chi^2$ = `r round(proficiencyglmer1.anova$Chisq[9], 2)`, $Df$ = `r proficiencyglmer1.anova$Df[9]`, *p*  = 0.1631]
 
-- **Phonemic Comprehension:** the model proficiencyglmer2.anova shows a robust 3-way interaction between relatedness:morphType:phonemicComprehension [$\chi^2$ = `r round(proficiencyglmer2.anova$Chisq[9], 2)`, $Df$ = `r proficiencyglmer2.anova$Df[9]`, *p*  $<$ 0.0001], such that priming in the orthographic condition shinks at higher scores [$\beta$ = `r round(summary(proficiencyglmer2_estimate)$coefficients,3)[12,1]`, $Std.Error$ = `r round(summary(proficiencyglmer2_estimate)$coefficients,3)[12,2]`, $t$ = `r round(summary(proficiencyglmer2_estimate)$coefficients,3)[12,3]`, *p* $<$ .0001], and it differs from opaque priming [$\beta$ = `r round(proficiencyglmer2.modelsum$coefficients, 4)[13]`, $Std.Error$ = `r round(proficiencyglmer2.modelsum$coefficients, 4)[13,2]`, $t$ = `r round(proficiencyglmer2.modelsum$coefficients, 4)[13,3]`, *p* $<$ .0001], and transparent priming [$\beta$ = `r round(proficiencyglmer2.modelsum$coefficients, 4)[14]`, $Std.Error$ = `r round(proficiencyglmer2.modelsum$coefficients, 4)[14,2]`, $t$ = `r round(proficiencyglmer2.modelsum$coefficients, 4)[14,3]`, *p* = .0006]. Opaque and trasparent priming instead are solid across the board. The model set to opaque contrast indeed shows no difference between opaque and transparent conditions [$\beta$ = `r round(proficiencyglmer2b.modelsum$coefficients, 4)[14]`, $Std.Error$ = `r round(proficiencyglmer2b.modelsum$coefficients, 4)[14,2]`, $t$ = `r round(proficiencyglmer2b.modelsum$coefficients, 4)[14,3]`, *p* = .45].
+- **Phonemic Comprehension:** the model proficiencyglmer2.anova shows a robust 3-way interaction between relatedness:morphType:phonemicComprehension [$\chi^2$ = `r round(proficiencyglmer2.anova$Chisq[9], 2)`, $Df$ = `r proficiencyglmer2.anova$Df[9]`, *p*  $<$ 0.0001]. Priming in the orthographic condition shrinks at higher scores [$\beta$ = `r round(summary(proficiencyglmer2_estimate)$coefficients,3)[12,1]`, $Std.Error$ = `r round(summary(proficiencyglmer2_estimate)$coefficients,3)[12,2]`, $t$ = `r round(summary(proficiencyglmer2_estimate)$coefficients,3)[12,3]`, *p* $<$ .0001], and it differs from opaque priming [$\beta$ = `r round(proficiencyglmer2.modelsum$coefficients, 4)[13]`, $Std.Error$ = `r round(proficiencyglmer2.modelsum$coefficients, 4)[13,2]`, $t$ = `r round(proficiencyglmer2.modelsum$coefficients, 4)[13,3]`, *p* $<$ .0001], and transparent priming [$\beta$ = `r round(proficiencyglmer2.modelsum$coefficients, 4)[14]`, $Std.Error$ = `r round(proficiencyglmer2.modelsum$coefficients, 4)[14,2]`, $t$ = `r round(proficiencyglmer2.modelsum$coefficients, 4)[14,3]`, *p* = .0006]. 
+Opaque priming steepens at higher proficiency [$\beta$ = `r round(summary(proficiencyglmer2_estimate)$coefficients,4)[13]`, $Std.Error$ = `r round(summary(proficiencyglmer2_estimate)$coefficients,4)[13,2]`, $t$ = `r round(summary(proficiencyglmer2_estimate)$coefficients,4)[13,3]`, *p* = `r round(summary(proficiencyglmer2_estimate)$coefficients,4)[13,4]`] while transparent priming instead remains identical across the board [$\beta$ = `r round(summary(proficiencyglmer2_estimate)$coefficients,4)[14]`, $Std.Error$ = `r round(summary(proficiencyglmer2_estimate)$coefficients,4)[14,2]`, $t$ = `r round(summary(proficiencyglmer2_estimate)$coefficients,4)[14,3]`, *p* = `r round(summary(proficiencyglmer2_estimate)$coefficients,4)[14,4]`].
+The model set to opaque contrast however shows no difference between opaque and transparent conditions [$\beta$ = `r round(proficiencyglmer2b.modelsum$coefficients, 4)[14]`, $Std.Error$ = `r round(proficiencyglmer2b.modelsum$coefficients, 4)[14,2]`, $t$ = `r round(proficiencyglmer2b.modelsum$coefficients, 4)[14,3]`, *p* = .45].
 
 - **Morphological awareness:** the model proficiencyglmer3.anova shows a robust 3-way interaction between relatedness:morphType:morphComprehension [$\chi^2$ = `r round(proficiencyglmer3.anova$Chisq[9], 2)`, $Df$ = `r proficiencyglmer3.anova$Df[9]`, *p*  = 0.0002]. Priming in the orthographic condition follows a decreasing pattern at growing morphological awareness, like in phonemic comprehension [$\beta$ = `r round(summary(proficiencyglmer3_estimate)$coefficients,3)[12,1]`, $Std.Error$ = `r round(summary(proficiencyglmer3_estimate)$coefficients,3)[12,2]`, $t$ = `r round(summary(proficiencyglmer3_estimate)$coefficients,3)[12,3]`, *p* $<$ .0001]. This decreasing pattern is statistically different from opaque priming that shows to be faster than orthographic priming [$\beta$ = -`r round(proficiencyglmer3.modelsum$coefficients, 4)[13]`, $Std.Error$ = `r round(proficiencyglmer3.modelsum$coefficients, 4)[13,2]`, $t$ = `r round(proficiencyglmer3.modelsum$coefficients, 4)[13,3]`, *p* = .0001]. However, orthographic priming does not show to be different from transparent priming  [$\beta$ = `r round(proficiencyglmer3.modelsum$coefficients, 4)[14]`, $Std.Error$ = `r round(proficiencyglmer3.modelsum$coefficients, 4)[14,2]`, $t$ = `r round(proficiencyglmer3.modelsum$coefficients, 4)[14,3]`, *p* = .32], while instead the model shows a significant difference between opaque and transparent priming [$\beta$ = `r round(proficiencyglmer3b.modelsum$coefficients, 4)[14]`, $Std.Error$ = `r round(proficiencyglmer3b.modelsum$coefficients, 4)[14,2]`, $t$ = `r round(proficiencyglmer3b.modelsum$coefficients, 4)[14,3]`, *p* $<$ .0001]. Estimate of opaque priming [$\beta$ = `r round(summary(proficiencyglmer3_estimate)$coefficients,3)[13,1]`, $Std.Error$ = `r round(summary(proficiencyglmer3_estimate)$coefficients,3)[13,2]`, $t$ = `r round(summary(proficiencyglmer3_estimate)$coefficients,3)[13,3]`, *p* $<$ .0001], and transparent priming [$\beta$ = `r round(summary(proficiencyglmer3_estimate)$coefficients,3)[14,1]`, $Std.Error$ = `r round(summary(proficiencyglmer3_estimate)$coefficients,3)[14,2]`, $t$ = `r round(summary(proficiencyglmer3_estimate)$coefficients,3)[14,3]`, *p* $<$ .0001].
 
+- **Spelling:** the model proficiencyglmer4.anova shows a non significant 3-way interaction between relatedness:morphType:spelling [$\chi^2$ = `r round(proficiencyglmer4.anova$Chisq[9], 2)`, $Df$ = `r proficiencyglmer4.anova$Df[9]`, *p*  = 0.0913].
 
+- **Reading comprehension:** the model proficiencyglmer5.anova shows a non significant 3-way interaction between relatedness:morphType:readingComprehension [$\chi^2$ = `r round(proficiencyglmer5.anova$Chisq[9], 2)`, $Df$ = `r proficiencyglmer5.anova$Df[9]`, *p*  = 0.4750].
+
+- **Vocabulary:** the model proficiencyglmer6.anova shows a robust 3-way interaction between relatedness:morphType:vocabulary [$\chi^2$ = `r round(proficiencyglmer6.anova$Chisq[9], 2)`, $Df$ = `r proficiencyglmer6.anova$Df[9]`, *p*  < 0.0001]. Greater facilitatory priming for transparent than orthographic [$\beta$ = `r round(proficiencyglmer6.modelsum$coefficients, 4)[14]`, $Std.Error$ = `r round(proficiencyglmer6.modelsum$coefficients, 4)[14,2]`, $t$ = `r round(proficiencyglmer6.modelsum$coefficients, 4)[14,3]`, *p* = .0001] and opaque priming [$\beta$ = `r round(proficiencyglmer6b.modelsum$coefficients, 4)[14]`, $Std.Error$ = `r round(proficiencyglmer6b.modelsum$coefficients, 4)[14,2]`, $t$ = `r round(proficiencyglmer6b.modelsum$coefficients, 4)[14,3]`, *p* = .0002] along the whole vocabulary spectrum. Opaques and orthographic priming shrink at higher scores, [opaque: $\beta$ = `r round(summary(proficiencyglmer6_estimate)$coefficients,3)[12,1]`, $Std.Error$ = `r round(summary(proficiencyglmer6_estimate)$coefficients,3)[12,2]`, $t$ = `r round(summary(proficiencyglmer6_estimate)$coefficients,3)[12,3]`, *p* $<$ .0001, orthographic: $\beta$ = `r round(summary(proficiencyglmer6_estimate)$coefficients,3)[13,1]`, $Std.Error$ = `r round(summary(proficiencyglmer6_estimate)$coefficients,3)[13,2]`, $t$ = `r round(summary(proficiencyglmer6_estimate)$coefficients,3)[13,3]`, *p* $<$ .0001]. Model set to orthographic contrast shows also that opaque and orthographic priming differs significantly, [$\beta$ = `r round(proficiencyglmer6.modelsum$coefficients, 4)[13]`, $Std.Error$ = `r round(proficiencyglmer6.modelsum$coefficients, 4)[13,2]`, $t$ = `r round(proficiencyglmer6.modelsum$coefficients, 4)[13,3]`, *p* = .0009].
+
+- **Oral comprehension:** the model proficiencyglmer7.anova shows a non significant 3-way interaction between relatedness:morphType:readingComprehension [$\chi^2$ = `r round(proficiencyglmer7.anova$Chisq[9], 2)`, $Df$ = `r proficiencyglmer7.anova$Df[9]`, *p*  = 0.698].
 
 # AoA 
 
@@ -1172,7 +1176,10 @@ aoaglmer1.modelsum <- summary(aoaglmer1)
 aoaglmer1c.modelsum <- summary(aoaglmer1c)
 ```
 
-Anova of aoaglmer1 - or contrast
+# Does AoA interact with priming?
+
+### AoA 1 - Age first exposed to English
+Anova of aoaglmer1 - ortographic contrast
 ```{r}
 aoaglmer1.anova
 ```
@@ -1183,13 +1190,25 @@ knitr::kable(round(aoaglmer1.modelsum$coefficients, 4))
 ```
 
 Anova of aoaglmer1c - op contrast
-```{r}
-aoaglmer1c.anova
-```
 
 ```{r summary aoaglmer1c}
 knitr::kable(round(aoaglmer1c.modelsum$coefficients, 4))
 ```
+
+We fit a model with the specific relatedness:morphType:AoA:
+```{r aoaglmer1_estimate, eval=FALSE}
+aoaglmer1_estimate<- glmer(rt ~ relatedness  + morphType + aoa1.Aoa + relatedness:morphType + morphType:aoa1.Aoa + relatedness:morphType:aoa1.Aoa + lengthTarget + freqTarget + (1|subject) + (1|target), 
+                                data = dataEng, family=Gamma(link="identity"), 
+                                control=glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)));
+
+```
+
+```{r table of estimates for aoaglmer1}
+knitr::kable(round(summary(aoaglmer1_estimate)$coefficients,4))
+```
+
+
+### AoA 2 - Daily usage of English (L2)
 
 ```{r anova aoaglmer2 and aoaglmer2c}
 aoaglmer2.anova <- car::Anova(aoaglmer2)
@@ -1205,71 +1224,31 @@ Anova of aoaglmer2 - or contrast
 aoaglmer2.anova
 ```
 
-
 ```{r summary aoaglmer2}
 knitr::kable(round(aoaglmer2.modelsum$coefficients, 4))
 ```
 
 Anova of aoaglmer2c - op contrast
-```{r}
-aoaglmer2c.anova
-```
 
 ```{r summary aoaglmer2c}
 knitr::kable(round(aoaglmer2c.modelsum$coefficients, 4))
 ```
 
-```{r anova aoaglmer3 and aoaglmer3c}
-aoaglmer3.anova <- car::Anova(aoaglmer3)
-aoaglmer3c.anova <- car::Anova(aoaglmer3c)
-aoaglmer3.modelsum <- summary(aoaglmer3)
-aoaglmer3c.modelsum <- summary(aoaglmer3c)
+We fit a model with the specific relatedness:morphType:AoA2.usage:
+```{r aoaglmer2_estimate, eval=FALSE}
+aoaglmer2_estimate<- glmer(rt ~ relatedness  + morphType + aoa2.usage + relatedness:morphType + morphType:aoa2.usage + relatedness:morphType:aoa2.usage + lengthTarget + freqTarget + (1|subject) + (1|target), 
+                                data = dataEng, family=Gamma(link="identity"), 
+                                control=glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)));
+
 ```
 
-Anova of aoaglmer3 - or contrast
-```{r}
-aoaglmer3.anova
+```{r table of estimates for aoaglmer2}
+knitr::kable(round(summary(aoaglmer2_estimate)$coefficients,4))
 ```
 
-```{r summary aoaglmer3}
-knitr::kable(round(aoaglmer3.modelsum$coefficients, 4))
-```
 
-Anova of aoaglmer3c - op contrast
 
-```{r}
-aoaglmer3c.anova
-```
-
-```{r summary aoaglmer3c}
-knitr::kable(round(aoaglmer3c.modelsum$coefficients, 4))
-```
-
-```{r anova aoaglmer4 and aoaglmer4c}
-aoaglmer4.anova <- car::Anova(aoaglmer4)
-aoaglmer4c.anova <- car::Anova(aoaglmer4c)
-aoaglmer4.modelsum <- summary(aoaglmer4)
-aoaglmer4c.modelsum <- summary(aoaglmer4c)
-```
-
-Anova of aoaglmer4 - or contrast
-```{r}
-aoaglmer4.anova
-```
-
-```{r summary aoaglmer4}
-knitr::kable(round(aoaglmer4.modelsum$coefficients, 4))
-```
-
-Anova of aoaglmer4c - op contrast
-
-```{r}
-aoaglmer4c.anova
-```
-
-```{r summary aoaglmer4c}
-knitr::kable(round(aoaglmer4c.modelsum$coefficients, 4))
-```
+### AoA 5 - Self rated proficiency
 
 ```{r anova aoaglmer5 and aoaglmer5c}
 aoaglmer5.anova <- car::Anova(aoaglmer5)
@@ -1289,39 +1268,31 @@ knitr::kable(round(aoaglmer5.modelsum$coefficients, 4))
 
 Anova of aoaglmer5c - op contrast
 
-```{r}
-aoaglmer5c.anova
-```
-
 ```{r summary aoaglmer5c}
 knitr::kable(round(aoaglmer5c.modelsum$coefficients, 4))
 ```
 
-```{r anova aoaglmer6 and aoaglmer6c}
-aoaglmer6.anova <- car::Anova(aoaglmer6)
-aoaglmer6c.anova <- car::Anova(aoaglmer6c)
-aoaglmer6.modelsum <- summary(aoaglmer6)
-aoaglmer6c.modelsum <- summary(aoaglmer6c)
+We fit a model with the specific relatedness:morphType:aoa5.selfRatedProf:
+```{r aoaglmer5_estimate, eval=FALSE}
+aoaglmer5_estimate<- glmer(rt ~ relatedness  + morphType + aoa5.selfRatedProf + relatedness:morphType + morphType:aoa5.selfRatedProf + relatedness:morphType:aoa5.selfRatedProf + lengthTarget + freqTarget + (1|subject) + (1|target), 
+                                data = dataEng, family=Gamma(link="identity"), 
+                                control=glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)));
+
 ```
 
-Anova of aoaglmer6 - or contrast
-```{r}
-aoaglmer6.anova
+```{r table of estimates for aoaglmer5}
+knitr::kable(round(summary(aoaglmer5_estimate)$coefficients,4))
 ```
 
-```{r summary aoaglmer6}
-knitr::kable(round(aoaglmer6.modelsum$coefficients, 4))
-```
 
-Anova of aoaglmer5c - op contrast
+# Summary of the results for the AoA and priming
 
-```{r}
-aoaglmer6c.anova
-```
+- **AoA1 - age of first exposure to English:** Model aoaglmer1.anova revealed a significant three-way interaction between proper AoA, prime relatedness and morphType [$\chi^2$ = `r round(aoaglmer1.anova$Chisq[8], 2)`, $Df$ = `r aoaglmer1.anova$Df[8]`, *p*  < 0.0001], indicating that the age of first exposure to English modulates priming. Only transparent primes seems to yield solid facilitation across the AoA spectrum compared to orthographic, [$\beta$ = `r round(aoaglmer1.modelsum$coefficients[13], 3)`, $Std.Error$ = `r round(aoaglmer1.modelsum$coefficients[13,2], 3)`, $t$ = `r round(aoaglmer1.modelsum$coefficients[13,3], 3)`, *p* $<$ .0001] and opaque pairs, [$\beta$ = `r round(aoaglmer1c.modelsum$coefficients[13], 3)`, $Std.Error$ = `r round(aoaglmer1c.modelsum$coefficients[13,2], 3)`, $t$ = `r round(aoaglmer1c.modelsum$coefficients[13,3], 3)`, *p* $<$ .0001] while there is no difference between opaque and orthographic, $\beta=-.8, t=-0.6, p=.54$.
 
-```{r summary aoaglmer6c}
-knitr::kable(round(aoaglmer6c.modelsum$coefficients, 4))
-```
+- **AoA2 - Daily use of English:** Model aoaglmer2.anova revealed a significant three-way interaction between daily use of English, prime relatedness and morphType [$\chi^2$ = `r round(aoaglmer2.anova$Chisq[8], 2)`, $Df$ = `r aoaglmer2.anova$Df[8]`, *p*  < 0.0001]. Transparent primes show greater facilitatory priming than orthographic primes, [$\beta$ = `r round(aoaglmer2.modelsum$coefficients[13], 3)`, $Std.Error$ = `r round(aoaglmer2.modelsum$coefficients[13,2], 3)`, $t$ = `r round(aoaglmer2.modelsum$coefficients[13,3], 3)`, *p* $<$ .0001], but not than opaque primes, [$\beta$ = `r round(aoaglmer2c.modelsum$coefficients[13], 3)`, $Std.Error$ = `r round(aoaglmer2c.modelsum$coefficients[13,2], 3)`, $t$ = `r round(aoaglmer2c.modelsum$coefficients[13,3], 3)`, *p* = .16]. Opaque priming is greater than orthographic, [$\beta$ = `r round(aoaglmer2.modelsum$coefficients[12], 3)`, $Std.Error$ = `r round(aoaglmer2.modelsum$coefficients[12,2], 3)`, $t$ = `r round(aoaglmer2.modelsum$coefficients[12,3], 3)`, *p* $<$ .0001].
+
+- **AoA5 - Self rated proficiency:** Model aoaglmer5.anova revealed a significant three-way interaction between daily use of English, prime relatedness and morphType [$\chi^2$ = `r round(aoaglmer5.anova$Chisq[8], 2)`, $Df$ = `r aoaglmer5.anova$Df[8]`, *p*  < 0.0001]. Transparent and opaque primes bring greater facilitation than orthographic controls, [transparent: $\beta$ = `r round(aoaglmer5.modelsum$coefficients[13], 3)`, $Std.Error$ = `r round(aoaglmer5.modelsum$coefficients[13,2], 3)`, $t$ = `r round(aoaglmer5.modelsum$coefficients[13,3], 3)`, *p* $<$ .0001, opaque: $\beta$ = `r round(aoaglmer5.modelsum$coefficients[12], 3)`, $Std.Error$ = `r round(aoaglmer5.modelsum$coefficients[12,2], 3)`, $t$ = `r round(aoaglmer5.modelsum$coefficients[12,3], 3)`, *p* $<$ .0001]. No difference between opaque and transparent pairs, [$\beta$ = `r round(aoaglmer5c.modelsum$coefficients[13], 3)`, $Std.Error$ = `r round(aoaglmer5c.modelsum$coefficients[13,2], 3)`, $t$ = `r round(aoaglmer5c.modelsum$coefficients[13,3], 3)`, *p* = .86].
+
 
 # OSC
 
@@ -1345,7 +1316,18 @@ osc1 <- glmer(rt ~ relatedness *  oscTarget * phonemicFluency + freqTarget + len
 
 ```{r}
 osc1.anova <-car::Anova(osc1)
+osc1.modelsum <- summary(osc1)
+
 ```
+
+```{r osc1.anova}
+osc1.anova
+```
+```{r osc1 modelsum}
+knitr::kable(round(osc1.modelsum$coefficients, 4))
+
+```
+
 
 ```{r osc2 glmer, eval=FALSE}
 osc2 <- glmer(rt ~ relatedness *  oscTarget * vocabulary + freqTarget + lengthTarget + (1|subject) + (1|target), data = dataEng, family=Gamma(link="identity"), control=glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)));
@@ -1353,6 +1335,15 @@ osc2 <- glmer(rt ~ relatedness *  oscTarget * vocabulary + freqTarget + lengthTa
 
 ```{r}
 osc2.anova<-car::Anova(osc2)
+osc2.modelsum <- summary(osc2)
+```
+
+```{r osc2 anova}
+osc2.anova
+```
+```{r osc2 modelsum}
+knitr::kable(round(osc2.modelsum$coefficients, 4))
+
 ```
 
 ```{r osc3 glmer, eval=FALSE}
@@ -1361,6 +1352,11 @@ osc3 <- glmer(rt ~ relatedness *  oscTarget * phonemicComprehension + freqTarget
 
 ```{r}
 osc3.anova<-car::Anova(osc3)
+osc3.modelsum <- summary(osc3)
+```
+
+```{r}
+osc3.anova
 ```
 
 
@@ -1370,7 +1366,20 @@ osc4 <- glmer(rt ~ relatedness *  oscTarget * morphComprehension + freqTarget + 
 
 ```{r}
 osc4.anova<-car::Anova(osc4)
+osc4.modelsum <- summary(osc4)
 ```
+
+```{r osc4 anova}
+osc4.anova
+```
+```{r osc4 modelsum}
+knitr::kable(round(osc4.modelsum$coefficients, 4))
+
+```
+
+# Summary of results for OSC by proficiency
+Among proficiency subtests, OSC interacts with phonemic fluency as shown by the osc1.anova model, [$\chi^2$ = `r round(osc1.anova$Chisq[9], 2)`, $Df$ = `r osc1.anova$Df[9]`, *p*  < 0.0001]. Vocabulary as shown by the osc2.model, [$\chi^2$ = `r round(osc2.anova$Chisq[9], 2)`, $Df$ = `r osc2.anova$Df[9]`, *p*  < 0.0001] and morphological comprehension in the osc4.anova model [$\chi^2$ = `r round(osc4.anova$Chisq[9], 2)`, $Df$ = `r osc4.anova$Df[9]`, *p*  < 0.0001].
+
 # Plots  
 
 ## Figure 1 - plot of estimated RTs
@@ -1480,7 +1489,7 @@ par(mfrow=c(1,1));
 
 ```{r save ita models, echo=FALSE, eval=FALSE}
 saveRDS(aoaglmer6c, paste(localGitDir, "/LMMs and GLMMs/aoaglmer6c.rds",sep = ""))
-saveRDS(engglmer1, paste(localGitDir, "/LMMs and GLMMs/engglmer1.rds",sep = ""))
+saveRDS(aoaglmer5_estimate, paste(localGitDir, "/LMMs and GLMMs/aoaglmer5_estimate.rds",sep = ""))
 saveRDS(proficiencyglmer7_estimate, paste(localGitDir, "/LMMs and GLMMs/proficiencyglmer7_estimate.rds",sep = ""))
 
 ```
@@ -1571,37 +1580,7 @@ ggplot(data = temp, aes(x=relatedness, y=fit, group=morphType)) +
 
 ```
 
-## Figure 6 - Interaction by phonemic Fluency by relatedness and morphtype
-
-```{r phonemic Fluency, fig.height = 4, fig.width = 10, fig.align= "center"}
-temp <- data.frame(effect('relatedness:morphType:phonemicFluency', proficiencyglmer1, se=list(level=.95), xlevels=list(phonemicFluency=quantile(dataEng$phonemicFluency, probs=c(.05,.50,.95)))));
-revalue(temp$relatedness, c("rel"="Related"))-> temp$relatedness;
-revalue(temp$relatedness, c("ctrl"="Unrelated"))-> temp$relatedness;
-
-phonemicFluency_names <- c(
-  "10" = "Low phonFluency",
-  "23" = "Medium phonFluency",
-  "39" = "High phonFluency");
-
-ggplot(data = temp, aes(x=relatedness, y=fit, group=morphType)) + 
-  geom_point(size = 2, position = position_dodge(width = 0.25)) +
-  geom_line(aes(linetype=morphType), position = position_dodge(width = 0.25)) + 
-  scale_linetype_manual(values=c("dashed", "dotted", "solid")) +
-  theme_bw() + 
-  theme(panel.grid.major = element_blank()) +
-  ylab('RTs (ms)') + xlab('') + 
-  theme(axis.text.y = element_text(angle = 00, hjust = 1, size=8, colour = 'black'))+
-  theme(axis.text.x = element_text(size=13, colour = 'black'))+
-  geom_pointrange(aes(ymin = lower, ymax = upper), position = position_dodge(width = 0.25)) +
-  facet_grid(~ phonemicFluency, 
-             labeller = labeller(phonemicFluency = as_labeller(phonemicFluency_names))) +
-  theme(strip.text = element_text(size=12)) + 
-  theme(legend.position="none");
-
-```
-
-
-## Figure 7 - Scores distributions in the AoA questionnaire
+## Figure 6 - Scores distributions in the AoA questionnaire
 
 ```{r aoa distribution, fig.height = 6, fig.width = 12.5, fig.align= "center"}
 #jpeg(filename = paste(localGitDir,'/aoaScores.jpg', sep = ''), res=300, height=2200, width=4400); 
@@ -1639,7 +1618,7 @@ par(mfrow=c(1,1));
 
 ```
 
-## Figure 8 - Interaction by AoA1 by relatedness and morphtype
+## Figure 7 - Interaction by AoA1 by relatedness and morphtype
 
 ```{r aoa1, fig.height = 4, fig.width = 10, fig.align= "center"}
 temp <- data.frame(effect('relatedness:morphType:aoa1.Aoa', aoaglmer1, se=list(level=.95), xlevels=list(aoa1.Aoa=quantile(dataEng$aoa1.Aoa, probs=c(.05,.50,.95)))));
@@ -1670,7 +1649,7 @@ ggplot(data = temp, aes(x=relatedness, y=fit, group=morphType)) +
 
 ```
 
-## Figure 9 - Interaction by AoA2 by relatedness and morphtype
+## Figure 8 - Interaction by AoA2 by relatedness and morphtype
 ```{r aoa2, fig.height = 4, fig.width = 10, fig.align= "center"}
 temp <- data.frame(effect('relatedness:morphType:aoa2.usage', aoaglmer2c, se=list(level=.95), xlevels=list(aoa2.usage=quantile(dataEng$aoa2.usage, probs=c(.05,.50,.95)))));
 revalue(temp$relatedness, c("rel"="Related"))-> temp$relatedness;
@@ -1701,7 +1680,7 @@ ggplot(data = temp, aes(x=relatedness, y=fit, group=morphType)) +
 
 ```
 
-## Figure 10 - Interaction by AoA5 by relatedness and morphtype
+## Figure 9 - Interaction by AoA5 by relatedness and morphtype
 
 ```{r aoa5, fig.height = 4, fig.width = 10, fig.align= "center"}
 temp <- data.frame(effect('relatedness:morphType:aoa5.selfRatedProf', aoaglmer5c, se=list(level=.95), xlevels=list(aoa5.selfRatedProf=quantile(dataEng$aoa5.selfRatedProf, probs=c(.05,.50,.95)))));
@@ -1732,7 +1711,7 @@ ggplot(data = temp, aes(x=relatedness, y=fit, group=morphType)) +
 
 ```
 
-## Figure 11 - OSC by morphtype
+## Figure 10 - OSC by morphtype
 
 ```{r osc, fig.height = 4, fig.width = 6, fig.align= "center"}
 temp <- unique(masterFile[masterFile$lexicality=='word' & masterFile$language=='eng',c('target','prime','morphType','relatedness','freqTarget','freqPrime','lengthTarget','lengthPrime','nTarget','nPrime','oscTarget')]);
@@ -1745,7 +1724,7 @@ ggboxplot(subset(temp, oscTarget>0), "morphType", "oscTarget",
 
 ```
 
-## Figure 12 - OSC by phonemic fluency by relatedness
+## Figure 11 - OSC by phonemic fluency by relatedness
 
 ```{r osc1, fig.height = 4, fig.width = 10, fig.align= "center"}
 temp <- data.frame(effect('relatedness:oscTarget:phonemicFluency', osc1, se=list(level=.95), xlevels=list(oscTarget=c(.20,.80), phonemicFluency=quantile(dataEng$phonemicFluency, probs=c(.05,.50,.95)))));
@@ -1778,7 +1757,7 @@ ggsave("oscModel.jpg", width = 7, height = 3, dpi = 300);
 
 ```
 
-## Figure 13 - OSC by vocabulary by relatedness
+## Figure 12 - OSC by vocabulary by relatedness
 
 ```{r osc2, fig.height = 4, fig.width = 10, fig.align= "center"}
 temp <- data.frame(effect('relatedness:oscTarget:vocabulary', osc2, se=list(level=.95), xlevels=list(oscTarget=c(.20,.80), vocabulary=quantile(dataEng$vocabulary, probs=c(.05,.50,.95)))));
@@ -1811,7 +1790,7 @@ ggsave("vocabulary.jpg", width = 7.5, height = 3, dpi = 300);
 
 ```
 
-## Figure 14 - morphComprehension by relatedness
+## Figure 13 - OSC by morphComprehension by relatedness
 
 ```{r osc4, fig.height = 4, fig.width = 10, fig.align= "center"}
 temp <- data.frame(effect('relatedness:oscTarget:morphComprehension', osc4, se=list(level=.95), xlevels=list(oscTarget=c(.20,.80), morphComprehension=quantile(dataEng$morphComprehension, probs=c(.05,.50,.95)))));
